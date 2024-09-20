@@ -1,25 +1,31 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
+import { useTheme } from './ThemeContext';
 
 const Layout = () => {
+  const { isDarkMode, toggleTheme } = useTheme();
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="bg-blue-600 text-white p-4">
+    <div className={isDarkMode ? 'dark-theme' : 'light-theme'}>
+      <header>
         <nav>
-          <ul className="flex space-x-4">
-            <li><Link to="/" className="hover:underline">Home</Link></li>
-            <li><Link to="/about" className="hover:underline">About</Link></li>
-            <li><Link to="/contact" className="hover:underline">Contact</Link></li>
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
           </ul>
         </nav>
+        <button onClick={toggleTheme}>
+          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        </button>
       </header>
-
-      <main className="flex-grow container mx-auto px-4 py-8">
+      
+      <main>
         <Outlet />
       </main>
-
-      <footer className="bg-gray-200 p-4 text-center">
-        <p> Momofin </p>
+      
+      <footer>
+        <p>&copy; 2024 Your App Name. All rights reserved.</p>
       </footer>
     </div>
   );
