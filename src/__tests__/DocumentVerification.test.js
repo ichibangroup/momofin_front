@@ -1,18 +1,32 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import DocumentVerification from '../components/DocumentVerification';
 
-test('renders DocumentVerification component', () => {
-  render(<DocumentVerification />);
-  const titleElement = screen.getByText(/Document Verification/i);
-  expect(titleElement).toBeInTheDocument();
-});
+// Suppress act() warnings
+import { act } from 'react-dom/test-utils';
+global.act = act;
 
-test('renders file input and generate hash button', () => {
+const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+
+describe('DocumentVerification Component', () => {
+  test('renders DocumentVerification component', () => {
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText(/Choose a file/i);
-    const generateButton = screen.getByRole('button', { name: /Generate Hash/i });
-    
-    expect(fileInput).toBeInTheDocument();
-    expect(generateButton).toBeInTheDocument();
+    expect(screen.getByText('Document Verification')).toBeInTheDocument();
   });
+
+  test('allows file selection and verification', () => {
+    render(<DocumentVerification />);
+    const fileInput = screen.getByLabelText(/choose a file/i);
+    const verifyButton = screen.getByRole('button', { name: /verify document/i });
+
+    expect(verifyButton).toBeDisabled();
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    expect(verifyButton).not.toBeDisabled();
+
+    fireEvent.click(verifyButton);
+
+    expect(screen.getByText(/Hash:/)).toBeInTheDocument();
+    expect(screen.getByText(/Verified:/)).toBeInTheDocument();
+  });
+});
