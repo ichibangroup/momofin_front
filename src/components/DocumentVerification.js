@@ -1,7 +1,11 @@
 import React from 'react';
 
 const DocumentVerification = () => {
-  return <h1>Document Verification</h1>;
+  return (
+    <div className="document-verification">
+      <h1 className="title">Document Verification</h1>
+    </div>
+  );
 };
 
 export default DocumentVerification;
