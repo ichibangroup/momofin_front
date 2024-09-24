@@ -1,11 +1,11 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './Layout';
+import Layout from './components/Layout';
 import LoadingIndicator from './LoadingIndicator';
 
-const Home = lazy(() => import('./Home'));
+const Home = lazy(() => import('./components/Home'));
 const About = lazy(() => import('./About'));
-const Contact = lazy(() => import('./Contact'));
+const Contact = lazy(() => import('./components/Contact'));
 
 function App() {
   return (
