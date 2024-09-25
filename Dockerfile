@@ -10,16 +10,14 @@ RUN npm run build
 # Run stage
 FROM nginx:alpine AS runner
 
-# Create a non-root user
+# Create a non-root user and set up directories
 ARG USER_NAME=reactuser
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
 
 RUN addgroup -g ${USER_GID} ${USER_NAME} \
-    && adduser -D -u ${USER_UID} -G ${USER_NAME} ${USER_NAME}
-
-# Create necessary directories and set permissions
-RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run /etc/nginx/conf.d \
+    && adduser -D -u ${USER_UID} -G ${USER_NAME} ${USER_NAME} \
+    && mkdir -p /var/cache/nginx /var/log/nginx /var/run /etc/nginx/conf.d \
     && chown -R ${USER_NAME}:${USER_NAME} /var/cache/nginx /var/log/nginx /var/run /etc/nginx /usr/share/nginx/html \
     && chmod -R 755 /var/cache/nginx /var/log/nginx /var/run /etc/nginx /usr/share/nginx/html
 
@@ -28,9 +26,6 @@ COPY --from=builder --chown=${USER_UID}:${USER_GID} /app/build /usr/share/nginx/
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Modify nginx.conf to use non-root user
-RUN sed -i 's!user  nginx;!user reactuser;!' /etc/nginx/nginx.conf
 
 EXPOSE 3000
 
