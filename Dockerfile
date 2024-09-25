@@ -18,11 +18,16 @@ ARG USER_GID=${USER_UID}
 RUN addgroup -g ${USER_GID} ${USER_NAME} \
     && adduser -D -u ${USER_UID} -G ${USER_NAME} ${USER_NAME}
 
+# Create necessary directories and set permissions
+RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run \
+    && chown -R ${USER_NAME}:${USER_NAME} /var/cache/nginx /var/log/nginx /var/run \
+    && chmod -R 755 /var/cache/nginx /var/log/nginx /var/run
+
 # Copy the built app from the builder stage
 COPY --from=builder --chown=${USER_UID}:${USER_GID} /app/build /usr/share/nginx/html
 
-# Copy a custom nginx config if you have one
-# COPY nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 3000
 
