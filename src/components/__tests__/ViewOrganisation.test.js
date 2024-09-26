@@ -5,7 +5,7 @@ import ViewOrganisation from '../viewOrganisation'
 test ('should render view organisation component', () => {
     render(<ViewOrganisation/>);
 
-    const viewOrgElement = screen.getAllByTestId('viewOrg-1');
+    const viewOrgElement = screen.getByTestId('viewOrg-1');
     expect(viewOrgElement).toBeInTheDocument();
 
 })

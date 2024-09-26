@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent} from '@testing-library/react';
-import DocumentVerification from '../components/DocumentVerification';
+import DocumentVerification from '../DocumentVerification';
 
 // Suppress act() warnings
 import { act } from 'react-dom/test-utils';
