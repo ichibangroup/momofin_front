@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import LoadingIndicator from './components/LoadingIndicator';
 import Login from './components/Login';
+import Register from './components/Register';
 
 const Home = lazy(() => import('./components/Home'));
 const About = lazy(() => import('./components/About'));
@@ -19,6 +20,9 @@ function App() {
 
         {/* Add the Login route */}
         <Route path="/login" element={<Login />} />
+
+        {/* Add the Login route */}
+        <Route path="/register" element={<Register />} />
 
         {/* Main Layout */}
         <Route path="/app" element={<Layout />}>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Register = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Login = () => {
 
     return (
         <div>
-            <h2>Login</h2>
+            <h2>Register</h2>
             <form>
                 <div>
                     <label htmlFor="username">Username</label>
@@ -32,11 +32,11 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </div>
-                <button type="button" onClick={handleLogin}>Login</button>
-                <p>Already have an account? <a href="register">Register Here!</a></p>
+                <button type="button" onClick={handleLogin}>Register</button>
+                <p>Already have an account? <a href="login">Login instead</a></p>
             </form>
         </div>
     );
 };
 
-export default Login;
+export default Register;
