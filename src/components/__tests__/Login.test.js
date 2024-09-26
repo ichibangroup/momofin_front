@@ -6,80 +6,79 @@ import { useNavigate } from 'react-router-dom';
 
 // Mock useNavigate hook
 jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: jest.fn(),
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn(),
 }));
 
 describe('Login Component', () => {
-    const mockNavigate = jest.fn();
+  const mockNavigate = jest.fn();
 
-    beforeEach(() => {
-        // Ensure useNavigate is mocked before each test
-        useNavigate.mockReturnValue(mockNavigate);
-    });
+  beforeEach(() => {
+    useNavigate.mockReturnValue(mockNavigate);
+  });
 
-    test('renders login form', () => {
-        render(
-            <MemoryRouter>
-                <Login />
-            </MemoryRouter>
-        );
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-        // Query the heading and login button separately
-        const heading = screen.getByRole('heading', { name: /login/i });
-        expect(heading).toBeInTheDocument();
+  test('renders login form', () => {
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
 
-        const usernameInput = screen.getByLabelText(/username/i);
-        const passwordInput = screen.getByLabelText(/password/i);
-        expect(usernameInput).toBeInTheDocument();
-        expect(passwordInput).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { name: /login/i });
+    expect(heading).toBeInTheDocument();
 
-        const loginButton = screen.getByRole('button', { name: /login/i });
-        expect(loginButton).toBeInTheDocument();
-    });
+    const usernameInput = screen.getByLabelText(/username/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    expect(usernameInput).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
 
-    test('allows input in username and password fields', () => {
-        render(
-            <MemoryRouter>
-                <Login />
-            </MemoryRouter>
-        );
+    const loginButton = screen.getByRole('button', { name: /login/i });
+    expect(loginButton).toBeInTheDocument();
+  });
 
-        const usernameInput = screen.getByLabelText(/username/i);
-        const passwordInput = screen.getByLabelText(/password/i);
+  test('allows input in username and password fields', () => {
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
 
-        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-        fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    const usernameInput = screen.getByLabelText(/username/i);
+    const passwordInput = screen.getByLabelText(/password/i);
 
-        expect(usernameInput.value).toBe('testuser');
-        expect(passwordInput.value).toBe('password123');
-    });
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    test('navigates to /app on login button click', () => {
-        render(
-            <MemoryRouter>
-                <Login />
-            </MemoryRouter>
-        );
+    expect(usernameInput.value).toBe('testuser');
+    expect(passwordInput.value).toBe('password123');
+  });
 
-        const loginButton = screen.getByRole('button', { name: /login/i });
-        fireEvent.click(loginButton);
+  test('navigates to /app on login button click', () => {
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
 
-        // Expect that useNavigate was called with "/app"
-        expect(mockNavigate).toHaveBeenCalledWith('/app');
-    });
+    const loginButton = screen.getByRole('button', { name: /login/i });
 
-    test('navigates to /register when clicking the "Register Here!" link', () => {
-        render(
-            <MemoryRouter>
-                <Login />
-            </MemoryRouter>
-        );
-    
-        const registerLink = screen.getByRole('link', { name: /register here/i });
-        fireEvent.click(registerLink);
-    
-        expect(mockNavigate).toHaveBeenCalledWith('/register');
-    });
-    
+    fireEvent.click(loginButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/app');
+  });
+
+  test('renders "Register Here!" link with correct "to" prop', () => {
+    render(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
+
+    const registerLink = screen.getByRole('link', { name: /register here/i });
+    expect(registerLink).toHaveAttribute('href', '/register');
+  });
 });

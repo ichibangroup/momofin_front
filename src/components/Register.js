@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = () => {
+    const handleRegister = () => {
         navigate('/app');
     };
 
@@ -32,8 +32,8 @@ const Register = () => {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </div>
-                <button type="button" onClick={handleLogin}>Register</button>
-                <p>Already have an account? <a href="login">Login instead</a></p>
+                <button type="button" onClick={handleRegister}>Register</button>
+                <p>Already have an account? <Link to="/login">Login instead</Link></p>
             </form>
         </div>
     );
