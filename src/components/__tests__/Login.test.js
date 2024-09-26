@@ -2,8 +2,22 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Login from '../Login';
+import { useNavigate } from 'react-router-dom';
+
+// Mock useNavigate hook
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: jest.fn(),
+}));
 
 describe('Login Component', () => {
+    const mockNavigate = jest.fn();
+
+    beforeEach(() => {
+        // Ensure useNavigate is mocked before each test
+        useNavigate.mockReturnValue(mockNavigate);
+    });
+
     test('renders login form', () => {
         render(
             <MemoryRouter>
@@ -11,17 +25,15 @@ describe('Login Component', () => {
             </MemoryRouter>
         );
 
-        // Check if the login heading is in the document
-        const heading = screen.getByText(/login/i);
+        // Query the heading and login button separately
+        const heading = screen.getByRole('heading', { name: /login/i });
         expect(heading).toBeInTheDocument();
 
-        // Check if the username and password inputs are present
         const usernameInput = screen.getByLabelText(/username/i);
         const passwordInput = screen.getByLabelText(/password/i);
         expect(usernameInput).toBeInTheDocument();
         expect(passwordInput).toBeInTheDocument();
 
-        // Check if the login button is present
         const loginButton = screen.getByRole('button', { name: /login/i });
         expect(loginButton).toBeInTheDocument();
     });
@@ -36,7 +48,6 @@ describe('Login Component', () => {
         const usernameInput = screen.getByLabelText(/username/i);
         const passwordInput = screen.getByLabelText(/password/i);
 
-        // Simulate user typing
         fireEvent.change(usernameInput, { target: { value: 'testuser' } });
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
@@ -45,19 +56,16 @@ describe('Login Component', () => {
     });
 
     test('navigates to /app on login button click', () => {
-        const { container } = render(
-            <MemoryRouter initialEntries={['/login']}>
+        render(
+            <MemoryRouter>
                 <Login />
             </MemoryRouter>
         );
 
-        // Get the login button
         const loginButton = screen.getByRole('button', { name: /login/i });
-
-        // Simulate button click
         fireEvent.click(loginButton);
 
-        // Check if the current URL is now '/app'
-        expect(container.innerHTML).toMatch(/<h1>Home<\/h1>/); // Assuming the Home component has an h1 with "Home"
+        // Expect that useNavigate was called with "/app"
+        expect(mockNavigate).toHaveBeenCalledWith('/app');
     });
 });
