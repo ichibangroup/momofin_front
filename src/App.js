@@ -1,7 +1,8 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoadingIndicator from './components/LoadingIndicator';
+import Login from './components/Login';
 
 const Home = lazy(() => import('./components/Home'));
 const About = lazy(() => import('./components/About'));
@@ -13,9 +14,16 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        {/* Redirect from root path to /login */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-          <Route index element={
+        {/* Add the Login route */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Main Layout */}
+        <Route path="/app" element={<Layout />}>
+
+          <Route path="/app" element={
             <Suspense fallback={<LoadingIndicator />}>
               <Home />
             </Suspense>
