@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DocumentVerification from '../components/DocumentVerification';
+import DocumentVerification from '../DocumentVerification';
 
 test('renders DocumentVerification component', () => {
   render(<DocumentVerification />);
