@@ -1,25 +1,67 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { validateLogin } from './LoginValidation'; 
+import { validateLogin } from './LoginValidation';
 import '../Login.css';
 
 function Login({ onSubmit }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
-  const navigate = useNavigate(); 
+  const [organizationName] = useState("Momofin"); // Static organization name
+  const [username, setUsername] = useState(''); // State for username
+  const [password, setPassword] = useState(''); // State for password
+  const [errors, setErrors] = useState({}); // State for error messages
+  const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+    console.log("Submit button clicked"); // Debugging line
     event.preventDefault();
+    console.log("Submit button clicked 2");
 
-    const validationErrors = validateLogin({ email, password });
+    // Perform validation
+    const validationErrors = validateLogin({ username, password });
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+    console.log("Submit button clicked 3");
 
-    if (onSubmit) {
-      onSubmit({ email, password });
+    // Prepare the payload to match your backend's expected format
+    const payload = {
+      organizationName,
+      username, // Using username from input
+      password,
+    };
+
+    console.log('Payload:', payload); // Debugging line
+
+    try {
+      // Send POST request to your backend
+      const response = await fetch('http://localhost:8080/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status); // Debugging line
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      console.log('Login successful:', data);
+
+      // Optional: Call the onSubmit callback or navigate based on the response
+      if (onSubmit) {
+        onSubmit(data);
+      }
+
+      // Example: Navigate to a dashboard page after successful login
+      navigate('/dashboard');
+
+    } catch (error) {
+      console.error('Error:', error);
+      setErrors({ server: 'Login failed. Please try again.' });
     }
   };
 
@@ -28,42 +70,43 @@ function Login({ onSubmit }) {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-form-container">
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h2>Sign In</h2>
-          <div className="form-group">
-            <input
-              type="email"
-              id="email"
-              placeholder="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            {errors.email && <span className="error">{errors.email}</span>}
-          </div>
-          <div className="form-group">
-            <input
-              type="password"
-              id="password"
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {errors.password && <span className="error">{errors.password}</span>}
-          </div>
-          <button type="submit" className="btn-signin">Sign In</button>
-          <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
-        </form>
+      <div className="login-container">
+        <div className="login-form-container">
+          <form className="login-form" onSubmit={handleSubmit}>
+            <h2>Sign In</h2>
+            <div className="form-group">
+              <input
+                  type="text" // Input type for username
+                  id="username" // ID for username input
+                  placeholder="Username" // Placeholder for username
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)} // Update username state
+                  required
+              />
+              {errors.username && <span className="error">{errors.username}</span>}
+            </div>
+            <div className="form-group">
+              <input
+                  type="password"
+                  id="password"
+                  placeholder="Password" // Placeholder for password
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)} // Update password state
+                  required
+              />
+              {errors.password && <span className="error">{errors.password}</span>}
+            </div>
+            {errors.server && <span className="error">{errors.server}</span>}
+            <button type="submit" className="btn-signin">Sign In</button>
+            <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+          </form>
+        </div>
+        <div className="login-welcome-container">
+          <h2>Welcome Back!</h2>
+          <p>Enter your personal details or Sign Up if you don't have an account</p>
+          <button className="btn-signup" onClick={handleSignUp}>Sign Up</button>
+        </div>
       </div>
-      <div className="login-welcome-container">
-        <h2>Welcome Back!</h2>
-        <p>Enter your personal details or Sign Up if you don't have an account</p>
-        <button className="btn-signup" onClick={handleSignUp}>Sign Up</button>
-      </div>
-    </div>
   );
 }
 

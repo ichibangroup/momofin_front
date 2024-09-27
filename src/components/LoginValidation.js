@@ -1,10 +1,8 @@
-export const validateLogin = ({ email, password }) => {
+export const validateLogin = ({ username, password }) => {
     let validationErrors = {};
     
-    if (!email) {
-      validationErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      validationErrors.email = 'Email address is invalid';
+    if (!username) {
+      validationErrors.email = 'Username is required';
     }
   
     if (!password) {
