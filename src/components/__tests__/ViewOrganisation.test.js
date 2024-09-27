@@ -1,13 +1,12 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { act } from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
 import ViewOrganisation from '../viewOrganisation';
 
 test('should render view organisation component', async () => {
-  await act(async () => {
-    render(<ViewOrganisation />);
-  });
+  render(<ViewOrganisation />);
 
-  const viewOrgElement = screen.getByTestId('viewOrg-1');
-  expect(viewOrgElement).toBeInTheDocument();
+  await waitFor(() => {
+    const viewOrgElement = screen.getByTestId('viewOrg-1');
+    expect(viewOrgElement).toBeInTheDocument();
+  });
 });

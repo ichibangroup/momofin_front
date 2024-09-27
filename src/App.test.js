@@ -1,18 +1,17 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { act } from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { ThemeProvider } from './components/ThemeContext';
 import App from './App';
 
 test('renders App without crashing', async () => {
-  await act(async () => {
-    render(
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    );
-  });
+  render(
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
   
-  // Add an assertion to check for some content
-  expect(screen.getByRole('navigation')).toBeInTheDocument();
+  await waitFor(() => {
+    // Check for the navigation element
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
+  });
 });
