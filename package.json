@@ -43,8 +43,6 @@
     "tailwindcss": "^3.4.12"
   },
   "jest": {
-    "collectCoverage": true,
-    "coverageReporters": ["lcov", "text"],
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,ts,tsx}",
       "!src/**/*.d.ts"
@@ -53,6 +51,7 @@
       "/node_modules/",
       "/coverage/"
     ],
+    "coverageReporters": ["lcov", "text"],
     "coverageThreshold": {
       "global": {
         "branches": 80,
@@ -62,5 +61,4 @@
       }
     }
   }
-
 }
