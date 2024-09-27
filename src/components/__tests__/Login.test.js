@@ -1,84 +1,105 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import Login from '../Login';
-import { useNavigate } from 'react-router-dom';
+import { act } from 'react';
 
-// Mock useNavigate hook
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: jest.fn(),
-}));
+const renderWithRouter = (component) => {
+  return {
+    ...render(
+      <BrowserRouter>
+        {component}
+      </BrowserRouter>
+    ),
+  };
+};
 
 describe('Login Component', () => {
-  const mockNavigate = jest.fn();
-
-  beforeEach(() => {
-    useNavigate.mockReturnValue(mockNavigate);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test('renders login form', () => {
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
-
-    const heading = screen.getByRole('heading', { name: /login/i });
-    expect(heading).toBeInTheDocument();
-
-    const usernameInput = screen.getByLabelText(/username/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    expect(usernameInput).toBeInTheDocument();
+  test('renders the login form with email and password fields', () => {
+    renderWithRouter(<Login />);
+    
+    const emailInput = screen.getByPlaceholderText(/email/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    
+    expect(emailInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
-
-    const loginButton = screen.getByRole('button', { name: /login/i });
-    expect(loginButton).toBeInTheDocument();
   });
 
-  test('allows input in username and password fields', () => {
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
+  test('allows the user to type an email and password', () => {
+    renderWithRouter(<Login />);
+    
+    const emailInput = screen.getByPlaceholderText(/email/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
 
-    const usernameInput = screen.getByLabelText(/username/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    expect(usernameInput.value).toBe('testuser');
+    expect(emailInput.value).toBe('test@example.com');
     expect(passwordInput.value).toBe('password123');
   });
 
-  test('navigates to /app on login button click', () => {
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
+  test('handles valid form submission', async () => {
+    const mockSubmit = jest.fn();
 
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    renderWithRouter(<Login onSubmit={mockSubmit} />);
+    
+    const emailInput = screen.getByPlaceholderText(/email/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
-    fireEvent.click(loginButton);
-
-    expect(mockNavigate).toHaveBeenCalledWith('/app');
+    expect(mockSubmit).toHaveBeenCalledTimes(1);
+    expect(mockSubmit).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123',
+    });
   });
 
-  test('renders "Register Here!" link with correct "to" prop', () => {
-    render(
-      <MemoryRouter>
-        <Login />
-      </MemoryRouter>
-    );
+  test('does not submit form with empty fields', async () => {
+    const mockSubmit = jest.fn();
 
-    const registerLink = screen.getByRole('link', { name: /register here/i });
-    expect(registerLink).toHaveAttribute('href', '/register');
+    renderWithRouter(<Login onSubmit={mockSubmit} />);
+    
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  test('does not submit form with invalid email format', async () => {
+    const mockSubmit = jest.fn();
+
+    renderWithRouter(<Login onSubmit={mockSubmit} />);
+    
+    const emailInput = screen.getByPlaceholderText(/email/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  test('renders "Forgot Password?" link', () => {
+    renderWithRouter(<Login />);
+
+    const forgotPasswordLink = screen.getByText(/forgot password\?/i);
+
+    expect(forgotPasswordLink).toBeInTheDocument();
+    expect(forgotPasswordLink.getAttribute('href')).toBe('/forgot-password');
   });
 });

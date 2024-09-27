@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import '../Login.css'; // Import the new CSS
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -7,34 +8,43 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleLogin = () => {
-        navigate('/app');
+        // Logic to handle login goes here (e.g., form validation, API call)
+        navigate('/app'); // Navigates to the main app after successful login
     };
 
     return (
-        <div>
-            <h2>Login</h2>
-            <form>
-                <div>
-                    <label htmlFor="username">Username</label>
-                    <input
-                        id="username"
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
-                <button type="button" onClick={handleLogin}>Login</button>
-                <p>Already have an account? <Link to="/register">Register Here!</Link></p>
-            </form>
+        <div className="login-container">
+            <div className="login-form-container">
+                <form className="login-form" onSubmit={handleLogin}>
+                    <h2>Login</h2>
+                    <div className="form-group">
+                        <input
+                            type="text"
+                            id="username"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn-signin">Login</button>
+                    <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+                </form>
+            </div>
+            <div className="login-welcome-container">
+                <h2>Welcome Back!</h2>
+                <p>Don't have an account? <Link to="/register" className="btn-signup">Register Here!</Link></p>
+            </div>
         </div>
     );
 };
