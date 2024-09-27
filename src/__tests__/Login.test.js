@@ -1,97 +1,124 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from '../components/Login';
 import { act } from 'react';
 
+// Mock useNavigate
+const mockedUsedNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockedUsedNavigate,
+}));
+
 const renderWithRouter = (component) => {
   return {
     ...render(
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
+        <BrowserRouter>
+          {component}
+        </BrowserRouter>
     ),
   };
 };
 
 describe('Login Component', () => {
-  test('renders the login form with email and password fields', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('renders the login form with username and password fields', () => {
     renderWithRouter(<Login />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
-    
-    expect(emailInput).toBeInTheDocument();
+
+    expect(usernameInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
   });
 
-  test('allows the user to type an email and password', () => {
+  test('allows the user to type a username and password', () => {
     renderWithRouter(<Login />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-    expect(emailInput.value).toBe('test@example.com');
+    expect(usernameInput.value).toBe('testuser');
     expect(passwordInput.value).toBe('password123');
   });
 
   test('handles valid form submission', async () => {
-    const mockSubmit = jest.fn();
+    const mockResponse = { ok: true, json: () => Promise.resolve({ token: 'fake-token' }) };
+    global.fetch.mockResolvedValueOnce(mockResponse);
 
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+    renderWithRouter(<Login />);
+
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
     const submitButton = screen.getByRole('button', { name: /sign in/i });
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    
+
     await act(async () => {
       fireEvent.click(submitButton);
     });
 
-    expect(mockSubmit).toHaveBeenCalledTimes(1);
-    expect(mockSubmit).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123',
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        organizationName: 'Momofin',
+        username: 'testuser',
+        password: 'password123',
+      }),
+    });
+
+    await waitFor(() => {
+      expect(mockedUsedNavigate).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
+  test('handles login failure', async () => {
+    const mockResponse = { ok: false };
+    global.fetch.mockResolvedValueOnce(mockResponse);
+
+    renderWithRouter(<Login />);
+
+    const usernameInput = screen.getByPlaceholderText(/username/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Login failed. Please try again.')).toBeInTheDocument();
     });
   });
 
   test('does not submit form with empty fields', async () => {
-    const mockSubmit = jest.fn();
+    renderWithRouter(<Login />);
 
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
     const submitButton = screen.getByRole('button', { name: /sign in/i });
 
     await act(async () => {
       fireEvent.click(submitButton);
     });
 
-    expect(mockSubmit).not.toHaveBeenCalled();
-  });
-
-  test('does not submit form with invalid email format', async () => {
-    const mockSubmit = jest.fn();
-
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-    await act(async () => {
-      fireEvent.click(submitButton);
-    });
-
-    expect(mockSubmit).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   test('renders "Forgot Password?" link', () => {
@@ -101,5 +128,15 @@ describe('Login Component', () => {
 
     expect(forgotPasswordLink).toBeInTheDocument();
     expect(forgotPasswordLink.getAttribute('href')).toBe('/forgot-password');
+  });
+
+  test('navigates to signup page when "Sign Up" button is clicked', () => {
+    renderWithRouter(<Login />);
+
+    const signUpButton = screen.getByRole('button', { name: /sign up/i });
+
+    fireEvent.click(signUpButton);
+
+    expect(mockedUsedNavigate).toHaveBeenCalledWith('/signup');
   });
 });
