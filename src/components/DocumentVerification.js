@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-// Interface Segregation Principle
 class IHashGenerator {
   generateHash(file) {
     throw new Error("Method 'generateHash()' must be implemented.");
@@ -13,7 +12,6 @@ class IVerifier {
   }
 }
 
-// Liskov Substitution Principle
 class SimpleHashGenerator extends IHashGenerator {
   generateHash(file) {
     return `simple_hash_${file.name}`;
@@ -32,7 +30,6 @@ class SimpleVerifier extends IVerifier {
   }
 }
 
-// Dependency Inversion Principle
 class DocumentProcessor {
   constructor(hashGenerator, verifier) {
     this.hashGenerator = hashGenerator;
