@@ -1,104 +1,80 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import Login from '../Login';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
 import { act } from 'react';
+import Login from '../Login';
 
-const renderWithRouter = (component) => {
-  return {
-    ...render(
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
-    ),
-  };
-};
+// Mock the useNavigate hook
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn(),
+}));
 
 describe('Login Component', () => {
-  test('renders the login form with email and password fields', () => {
-    renderWithRouter(<Login />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+  let mockNavigate;
+
+  beforeEach(() => {
+    mockNavigate = jest.fn();
+    useNavigate.mockReturnValue(mockNavigate);
+  });
+
+  const renderLogin = () => {
+    return render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
+  };
+
+  test('renders the login form with username and password fields', () => {
+    renderLogin();
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
-    
-    expect(emailInput).toBeInTheDocument();
+    expect(usernameInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
   });
 
-  test('allows the user to type an email and password', () => {
-    renderWithRouter(<Login />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+  test('allows the user to type a username and password', () => {
+    renderLogin();
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
-
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
-    expect(emailInput.value).toBe('test@example.com');
+    expect(usernameInput.value).toBe('testuser');
     expect(passwordInput.value).toBe('password123');
   });
 
   test('handles valid form submission', async () => {
-    const mockSubmit = jest.fn();
-
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
+    renderLogin();
+    const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-    
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    
-    await act(async () => {
-      fireEvent.click(submitButton);
-    });
+    const submitButton = screen.getByRole('button', { name: /login/i });
 
-    expect(mockSubmit).toHaveBeenCalledTimes(1);
-    expect(mockSubmit).toHaveBeenCalledWith({
-      email: 'test@example.com',
-      password: 'password123',
-    });
-  });
-
-  test('does not submit form with empty fields', async () => {
-    const mockSubmit = jest.fn();
-
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    await act(async () => {
-      fireEvent.click(submitButton);
-    });
-
-    expect(mockSubmit).not.toHaveBeenCalled();
-  });
-
-  test('does not submit form with invalid email format', async () => {
-    const mockSubmit = jest.fn();
-
-    renderWithRouter(<Login onSubmit={mockSubmit} />);
-    
-    const emailInput = screen.getByPlaceholderText(/email/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
     await act(async () => {
       fireEvent.click(submitButton);
     });
 
-    expect(mockSubmit).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith('/app');
+  });
+
+  test('does not navigate with empty fields', async () => {
+    renderLogin();
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   test('renders "Forgot Password?" link', () => {
-    renderWithRouter(<Login />);
-
+    renderLogin();
     const forgotPasswordLink = screen.getByText(/forgot password\?/i);
-
     expect(forgotPasswordLink).toBeInTheDocument();
     expect(forgotPasswordLink.getAttribute('href')).toBe('/forgot-password');
   });
