@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 
 const ThemeContext = createContext();
 
@@ -13,11 +14,25 @@ export const ThemeProvider = ({ children }) => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
+  const value = useMemo(() => ({ isDarkMode, toggleTheme }), [isDarkMode]);
+
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+ThemeProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};
+
+export default ThemeContext;

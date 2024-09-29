@@ -14,11 +14,14 @@ const Layout = () => {
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
             <li><Link to="/verify">Document Verification</Link></li>
+            <li><Link to="/viewOrganisation">View Organisation</Link></li>
           </ul>
         </nav>
+
         <button onClick={toggleTheme}>
           {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         </button>
+        
       </header>
       
       <main>
