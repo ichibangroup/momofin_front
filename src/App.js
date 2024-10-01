@@ -1,23 +1,34 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AuthLayout from './components/AuthLayout';
 import LoadingIndicator from './components/LoadingIndicator';
+import Login from './components/Login';
+import Register from './components/Register';
 
 const Home = lazy(() => import('./components/Home'));
 const About = lazy(() => import('./components/About'));
 const Contact = lazy(() => import('./components/Contact'));
 const DocumentVerification = lazy(() => import('./components/DocumentVerification'));
-const Login = lazy(() => import('./components/Login'));
 const ViewOrganisation = lazy( () => import('./components/viewOrganisation'));
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        {/* Redirect from root path to /login */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-          <Route index element={
+        {/* Add the Login route */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Add the Login route */}
+        <Route path="/register" element={<Register />} />
+
+        {/* Main Layout */}
+        <Route path="/app" element={<Layout />}>
+
+          <Route path="/app" element={
             <Suspense fallback={<LoadingIndicator />}>
               <Home />
             </Suspense>

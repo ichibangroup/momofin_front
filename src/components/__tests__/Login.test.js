@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import Login from '../components/Login';
+import Login from '../Login';
 import { act } from 'react';
 
 // Mock useNavigate
@@ -83,7 +83,7 @@ describe('Login Component', () => {
     });
 
     await waitFor(() => {
-      expect(mockedUsedNavigate).toHaveBeenCalledWith('/dashboard');
+      expect(mockedUsedNavigate).toHaveBeenCalledWith('/app');
     });
   });
 

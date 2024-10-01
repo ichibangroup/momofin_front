@@ -57,7 +57,7 @@ function Login({ onSubmit }) {
       }
 
       // Example: Navigate to a dashboard page after successful login
-      navigate('/dashboard');
+      navigate('/app');
 
     } catch (error) {
       console.error('Error:', error);

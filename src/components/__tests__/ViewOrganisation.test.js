@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import ViewOrganisation from '../components/viewOrganisation';
+import ViewOrganisation from '../viewOrganisation';
 
 describe('ViewOrganisation Component', () => {
   test('should render view organisation component', () => {
