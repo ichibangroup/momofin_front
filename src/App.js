@@ -10,7 +10,6 @@ const Home = lazy(() => import('./components/Home'));
 const About = lazy(() => import('./components/About'));
 const Contact = lazy(() => import('./components/Contact'));
 const DocumentVerification = lazy(() => import('./components/DocumentVerification'));
-const Login = lazy(() => import('./components/Login'));
 const ViewOrganisation = lazy( () => import('./components/viewOrganisation'));
 
 function App() {

@@ -7,7 +7,7 @@ import DocumentVerification, {
   IHashGenerator, 
   IVerifier,
   DocumentProcessor
-} from '../components/DocumentVerification';
+} from '../DocumentVerification';
 
 describe('DocumentVerification Component', () => {
   test('renders DocumentVerification component', () => {
