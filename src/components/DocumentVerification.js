@@ -152,7 +152,6 @@ const DocumentVerification = () => {
               <p>File Name: {verificationResult.name}</p>
               <p>Hash: {verificationResult.hashString}</p>
               <h3>Owner Information:</h3>
-              <p>User ID: {verificationResult.owner.userId}</p>
               <p>Name: {verificationResult.owner.name}</p>
               <p>Email: {verificationResult.owner.email}</p>
               <p>Position: {verificationResult.owner.position}</p>
