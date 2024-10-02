@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 export class IHashGenerator {
   generateHash(file) {
@@ -36,48 +37,110 @@ export class DocumentProcessor {
     this.verifier = verifier;
   }
 
-  processDocument(file) {
-    const hash = this.hashGenerator.generateHash(file);
-    const isVerified = this.verifier.verify(hash);
-    return { hash, isVerified };
+  async submitDocument(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post('http://localhost:8080/doc/submit', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.errorMessage || 'Error submitting document');
+    }
+  }
+
+  async verifyDocument(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await axios.post(`http://localhost:8080/doc/verify`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.errorMessage || 'Error verifying document');
+    }
   }
 }
 
-const DocumentVerification = ({ 
-  hashGenerator = new SimpleHashGenerator(),
-  verifier = new SimpleVerifier()
-}) => {
+const DocumentVerification = () => {
   const [file, setFile] = useState(null);
-  const [result, setResult] = useState(null);
+  const [submissionResult, setSubmissionResult] = useState(null);
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [error, setError] = useState(null);
 
+  const hashGenerator = new SimpleHashGenerator();
+  const verifier = new SimpleVerifier();
   const processor = new DocumentProcessor(hashGenerator, verifier);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
+    setError(null);
+    setSubmissionResult(null);
+    setVerificationResult(null);
   };
 
-  const handleVerify = () => {
+  const handleSubmit = async () => {
     if (file) {
-      const processResult = processor.processDocument(file);
-      setResult(processResult);
+      try {
+        const result = await processor.submitDocument(file);
+        setSubmissionResult(result.documentSubmissionResult);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        setSubmissionResult(null);
+      }
+    }
+  };
+
+  const handleVerify = async () => {
+    if (file) {
+      try {
+        const result = await processor.verifyDocument(file);
+        setVerificationResult(result.document);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        setVerificationResult(null);
+      }
     }
   };
 
   return (
-    <div>
-      <h1>Document Verification</h1>
-      <label htmlFor="file-input">Choose a file:</label>
-      <input id="file-input" type="file" onChange={handleFileChange} />
-      <button onClick={handleVerify} disabled={!file}>
-        Verify Document
-      </button>
-      {result && (
+      <div>
+        <h1>Document Verification</h1>
         <div>
-          <p>Hash: {result.hash}</p>
-          <p>Verified: {result.isVerified ? 'Yes' : 'No'}</p>
+          <label htmlFor="file-input">Choose a file:</label>
+          <input id="file-input" type="file" onChange={handleFileChange} />
         </div>
-      )}
-    </div>
+        <div>
+          <button onClick={handleSubmit} disabled={!file}>
+            Submit Document
+          </button>
+        </div>
+        <div>
+          <button onClick={handleVerify} disabled={!file}>
+            Verify Document
+          </button>
+        </div>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {submissionResult && <p>Document submitted. Result: {submissionResult}</p>}
+        {verificationResult && (
+            <div>
+              <h2>Verification Result:</h2>
+              <p>Document ID: {verificationResult.documentId}</p>
+              <p>File Name: {verificationResult.name}</p>
+              <p>Hash: {verificationResult.hashString}</p>
+              <p>Status: {verificationResult.owner}</p>
+            </div>
+        )}
+      </div>
   );
 };
 
