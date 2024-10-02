@@ -25,8 +25,8 @@ jobs:
         run: ls -R node_modules/axios
       - name: Verify all dependencies are installed
         run: npm list
-      - name: Run tests in debug mode
-        run: npm run test:coverage -- --verbose
+      - name: Run tests and generate coverage report
+        run: npm run test:coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
