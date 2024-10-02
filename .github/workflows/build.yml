@@ -19,13 +19,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
       - name: List node_modules directory
