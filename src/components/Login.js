@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { validateLogin } from './LoginValidation';
 import '../Login.css';
+import api from '../utils/api';
+import { setAuthToken } from '../utils/auth';
 
 function Login({ onSubmit }) {
   const [organizationName] = useState("Momofin"); // Static organization name
@@ -34,21 +36,18 @@ function Login({ onSubmit }) {
 
     try {
       // Send POST request to your backend
-      const response = await fetch('http://localhost:8080/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post('/auth/login', { organizationName, username, password });
+      const { jwt } = response.data;
+      setAuthToken(jwt);
 
       console.log('Response status:', response.status); // Debugging line
+      console.log(response.status)
 
-      if (!response.ok) {
+      if (response.status < 200 || response.status > 300) {
         throw new Error('Login failed');
       }
 
-      const data = await response.json();
+      const data = await response.data;
       console.log('Login successful:', data);
 
       // Optional: Call the onSubmit callback or navigate based on the response
