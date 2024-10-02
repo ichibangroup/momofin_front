@@ -21,10 +21,6 @@ jobs:
           node-version: '16'
       - name: Install dependencies
         run: npm ci
-      - name: List node_modules directory
-        run: ls -R node_modules/axios
-      - name: Verify all dependencies are installed
-        run: npm list
       - name: Run tests and generate coverage report
         run: npm run test:coverage
       - name: SonarCloud Scan
