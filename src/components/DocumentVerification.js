@@ -96,6 +96,9 @@ const DocumentVerification = () => {
         setError(err.message);
         setSubmissionResult(null);
       }
+    } else {
+      console.log('Setting error: Please select a file to submit.');
+      setError('Please select a file to submit.');
     }
   };
 
@@ -109,6 +112,9 @@ const DocumentVerification = () => {
         setError(err.message);
         setVerificationResult(null);
       }
+    } else {
+      console.log('Setting error: Please select a file to verify.');
+      setError('Please select a file to verify.');
     }
   };
 
@@ -120,12 +126,12 @@ const DocumentVerification = () => {
           <input id="file-input" type="file" onChange={handleFileChange} />
         </div>
         <div>
-          <button onClick={handleSubmit} disabled={!file}>
+          <button onClick={handleSubmit}>
             Submit Document
           </button>
         </div>
         <div>
-          <button onClick={handleVerify} disabled={!file}>
+          <button onClick={handleVerify}>
             Verify Document
           </button>
         </div>
@@ -137,7 +143,7 @@ const DocumentVerification = () => {
               <p>Document ID: {verificationResult.documentId}</p>
               <p>File Name: {verificationResult.name}</p>
               <p>Hash: {verificationResult.hashString}</p>
-              <p>Status: {verificationResult.owner}</p>
+              <p>Owner: {verificationResult.owner}</p>
             </div>
         )}
       </div>

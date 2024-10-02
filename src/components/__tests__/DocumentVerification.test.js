@@ -73,7 +73,7 @@ describe('DocumentVerification Component', () => {
           documentId: '123',
           name: 'test.pdf',
           hashString: 'abc123',
-          owner: 'Verified'
+          owner: 'Verified User'
         }
       }
     });
@@ -91,9 +91,63 @@ describe('DocumentVerification Component', () => {
       expect(screen.getByText('Document ID: 123')).toBeInTheDocument();
       expect(screen.getByText('File Name: test.pdf')).toBeInTheDocument();
       expect(screen.getByText('Hash: abc123')).toBeInTheDocument();
-      expect(screen.getByText('Status: Verified')).toBeInTheDocument();
+      expect(screen.getByText('Owner: Verified User')).toBeInTheDocument();
     });
   });
+
+    test('handles submit when file is null', async () => {
+      render(<DocumentVerification />);
+      const submitButton = screen.getByText('Submit Document');
+
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Please select a file to submit.')).toBeInTheDocument();
+      });
+    });
+
+    test('handles verification when file is null', async () => {
+      render(<DocumentVerification />);
+      const verifyButton = screen.getByText('Verify Document');
+
+      fireEvent.click(verifyButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Please select a file to verify.')).toBeInTheDocument();
+      });
+    });
+
+    test('handles submission error when error message is missing', async () => {
+      axios.post.mockRejectedValueOnce({ response: {} });
+
+      render(<DocumentVerification />);
+      const fileInput = screen.getByLabelText('Choose a file:');
+      const submitButton = screen.getByText('Submit Document');
+
+      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Error submitting document')).toBeInTheDocument();
+      });
+    });
+
+    test('handles verification error when error message is missing', async () => {
+      axios.post.mockRejectedValueOnce({ response: {} });
+
+      render(<DocumentVerification />);
+      const fileInput = screen.getByLabelText('Choose a file:');
+      const verifyButton = screen.getByText('Verify Document');
+
+      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+      fireEvent.click(verifyButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Error verifying document')).toBeInTheDocument();
+      });
+    });
 
   test('handles verification error', async () => {
     axios.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Verification failed' } } });
