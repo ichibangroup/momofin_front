@@ -1,8 +1,15 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import DocumentVerification from '../DocumentVerification';
 import axios from 'axios';
+import DocumentVerification, {
+  SimpleHashGenerator,
+  AdvancedHashGenerator,
+  SimpleVerifier,
+  IHashGenerator,
+  IVerifier,
+  DocumentProcessor
+} from '../DocumentVerification';
 
 jest.mock('axios');
 
@@ -102,5 +109,34 @@ describe('DocumentVerification Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Verification failed')).toBeInTheDocument();
     });
+  });
+});
+
+describe('Hash Generators and Verifiers', () => {
+  test('IHashGenerator throws error', () => {
+    const hashGenerator = new IHashGenerator();
+    expect(() => hashGenerator.generateHash({})).toThrow("Method 'generateHash()' must be implemented.");
+  });
+
+  test('IVerifier throws error', () => {
+    const verifier = new IVerifier();
+    expect(() => verifier.verify('')).toThrow("Method 'verify()' must be implemented.");
+  });
+
+  test('SimpleHashGenerator generates correct hash', () => {
+    const hashGenerator = new SimpleHashGenerator();
+    expect(hashGenerator.generateHash({ name: 'test.pdf' })).toBe('simple_hash_test.pdf');
+  });
+
+  test('AdvancedHashGenerator generates correct hash', () => {
+    const hashGenerator = new AdvancedHashGenerator();
+    expect(hashGenerator.generateHash({ name: 'test.pdf' })).toBe('advanced_hash_test.pdf');
+  });
+
+  test('SimpleVerifier verifies correctly', () => {
+    const verifier = new SimpleVerifier();
+    expect(verifier.verify('simple_hash_test.pdf')).toBe(true);
+    expect(verifier.verify('advanced_hash_test.pdf')).toBe(true);
+    expect(verifier.verify('invalid_hash')).toBe(false);
   });
 });
