@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 export class IHashGenerator {
   generateHash(file) {
@@ -42,11 +42,10 @@ export class DocumentProcessor {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8080/doc/submit', formData, {
+      const response = await api.post(`http://localhost:8080/doc/submit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        },
-      });
+        },});
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.errorMessage || 'Error submitting document');
@@ -57,11 +56,10 @@ export class DocumentProcessor {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await axios.post(`http://localhost:8080/doc/verify`, formData, {
+      const response = await api.post(`http://localhost:8080/doc/verify`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        },
-      });
+        },});
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.errorMessage || 'Error verifying document');
@@ -80,10 +78,20 @@ const DocumentVerification = () => {
   const processor = new DocumentProcessor(hashGenerator, verifier);
 
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-    setError(null);
-    setSubmissionResult(null);
-    setVerificationResult(null);
+    const selectedFile = event.target.files[0];
+    const MAX_FILE_SIZE_IN_MB = 5
+    const MAX_FILE_SIZE = MAX_FILE_SIZE_IN_MB * 1024 * 1024;
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+      setError('File size must be less than ' +MAX_FILE_SIZE+'MB.');
+      setFile(null);
+      setSubmissionResult(null);
+      setVerificationResult(null);
+    } else {
+      setFile(selectedFile);
+      setError(null);
+      setSubmissionResult(null);
+      setVerificationResult(null);
+    }
   };
 
   const handleSubmit = async () => {
@@ -143,7 +151,11 @@ const DocumentVerification = () => {
               <p>Document ID: {verificationResult.documentId}</p>
               <p>File Name: {verificationResult.name}</p>
               <p>Hash: {verificationResult.hashString}</p>
-              <p>Owner: {verificationResult.owner}</p>
+              <h3>Owner Information:</h3>
+              <p>User ID: {verificationResult.owner.userId}</p>
+              <p>Name: {verificationResult.owner.name}</p>
+              <p>Email: {verificationResult.owner.email}</p>
+              <p>Position: {verificationResult.owner.position}</p>
             </div>
         )}
       </div>
