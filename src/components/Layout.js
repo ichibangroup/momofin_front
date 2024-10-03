@@ -22,6 +22,8 @@ const Layout = () => {
         fetchUserInfo();
     }, []); // Fetch the data when the component mounts
 
+
+    //Test Commit, if you're seeing this it works.
     return (
         <div className={isDarkMode ? 'dark-theme' : 'light-theme'}>
             <header>
