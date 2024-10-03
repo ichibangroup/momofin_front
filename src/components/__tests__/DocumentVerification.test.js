@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import axios from 'axios';
 import DocumentVerification, {
   SimpleHashGenerator,
   AdvancedHashGenerator,
@@ -10,8 +9,9 @@ import DocumentVerification, {
   IVerifier,
   DocumentProcessor
 } from '../DocumentVerification';
+import api from '../../utils/api';
 
-jest.mock('axios');
+jest.mock('../../utils/api');
 
 describe('DocumentVerification Component', () => {
   beforeEach(() => {
@@ -34,8 +34,16 @@ describe('DocumentVerification Component', () => {
     expect(fileInput.files[0]).toBe(file);
   });
 
+  test('handles file size limit', () => {
+    render(<DocumentVerification />);
+    const fileInput = screen.getByLabelText('Choose a file:');
+    const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [largeFile] } });
+    expect(screen.getByText('File size must be less than 5MB.')).toBeInTheDocument();
+  });
+
   test('submits document successfully', async () => {
-    axios.post.mockResolvedValueOnce({ data: { documentSubmissionResult: 'Success' } });
+    api.post.mockResolvedValueOnce({ data: { documentSubmissionResult: 'Success' } });
 
     render(<DocumentVerification />);
     const fileInput = screen.getByLabelText('Choose a file:');
@@ -51,7 +59,7 @@ describe('DocumentVerification Component', () => {
   });
 
   test('handles submission error', async () => {
-    axios.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Submission failed' } } });
+    api.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Submission failed' } } });
 
     render(<DocumentVerification />);
     const fileInput = screen.getByLabelText('Choose a file:');
@@ -67,13 +75,17 @@ describe('DocumentVerification Component', () => {
   });
 
   test('verifies document successfully', async () => {
-    axios.post.mockResolvedValueOnce({
+    api.post.mockResolvedValueOnce({
       data: {
         document: {
           documentId: '123',
           name: 'test.pdf',
           hashString: 'abc123',
-          owner: 'Verified User'
+          owner: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            position: 'Manager'
+          }
         }
       }
     });
@@ -91,66 +103,68 @@ describe('DocumentVerification Component', () => {
       expect(screen.getByText('Document ID: 123')).toBeInTheDocument();
       expect(screen.getByText('File Name: test.pdf')).toBeInTheDocument();
       expect(screen.getByText('Hash: abc123')).toBeInTheDocument();
-      expect(screen.getByText('Owner: Verified User')).toBeInTheDocument();
+      expect(screen.getByText('Name: John Doe')).toBeInTheDocument();
+      expect(screen.getByText('Email: john@example.com')).toBeInTheDocument();
+      expect(screen.getByText('Position: Manager')).toBeInTheDocument();
     });
   });
 
-    test('handles submit when file is null', async () => {
-      render(<DocumentVerification />);
-      const submitButton = screen.getByText('Submit Document');
+  test('handles submit when file is null', async () => {
+    render(<DocumentVerification />);
+    const submitButton = screen.getByText('Submit Document');
 
-      fireEvent.click(submitButton);
+    fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText('Please select a file to submit.')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Please select a file to submit.')).toBeInTheDocument();
     });
+  });
 
-    test('handles verification when file is null', async () => {
-      render(<DocumentVerification />);
-      const verifyButton = screen.getByText('Verify Document');
+  test('handles verification when file is null', async () => {
+    render(<DocumentVerification />);
+    const verifyButton = screen.getByText('Verify Document');
 
-      fireEvent.click(verifyButton);
+    fireEvent.click(verifyButton);
 
-      await waitFor(() => {
-        expect(screen.getByText('Please select a file to verify.')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Please select a file to verify.')).toBeInTheDocument();
     });
+  });
 
-    test('handles submission error when error message is missing', async () => {
-      axios.post.mockRejectedValueOnce({ response: {} });
+  test('handles submission error when error message is missing', async () => {
+    api.post.mockRejectedValueOnce({ response: {} });
 
-      render(<DocumentVerification />);
-      const fileInput = screen.getByLabelText('Choose a file:');
-      const submitButton = screen.getByText('Submit Document');
+    render(<DocumentVerification />);
+    const fileInput = screen.getByLabelText('Choose a file:');
+    const submitButton = screen.getByText('Submit Document');
 
-      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
-      fireEvent.change(fileInput, { target: { files: [file] } });
-      fireEvent.click(submitButton);
+    const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    fireEvent.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText('Error submitting document')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Error submitting document')).toBeInTheDocument();
     });
+  });
 
-    test('handles verification error when error message is missing', async () => {
-      axios.post.mockRejectedValueOnce({ response: {} });
+  test('handles verification error when error message is missing', async () => {
+    api.post.mockRejectedValueOnce({ response: {} });
 
-      render(<DocumentVerification />);
-      const fileInput = screen.getByLabelText('Choose a file:');
-      const verifyButton = screen.getByText('Verify Document');
+    render(<DocumentVerification />);
+    const fileInput = screen.getByLabelText('Choose a file:');
+    const verifyButton = screen.getByText('Verify Document');
 
-      const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
-      fireEvent.change(fileInput, { target: { files: [file] } });
-      fireEvent.click(verifyButton);
+    const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    fireEvent.click(verifyButton);
 
-      await waitFor(() => {
-        expect(screen.getByText('Error verifying document')).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByText('Error verifying document')).toBeInTheDocument();
     });
+  });
 
   test('handles verification error', async () => {
-    axios.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Verification failed' } } });
+    api.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Verification failed' } } });
 
     render(<DocumentVerification />);
     const fileInput = screen.getByLabelText('Choose a file:');
@@ -192,5 +206,43 @@ describe('Hash Generators and Verifiers', () => {
     expect(verifier.verify('simple_hash_test.pdf')).toBe(true);
     expect(verifier.verify('advanced_hash_test.pdf')).toBe(true);
     expect(verifier.verify('invalid_hash')).toBe(false);
+  });
+});
+
+describe('DocumentProcessor', () => {
+  let processor;
+  let mockHashGenerator;
+  let mockVerifier;
+
+  beforeEach(() => {
+    mockHashGenerator = { generateHash: jest.fn() };
+    mockVerifier = { verify: jest.fn() };
+    processor = new DocumentProcessor(mockHashGenerator, mockVerifier);
+  });
+
+  test('submitDocument calls api.post with correct arguments', async () => {
+    const mockFile = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+    api.post.mockResolvedValueOnce({ data: 'success' });
+
+    await processor.submitDocument(mockFile);
+
+    expect(api.post).toHaveBeenCalledWith(
+        'http://localhost:8080/doc/submit',
+        expect.any(FormData),
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+  });
+
+  test('verifyDocument calls api.post with correct arguments', async () => {
+    const mockFile = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
+    api.post.mockResolvedValueOnce({ data: 'success' });
+
+    await processor.verifyDocument(mockFile);
+
+    expect(api.post).toHaveBeenCalledWith(
+        'http://localhost:8080/doc/verify',
+        expect.any(FormData),
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
   });
 });
