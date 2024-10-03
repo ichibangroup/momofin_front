@@ -1,0 +1,70 @@
+.branding {
+    text-align: center;
+    margin-bottom: 50px; /* Additional spacing from the logo to the boxes */
+  }
+  
+  .branding h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .branding p {
+    font-size: 16px;
+    color: #666; /* Subtle gray for the tagline */
+  }
+
+.action-boxes-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 40px 0;
+  }
+  
+  .action-box {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+  }
+  
+  .action-box h3 {
+    margin-bottom: 20px;
+  }
+  
+  .action-box:hover {
+    transform: scale(1.05);
+  }
+  
+  /* View Box */
+  .view-box {
+    background-color: #2563EB; /* Blue for View */
+  }
+  
+  /* Upload Box */
+  .upload-box {
+    background-color: #10B981; /* Green for Upload */
+  }
+  
+  /* Verify Box */
+  .verify-box {
+    background-color: #F59E0B; /* Yellow for Verify */
+  }
+  
+  .learn-more-link {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 16px;
+    border-bottom: 1px solid #ffffff;
+    transition: color 0.3s ease;
+  }
+  
+  .learn-more-link:hover {
+    color: #f3f3f3;
+  }

@@ -15,7 +15,7 @@ const ViewOrganisation = lazy(() => import('./components/viewOrganisation'));
 const ViewUsers = lazy(() => import('./components/ViewUsers'));
 const EditProfile = lazy(() => import('./components/EditProfile'));
 const ConfigOrganisation = lazy(() => import('./components/ConfigOrganisation'));
-
+const ViewDocuments = lazy(() => import('./components/ViewDocuments'));
 
 function App() {
   return (
@@ -35,6 +35,7 @@ function App() {
           <Route path="contact" element={<Suspense fallback={<LoadingIndicator />}><Contact /></Suspense>} />
           <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
           <Route path="viewUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense>} />
+          <Route path="viewDocuments" element={<Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense>} /> 
         </Route>
 
         {/* Route for Edit Profile */}
