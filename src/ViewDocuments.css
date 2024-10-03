@@ -1,0 +1,143 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invoice-header h1 {
+    color: #4a4a4a;
+    font-size: 1.5rem;
+}
+
+.filter {
+    display: flex;
+    gap: 10px;
+}
+
+.filter input, .filter select {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-size: 14px;
+    color: #555;
+}
+
+.filter input:focus, .filter select:focus {
+    outline: none;
+    border-color: #9f8cf1;
+    background-color: #ffffff;
+}
+
+
+table {
+    margin-top: 20px;
+    border-collapse: collapse;
+    font-size: 14px;
+    width: 100%; 
+}
+
+table thead {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+table thead th {
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+    color: #4a4a4a;
+    border-bottom: 1px solid #eee;
+}
+
+table tbody tr {
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
+table tbody tr:hover {
+    background-color: #A0C6E4; 
+}
+
+table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #4a4a4a;
+}
+
+table td:last-child {
+    text-align: center;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.status.paid {
+    background-color: #5cb85c;
+}
+
+.status.partial {
+    background-color: #f0ad4e;
+}
+
+.status.due {
+    background-color: #d9534f;
+}
+
+
+.upgrade-box {
+    background-color: #edf1fc;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 20px;
+    color: #555;
+}
+
+.upgrade-box a {
+    text-decoration: none;
+    font-weight: bold;
+    color: #6a63fa;
+}
+
+.upgrade-box a:hover {
+    color: #4a3cc7;
+}
+
+@media (max-width: 768px) {
+    .invoice-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    table {
+        font-size: 12px;
+    }
+}
+
