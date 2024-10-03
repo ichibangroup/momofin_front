@@ -4,15 +4,11 @@ import '../ViewDocuments.css';
 
 function Page() {
   const [users, setUsers] = useState([]); 
-  const [keyword, setKeyword] = useState('');  
+  const [keyword, setKeyword] = useState('');
 
   useEffect(() => {
     handleGetUsers();
   }, []);
-
-  const handleSearch = (e) => {
-    setKeyword(e.target.value);
-  };
 
   const handleGetUsers = async () => {
     try {
@@ -23,11 +19,13 @@ function Page() {
     }
   };
 
+  const handleSearch = (e) => {
+    setKeyword(e.target.value);
+  };
+
   return (
     <div className="page-container">
       <h1 className="page-title">Your Documents</h1>
-
-      {/* Search Input */}
       <input
         type="text"
         className="search-input"
@@ -35,8 +33,6 @@ function Page() {
         value={keyword}
         onChange={handleSearch}
       />
-
-      {/* Users Table */}
       <table className="users-table">
         <thead>
           <tr>
