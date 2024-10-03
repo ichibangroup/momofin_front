@@ -1,38 +1,76 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { useTheme } from './ThemeContext';
+import api from '../utils/api'; // import the configured axios instance
+import './Layout.css';
+
 
 const Layout = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
+    const [user, setUser] = useState(null);
+    const [error, setError] = useState(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  return (
-    <div className={isDarkMode ? 'dark-theme' : 'light-theme'}>
-      <header>
-        <nav>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/verify">Document Verification</Link></li>
-            <li><Link to="/viewOrganisation">View Organisation</Link></li>
-          </ul>
-        </nav>
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const response = await api.get('/auth/info');
+                setUser(response.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch user information');
+            }
+        };
 
-        <button onClick={toggleTheme}>
-          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        </button>
-        
-      </header>
-      
-      <main>
-        <Outlet />
-      </main>
-      
-      <footer>
-        <p>&copy; 2024 Your App Name. All rights reserved.</p>
-      </footer>
-    </div>
-  );
+        fetchUserInfo();
+    }, []); // Fetch the data when the component mounts
+
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
+
+    return (
+        <div>
+            <header>
+                <nav>
+                    <ul>
+                        <li><Link to="/app">Home</Link></li>
+                        <li><Link to="verify">Upload and Verify</Link></li>
+                        <li><Link to="viewUsers">View Users</Link></li>
+                        <li><Link to="/viewOrganisation">View Organisations</Link></li>
+                        <li><Link to="/configOrganisation">Config Organisation</Link></li>
+                        <li>
+                        {user && (
+                            <div className="user-dropdown">
+                                <button onClick={toggleDropdown} className="dropdown-button">
+                                    {user.name} <span>&#x25BC;</span> {/* Down arrow */}
+                                </button>
+                            {dropdownOpen && (
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link to="/editProfile">
+                                            <button>Edit Profile</button>
+                                        </Link>
+                                    </li>
+                                    <li><button>Log Out</button></li>
+                                </ul>
+                            )}
+                            </div>
+                        )}
+                        </li>
+                    </ul>
+                </nav>
+
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+            </header>
+
+            <main>
+                <Outlet />
+            </main>
+
+            <footer>
+                <p>&copy; 2024 Your App Name. All rights reserved.</p>
+            </footer>
+        </div>
+    );
 };
 
 export default Layout;
