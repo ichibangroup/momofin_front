@@ -30,7 +30,7 @@ function App() {
 
         {/* Main Layout */}
         <Route path="/app" element={<Layout />}>
-          <Route index element={<Suspense fallback={<LoadingIndicator />}><Home /></Suspense>} />
+          <Route path="/app" element={<Suspense fallback={<LoadingIndicator />}><Home /></Suspense>} />
           <Route path="about" element={<Suspense fallback={<LoadingIndicator />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<LoadingIndicator />}><Contact /></Suspense>} />
           <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
