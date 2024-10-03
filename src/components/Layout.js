@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { useTheme } from './ThemeContext';
-import api from '..//utils/api'; // import the configured axios instance
+import api from '../utils/api'; // import the configured axios instance
+import './Layout.css';
+
 
 const Layout = () => {
-    const { isDarkMode, toggleTheme } = useTheme();
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -22,34 +23,41 @@ const Layout = () => {
         fetchUserInfo();
     }, []); // Fetch the data when the component mounts
 
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
+
     return (
-        <div className={isDarkMode ? 'dark-theme' : 'light-theme'}>
+        <div>
             <header>
                 <nav>
                     <ul>
                         <li><Link to="/app">Home</Link></li>
-                        <li><Link to="about">About</Link></li>
-                        <li><Link to="contact">Contact</Link></li>
-                        <li><Link to="verify">Document Verification</Link></li>
-                        <li><Link to="viewOrganisation">View Organisation</Link></li>
+                        <li><Link to="verify">Upload and Verify</Link></li>
+                        <li><Link to="viewUsers">View Users</Link></li>
+                        <li><Link to="/viewOrganisation">View Organisations</Link></li>
+                        <li><Link to="/configOrganisation">Config Organisation</Link></li>
+                        <li>
+                        {user && (
+                            <div className="user-dropdown">
+                                <button onClick={toggleDropdown} className="dropdown-button">
+                                    {user.name} <span>&#x25BC;</span> {/* Down arrow */}
+                                </button>
+                            {dropdownOpen && (
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link to="/editProfile">
+                                            <button>Edit Profile</button>
+                                        </Link>
+                                    </li>
+                                    <li><button>Log Out</button></li>
+                                </ul>
+                            )}
+                            </div>
+                        )}
+                        </li>
                     </ul>
                 </nav>
-
-                <button onClick={toggleTheme}>
-                    {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                </button>
-
-                {/* Display user info if available */}
-                {user && (
-                    <div className="user-info">
-                        <p>Welcome, {user.name} ({user.username})</p>
-                        <p>Email: {user.email}</p>
-                        <p>Position: {user.position}</p>
-                        <p>Organization: {user.organization.name}</p>
-                        {user.organizationAdmin && <p>You are an admin of {user.organization.name}</p>}
-                        {user.momofinAdmin && <p>You are a Momofin admin</p>}
-                    </div>
-                )}
 
                 {error && <p style={{ color: 'red' }}>{error}</p>}
             </header>
