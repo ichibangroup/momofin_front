@@ -35,7 +35,7 @@ const Layout = () => {
                         <li><Link to="/app">Home</Link></li>
                         <li><Link to="verify">Upload and Verify</Link></li>
                         <li><Link to="viewUsers">View Users</Link></li>
-                        <li><Link to="viewOrganisation">View Organisations</Link></li>
+                        <li><Link to="/viewOrganisation">View Organisations</Link></li>
                         <li><Link to="/configOrganisation">Config Organisation</Link></li>
                         <li>
                         {user && (

@@ -34,7 +34,6 @@ function App() {
           <Route path="about" element={<Suspense fallback={<LoadingIndicator />}><About /></Suspense>} />
           <Route path="contact" element={<Suspense fallback={<LoadingIndicator />}><Contact /></Suspense>} />
           <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
-          <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
           <Route path="viewUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense>} />
         </Route>
 
@@ -43,6 +42,9 @@ function App() {
         
         {/* Route for Config Organisation */}
         <Route path="/configOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
+        
+        {/* Route for View Organisation */}
+        <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
 
         {/* Auth layout routes */}
         <Route path="auth" element={<AuthLayout />}>
