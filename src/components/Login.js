@@ -6,16 +6,14 @@ import api from '../utils/api';
 import { setAuthToken } from '../utils/auth';
 
 function Login({ onSubmit }) {
-  const [organizationName, setOrganizationName] = useState(''); // State for organization name
-  const [username, setUsername] = useState(''); // State for username
-  const [password, setPassword] = useState(''); // State for password
-  const [errors, setErrors] = useState({}); // State for error messages
+  const [organizationName, setOrganizationName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    console.log("Submit button clicked"); // Debugging line
     event.preventDefault();
-    console.log("Submit button clicked 2");
 
     // Perform validation
     const validationErrors = validateLogin({ username, password });
@@ -23,44 +21,34 @@ function Login({ onSubmit }) {
       setErrors(validationErrors);
       return;
     }
-    console.log("Submit button clicked 3");
 
-    // Prepare the payload to match your backend's expected format
     const payload = {
       organizationName,
-      username, // Using username from input
+      username,
       password,
     };
 
-    console.log('Payload:', payload); // Debugging line
-
     try {
-      // Send POST request to your backend
       const response = await api.post('/auth/login', payload);
       const { jwt } = response.data;
       setAuthToken(jwt);
 
-      console.log('Response status:', response.status); // Debugging line
-      console.log(response.status)
-
-      if (response.status < 200 || response.status > 300) {
+      if (response.status >= 200 && response.status < 300) {
+        console.log('Login successful:', response.data);
+        if (onSubmit) {
+          onSubmit(response.data);
+        }
+        navigate('/app');
+      } else {
         throw new Error('Login failed');
       }
-
-      const data = await response.data;
-      console.log('Login successful:', data);
-
-      // Optional: Call the onSubmit callback or navigate based on the response
-      if (onSubmit) {
-        onSubmit(data);
-      }
-
-      // Example: Navigate to a dashboard page after successful login
-      navigate('/app');
-
     } catch (error) {
       console.error('Error:', error);
-      setErrors({ server: 'Login failed. Please try again.' });
+      if (error.response && error.response.data && error.response.data.errorMessage) {
+        setErrors({ server: error.response.data.errorMessage });
+      } else {
+        setErrors({ server: 'Login failed. Please try again.' });
+      }
     }
   };
 
@@ -77,20 +65,20 @@ function Login({ onSubmit }) {
               <input
                   type="text"
                   id="organizationName"
-                  placeholder="Organization Name" // Placeholder for organization name
+                  placeholder="Organization Name"
                   value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)} // Update organization name state
+                  onChange={(e) => setOrganizationName(e.target.value)}
                   required
               />
               {errors.organizationName && <span className="error">{errors.organizationName}</span>}
             </div>
             <div className="form-group">
               <input
-                  type="text" // Input type for username
-                  id="username" // ID for username input
-                  placeholder="Username" // Placeholder for username
+                  type="text"
+                  id="username"
+                  placeholder="Username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)} // Update username state
+                  onChange={(e) => setUsername(e.target.value)}
                   required
               />
               {errors.username && <span className="error">{errors.username}</span>}
@@ -99,9 +87,9 @@ function Login({ onSubmit }) {
               <input
                   type="password"
                   id="password"
-                  placeholder="Password" // Placeholder for password
+                  placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)} // Update password state
+                  onChange={(e) => setPassword(e.target.value)}
                   required
               />
               {errors.password && <span className="error">{errors.password}</span>}
