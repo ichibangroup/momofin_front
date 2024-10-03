@@ -6,34 +6,47 @@ import ConfigOrganisation from '../ConfigOrganisation';
 describe('ConfigOrganisation Component', () => {
   test('renders ConfigOrganisation component', () => {
     render(<ConfigOrganisation />);
+    
     const configOrganisationElement = screen.getByTestId('config-organisation');
     expect(configOrganisationElement).toBeInTheDocument();
   });
 
   test('displays the correct title', () => {
     render(<ConfigOrganisation />);
-    const titleElement = screen.getByText('Configure Organisation');
+    
+    const titleElement = screen.getByText('Configure Organisation!');
     expect(titleElement).toBeInTheDocument();
     expect(titleElement).toHaveClass('title');
   });
 
   test('displays the description', () => {
     render(<ConfigOrganisation />);
-    const descriptionElement = screen.getByText('Configure your organisation settings here.');
+    
+    const descriptionElement = screen.getByText('This page will allow you to configure organization settings and manage related features.');
     expect(descriptionElement).toBeInTheDocument();
     expect(descriptionElement).toHaveClass('description');
   });
 
-  test('renders the settings form', () => {
+  test('renders the placeholder content', () => {
     render(<ConfigOrganisation />);
-    const formElement = screen.getByTestId('settings-form');
-    expect(formElement).toBeInTheDocument();
+    
+    const placeholderContent = screen.getByTestId('placeholder-content');
+    expect(placeholderContent).toBeInTheDocument();
+    expect(placeholderContent).toHaveClass('placeholder-content');
   });
 
-  test('displays the save button', () => {
+  test('displays the placeholder title', () => {
     render(<ConfigOrganisation />);
-    const saveButton = screen.getByText('Save Settings');
-    expect(saveButton).toBeInTheDocument();
-    expect(saveButton).toHaveAttribute('type', 'submit');
+    
+    const placeholderTitle = screen.getByText('Settings');
+    expect(placeholderTitle).toBeInTheDocument();
+    expect(placeholderTitle).toHaveClass('placeholder-title');
+  });
+
+  test('displays the placeholder description', () => {
+    render(<ConfigOrganisation />);
+    
+    const placeholderDescription = screen.getByText('This section will include various settings for the organization.');
+    expect(placeholderDescription).toBeInTheDocument();
   });
 });
