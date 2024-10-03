@@ -42,7 +42,7 @@ export class DocumentProcessor {
     formData.append('file', file);
 
     try {
-      const response = await api.post(`http://localhost:8080/doc/submit`, formData, {
+      const response = await api.post(`/doc/submit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },});
@@ -56,7 +56,7 @@ export class DocumentProcessor {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await api.post(`http://localhost:8080/doc/verify`, formData, {
+      const response = await api.post(`/doc/verify`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },});
