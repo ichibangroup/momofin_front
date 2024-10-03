@@ -3,12 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from '../Login';
 import { act } from 'react';
+import api from '../../utils/api';
+import { setAuthToken } from '../../utils/auth';
 
-// Mock useNavigate
-const mockedUsedNavigate = jest.fn();
+// Mock modules
+jest.mock('../../utils/api');
+jest.mock('../../utils/auth');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockedUsedNavigate,
+  useNavigate: () => jest.fn(),
 }));
 
 const renderWithRouter = (component) => {
@@ -23,46 +26,47 @@ const renderWithRouter = (component) => {
 
 describe('Login Component', () => {
   beforeEach(() => {
-    global.fetch = jest.fn();
+    jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
-
-  test('renders the login form with username and password fields', () => {
+  test('renders the login form with organization name, username, and password fields', () => {
     renderWithRouter(<Login />);
 
+    expect(screen.getByPlaceholderText(/organization name/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/username/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
+  });
+
+  test('allows the user to type organization name, username, and password', () => {
+    renderWithRouter(<Login />);
+
+    const orgInput = screen.getByPlaceholderText(/organization name/i);
     const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
 
-    expect(usernameInput).toBeInTheDocument();
-    expect(passwordInput).toBeInTheDocument();
-  });
-
-  test('allows the user to type a username and password', () => {
-    renderWithRouter(<Login />);
-
-    const usernameInput = screen.getByPlaceholderText(/username/i);
-    const passwordInput = screen.getByPlaceholderText(/password/i);
-
+    fireEvent.change(orgInput, { target: { value: 'TestOrg' } });
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
+    expect(orgInput.value).toBe('TestOrg');
     expect(usernameInput.value).toBe('testuser');
     expect(passwordInput.value).toBe('password123');
   });
 
   test('handles valid form submission', async () => {
-    const mockResponse = { ok: true, json: () => Promise.resolve({ token: 'fake-token' }) };
-    global.fetch.mockResolvedValueOnce(mockResponse);
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+
+    api.post.mockResolvedValueOnce({ status: 200, data: { jwt: 'fake-token' } });
 
     renderWithRouter(<Login />);
 
+    const orgInput = screen.getByPlaceholderText(/organization name/i);
     const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
     const submitButton = screen.getByRole('button', { name: /sign in/i });
 
+    fireEvent.change(orgInput, { target: { value: 'TestOrg' } });
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
@@ -70,33 +74,29 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
     });
 
-    expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        organizationName: 'Momofin',
-        username: 'testuser',
-        password: 'password123',
-      }),
+    expect(api.post).toHaveBeenCalledWith('/auth/login', {
+      organizationName: 'TestOrg',
+      username: 'testuser',
+      password: 'password123',
     });
 
     await waitFor(() => {
-      expect(mockedUsedNavigate).toHaveBeenCalledWith('/app');
+      expect(setAuthToken).toHaveBeenCalledWith('fake-token');
+      expect(mockNavigate).toHaveBeenCalledWith('/app');
     });
   });
 
   test('handles login failure', async () => {
-    const mockResponse = { ok: false };
-    global.fetch.mockResolvedValueOnce(mockResponse);
+    api.post.mockRejectedValueOnce(new Error('Login failed'));
 
     renderWithRouter(<Login />);
 
+    const orgInput = screen.getByPlaceholderText(/organization name/i);
     const usernameInput = screen.getByPlaceholderText(/username/i);
     const passwordInput = screen.getByPlaceholderText(/password/i);
     const submitButton = screen.getByRole('button', { name: /sign in/i });
 
+    fireEvent.change(orgInput, { target: { value: 'TestOrg' } });
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
 
@@ -118,7 +118,7 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
     });
 
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(api.post).not.toHaveBeenCalled();
   });
 
   test('renders "Forgot Password?" link', () => {
@@ -131,12 +131,15 @@ describe('Login Component', () => {
   });
 
   test('navigates to signup page when "Sign Up" button is clicked', () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+
     renderWithRouter(<Login />);
 
     const signUpButton = screen.getByRole('button', { name: /sign up/i });
 
     fireEvent.click(signUpButton);
 
-    expect(mockedUsedNavigate).toHaveBeenCalledWith('/signup');
+    expect(mockNavigate).toHaveBeenCalledWith('/signup');
   });
 });
