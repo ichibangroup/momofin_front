@@ -2,10 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Layout from '../Layout';
-import api from 'src/utils/api'; // Use an absolute import
-
+import api from '../../utils/api';
 // Mock the api module
-jest.mock('../utils/api', () => ({
+jest.mock('../../utils/api', () => ({
   get: jest.fn(),
 }));
 
