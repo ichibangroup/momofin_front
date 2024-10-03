@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import api from '..//utils/api'; // import the configured axios instance
+import api from '../utils/api'; // import the configured axios instance
 import './Layout.css';
 
 
