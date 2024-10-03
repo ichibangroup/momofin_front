@@ -144,7 +144,7 @@ const DocumentVerification = () => {
           </button>
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        {submissionResult && <p>Document submitted. Result: {submissionResult}</p>}
+        {submissionResult && <p>Result: {submissionResult}</p>}
         {verificationResult && (
             <div>
               <h2>Verification Result:</h2>
