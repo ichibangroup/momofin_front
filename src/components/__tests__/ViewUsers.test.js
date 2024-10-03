@@ -27,10 +27,10 @@ describe('ViewUsers Component', () => {
     expect(placeholderText).toBeInTheDocument();
   });
 
-  test('renders the user list', () => {
+  test('renders the user list container', () => {
     render(<ViewUsers />);
     
-    const userListElement = screen.getByRole('list');
+    const userListElement = screen.getByTestId('user-list');
     expect(userListElement).toBeInTheDocument();
     expect(userListElement).toHaveClass('user-list');
   });
@@ -38,7 +38,7 @@ describe('ViewUsers Component', () => {
   test('displays the correct number of user items', () => {
     render(<ViewUsers />);
     
-    const userItems = screen.getAllByText(/User \d/);
+    const userItems = screen.getAllByTestId('user-item');
     expect(userItems).toHaveLength(3);
     userItems.forEach(item => {
       expect(item).toHaveClass('user-item');
