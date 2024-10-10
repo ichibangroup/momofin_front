@@ -6,6 +6,6 @@ import AddUserOrgAdmin from '../AddUserOrgAdmin';
 describe('AddUserOrgAdmin', () => {
   it('renders with correct title', () => {
     render(<AddUserOrgAdmin />);
-    expect(screen.getByText('Add User (Momofin Admin)')).toBeInTheDocument();
+    expect(screen.getByText('Add User (Org Admin)')).toBeInTheDocument();
   });
 });
