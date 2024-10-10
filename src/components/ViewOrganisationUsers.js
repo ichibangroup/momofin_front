@@ -64,7 +64,7 @@ const ViewUsers = () => {
         </tbody>
       </table>
     <button className="add-users-button">
-        <Link to="/app/configOrganisation/addUserOrgAdmin">ADD USER</Link>
+        <Link to="app/configOrganisation/addUserOrgAdmin">ADD USER</Link>
     </button>
     </div>
   );

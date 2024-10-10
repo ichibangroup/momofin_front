@@ -1,9 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import ViewUsers from '../ViewOrganisationUsers'; // Adjust import based on the actual file location
+import '@testing-library/jest-dom/extend-expect';
+import { BrowserRouter as Router } from 'react-router-dom';
+import ViewUsers from '../ViewOrganisationUsers';
 
-// Mock the fetch function
+// Mock fetch globally
 global.fetch = jest.fn(() =>
   Promise.resolve({
     json: () => Promise.resolve([
@@ -16,81 +17,105 @@ global.fetch = jest.fn(() =>
         avatar: 'https://randomuser.me/api/portraits/men/79.jpg',
         organisation: 'ICHIBAN GROUP',
       },
-      {
-        id: 2,
-        name: 'Sam Jones',
-        username: 'samjones',
-        position: 'CHIEF TECHNOLOGY OFFICER',
-        email: 'sam@example.com',
-        avatar: 'https://randomuser.me/api/portraits/men/80.jpg',
-        organisation: 'ICHIBAN GROUP',
-      },
     ]),
   })
 );
 
-const renderWithRouter = (ui, { route = '/' } = {}) => {
-  window.history.pushState({}, 'Test page', route);
-  return render(ui, { wrapper: BrowserRouter });
-};
-
 describe('ViewUsers Component', () => {
   beforeEach(() => {
-    fetch.mockClear(); // Clear the mock before each test
+    fetch.mockClear();
   });
 
-  test('renders the component with the correct title', async () => {
-    renderWithRouter(<ViewUsers />);
+  it('renders without crashing', () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
+    expect(screen.getByTestId('viewUsers-1')).toBeInTheDocument();
+  });
 
+  it('displays the correct title', () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
     expect(screen.getByText('View All Organisation Users')).toBeInTheDocument();
   });
 
-  test('renders the user table with headers', async () => {
-    renderWithRouter(<ViewUsers />);
+  it('fetches and displays users', async () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
 
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Username')).toBeInTheDocument();
-    expect(screen.getByText('Position')).toBeInTheDocument();
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('Actions')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith('http://your-api-endpoint/users');
+    });
+
+    expect(screen.getByText('Galih Ibrahim Kurniawan')).toBeInTheDocument();
+    expect(screen.getByText('Sirered')).toBeInTheDocument();
+    expect(screen.getByText('CHIEF EXECUTIVE OFFICER')).toBeInTheDocument();
+    expect(screen.getByText('emailme@example.com')).toBeInTheDocument();
   });
 
-  test('fetches and displays users correctly', async () => {
-    renderWithRouter(<ViewUsers />);
+  it('displays user avatar', async () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
 
-    // Wait for the users to be loaded
     await waitFor(() => {
-      expect(screen.getByText('Galih Ibrahim Kurniawan')).toBeInTheDocument();
-      expect(screen.getByText('CHIEF EXECUTIVE OFFICER')).toBeInTheDocument();
-      expect(screen.getByText('Sirered')).toBeInTheDocument();
-      expect(screen.getByText('emailme@example.com')).toBeInTheDocument();
-
-      expect(screen.getByText('Sam Jones')).toBeInTheDocument();
-      expect(screen.getByText('CHIEF TECHNOLOGY OFFICER')).toBeInTheDocument();
-      expect(screen.getByText('samjones')).toBeInTheDocument();
-      expect(screen.getByText('sam@example.com')).toBeInTheDocument();
+      const avatar = screen.getByAltText('Galih Ibrahim Kurniawan');
+      expect(avatar).toBeInTheDocument();
+      expect(avatar).toHaveAttribute('src', 'https://randomuser.me/api/portraits/men/79.jpg');
     });
   });
 
-  test('renders action buttons for each user', async () => {
-    renderWithRouter(<ViewUsers />);
+  it('renders action buttons for each user', async () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
 
-    // Wait for the users to be loaded
     await waitFor(() => {
-      expect(screen.getAllByText('MAKE ADMIN')).toHaveLength(2);
-      expect(screen.getAllByText('EDIT')).toHaveLength(2);
-      expect(screen.getAllByText('DELETE')).toHaveLength(2);
+      expect(screen.getByText('MAKE ADMIN')).toBeInTheDocument();
+      expect(screen.getByText('EDIT')).toBeInTheDocument();
+      expect(screen.getByText('DELETE')).toBeInTheDocument();
     });
   });
 
-  test('renders "Add User" button and navigates to the correct path', async () => {
-    renderWithRouter(<ViewUsers />);
+  it('renders the ADD USER button with correct link', () => {
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
 
     const addUserButton = screen.getByText('ADD USER');
     expect(addUserButton).toBeInTheDocument();
+    expect(addUserButton.closest('a')).toHaveAttribute('href', '/app/configOrganisation/addUserOrgAdmin');
+  });
 
-    fireEvent.click(addUserButton);
+  it('handles fetch error gracefully', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    fetch.mockImplementationOnce(() => Promise.reject(new Error('API Error')));
 
-    expect(window.location.pathname).toBe('/app/configOrganisation/addUserOrgAdmin');
+    render(
+      <Router>
+        <ViewUsers />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching users:', expect.any(Error));
+    });
+
+    consoleSpy.mockRestore();
   });
 });

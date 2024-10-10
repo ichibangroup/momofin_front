@@ -1,147 +1,146 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import ViewOrganisation from '../viewOrganisation';
-import { BrowserRouter } from 'react-router-dom'; // Needed for useNavigate
-import '@testing-library/jest-dom';
 
+// Mock the useNavigate hook
 const mockNavigate = jest.fn();
-
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
 }));
 
-const mockOrganizations = [
-  {
-    id: 1,
-    name: 'Organization 1',
-    industry: 'Technology',
-    address: '123 Main St, City, State, Country',
-    description: 'This is a long description about Organization 1. It provides technology solutions.',
-  },
-  {
-    id: 2,
-    name: 'Organization 2',
-    industry: 'Healthcare',
-    address: '456 Oak St, City, State, Country',
-    description: 'This is a shorter description for Organization 2.',
-  },
-];
+// Mock the fetch function
+global.fetch = jest.fn();
 
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve(mockOrganizations),
-  })
-);
-
-describe('ViewOrganisation component', () => {
+describe('ViewOrganisation Component', () => {
   beforeEach(() => {
-    fetch.mockClear();
-    mockNavigate.mockClear();
+    jest.clearAllMocks();
   });
 
-  test('renders ViewOrganisation component correctly', async () => {
+  it('renders the component with initial data', async () => {
     render(
       <BrowserRouter>
         <ViewOrganisation />
       </BrowserRouter>
     );
 
-    // Check if the title renders
     expect(screen.getByText('View Organizations')).toBeInTheDocument();
-
-    // Ensure the fetch is called once
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
-
-    // Check if organization data is rendered correctly
-    await waitFor(() => {
-      expect(screen.getByText('Organization 1')).toBeInTheDocument();
-      expect(screen.getByText('Technology')).toBeInTheDocument();
-      expect(screen.getByText('123 Main St, City, State, Country')).toBeInTheDocument();
-      expect(screen.getByText('This is a long description about Organization 1. It provides technology solutions.')).toBeInTheDocument();
-
-      expect(screen.getByText('Organization 2')).toBeInTheDocument();
-      expect(screen.getByText('Healthcare')).toBeInTheDocument();
-      expect(screen.getByText('456 Oak St, City, State, Country')).toBeInTheDocument();
-      expect(screen.getByText('This is a shorter description for Organization 2.')).toBeInTheDocument();
-    });
-
-    // Check for actions buttons
-    expect(screen.getAllByText('EDIT')).toHaveLength(2);
-    expect(screen.getAllByText('DELETE')).toHaveLength(2);
-
-    // Check for the Add Organisation button
-    expect(screen.getByText('Add Organisation')).toBeInTheDocument();
+    expect(screen.getByText('Back')).toBeInTheDocument();
+    expect(screen.getByText('Organization 1')).toBeInTheDocument();
+    expect(screen.getByText('Organization 2')).toBeInTheDocument();
   });
 
-  test('navigates back when clicking "Back" button', async () => {
+  it('navigates back when the back button is clicked', () => {
     render(
       <BrowserRouter>
         <ViewOrganisation />
       </BrowserRouter>
     );
 
-    const backButton = screen.getByText('Back');
-    fireEvent.click(backButton);
-
-    // Check that the navigate function was called with -1
+    fireEvent.click(screen.getByText('Back'));
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 
-  test('navigates to Add Organisation page when clicking "Add Organisation"', async () => {
+  it('renders organization data correctly', () => {
     render(
       <BrowserRouter>
         <ViewOrganisation />
       </BrowserRouter>
     );
 
-    const addButton = screen.getByText('Add Organisation');
-    fireEvent.click(addButton);
+    expect(screen.getByText('Organization 1')).toBeInTheDocument();
+    expect(screen.getByText('Technology')).toBeInTheDocument();
+    expect(screen.getByText('123 Main St, City, State, Country')).toBeInTheDocument();
+    expect(screen.getByText('This is a long description about Organization 1. It provides technology solutions.')).toBeInTheDocument();
 
-    // Check that the navigate function was called with the correct path
+    expect(screen.getByText('Organization 2')).toBeInTheDocument();
+    expect(screen.getByText('Healthcare')).toBeInTheDocument();
+    expect(screen.getByText('456 Oak St, City, State, Country')).toBeInTheDocument();
+    expect(screen.getByText('This is a shorter description for Organization 2.')).toBeInTheDocument();
+  });
+
+  it('truncates long descriptions', () => {
+    const longDescription = 'A'.repeat(150);
+    const organizations = [
+      { id: 1, name: 'Test Org', industry: 'Test', address: 'Test Address', description: longDescription },
+    ];
+    render(
+      <BrowserRouter>
+        <ViewOrganisation />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText(`${'A'.repeat(100)}...`)).toBeInTheDocument();
+  });
+
+  it('displays edit and delete buttons for each organization', () => {
+    render(
+      <BrowserRouter>
+        <ViewOrganisation />
+      </BrowserRouter>
+    );
+
+    const editButtons = screen.getAllByText('EDIT');
+    const deleteButtons = screen.getAllByText('DELETE');
+
+    expect(editButtons).toHaveLength(2);
+    expect(deleteButtons).toHaveLength(2);
+  });
+
+  it('navigates to add new organisation page when "Add Organisation" button is clicked', () => {
+    render(
+      <BrowserRouter>
+        <ViewOrganisation />
+      </BrowserRouter>
+    );
+
+    fireEvent.click(screen.getByText('Add Organisation'));
     expect(mockNavigate).toHaveBeenCalledWith('/app/momofinDashboard/addNewOrganisation');
   });
 
-  test('clicking the edit button', async () => {
-    render(
-      <BrowserRouter>
-        <ViewOrganisation />
-      </BrowserRouter>
-    );
+  it('fetches organizations from API on component mount', async () => {
+    const mockOrganizations = [
+      { id: 3, name: 'API Org', industry: 'API', address: 'API Address', description: 'API Description' },
+    ];
 
-    // Wait for organization data to render
-    await waitFor(() => {
-      expect(screen.getByText('EDIT')).toBeInTheDocument();
+    global.fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValueOnce(mockOrganizations),
     });
 
-    const editButton = screen.getAllByText('EDIT')[0];
-    fireEvent.click(editButton);
-
-    // Ensure the edit button is clickable (no specific action in this test)
-    expect(editButton).toBeEnabled();
-  });
-
-  test('clicking the delete button', async () => {
     render(
       <BrowserRouter>
         <ViewOrganisation />
       </BrowserRouter>
     );
 
-    // Wait for organization data to render
     await waitFor(() => {
-      expect(screen.getByText('DELETE')).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith('http://your-api-endpoint/organizations');
+      expect(screen.getByText('API Org')).toBeInTheDocument();
+    });
+  });
+
+  it('handles API fetch error', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch.mockRejectedValueOnce(new Error('API Error'));
+
+    render(
+      <BrowserRouter>
+        <ViewOrganisation />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Error fetching organizations:', expect.any(Error));
     });
 
-    const deleteButton = screen.getAllByText('DELETE')[0];
-    fireEvent.click(deleteButton);
-
-    // Ensure the delete button is clickable (no specific action in this test)
-    expect(deleteButton).toBeEnabled();
+    consoleSpy.mockRestore();
   });
 
-  test('handles fetch failure gracefully', async () => {
-    fetch.mockImplementationOnce(() => Promise.reject('API error'));
+  it('displays "No organizations" message when there are no organizations', async () => {
+    global.fetch.mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValueOnce([]),
+    });
 
     render(
       <BrowserRouter>
@@ -149,10 +148,8 @@ describe('ViewOrganisation component', () => {
       </BrowserRouter>
     );
 
-    // Ensure fetch was called once
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
-
-    // Since no error handling UI is implemented, we only check if the table is still rendered
-    expect(screen.getByTestId('viewOrg-1')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('No organizations to display yet. Please add an organization.')).toBeInTheDocument();
+    });
   });
 });
