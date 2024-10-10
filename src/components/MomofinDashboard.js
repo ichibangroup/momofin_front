@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../Home.css';  
 
-function Home() {
+function MomofinDashboard() {
   return (
     <div className="home-container">
       <div className="branding">
@@ -11,17 +11,17 @@ function Home() {
       </div>
       <div className="action-boxes-container">
         <div className="action-box view-box">
-          <h3>View</h3>
-          <Link to="/viewDocuments" className="learn-more-link">Learn More</Link>
+          <h3>View All Users</h3>
+          <Link to="/app/viewUsers" className="learn-more-link">Learn More</Link>
         </div>
 
         <div className="action-box verify-box">
-          <h3>Upload and Verify</h3>
-          <Link to="/verifyDocuments" className="learn-more-link">Learn More</Link>
+          <h3>View All Organisations</h3>
+          <Link to="/app/viewOrganisation" className="learn-more-link">Learn More</Link>
         </div>
       </div>
     </div>
   );
 }
 
-export default Home;
+export default MomofinDashboard;

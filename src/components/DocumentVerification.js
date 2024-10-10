@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
+import './DocumentVerification.css';
+
 
 export class IHashGenerator {
   generateHash(file) {
@@ -72,6 +74,7 @@ const DocumentVerification = () => {
   const [submissionResult, setSubmissionResult] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const hashGenerator = new SimpleHashGenerator();
   const verifier = new SimpleVerifier();
@@ -79,10 +82,10 @@ const DocumentVerification = () => {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
-    const MAX_FILE_SIZE_IN_MB = 5
+    const MAX_FILE_SIZE_IN_MB = 5;
     const MAX_FILE_SIZE = MAX_FILE_SIZE_IN_MB * 1024 * 1024;
     if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
-      setError('File size must be less than ' +MAX_FILE_SIZE_IN_MB+'MB.');
+      setError(`File size must be less than ${MAX_FILE_SIZE_IN_MB}MB.`);
       setFile(null);
       setSubmissionResult(null);
       setVerificationResult(null);
@@ -96,6 +99,7 @@ const DocumentVerification = () => {
 
   const handleSubmit = async () => {
     if (file) {
+      setIsLoading(true);
       try {
         const result = await processor.submitDocument(file);
         setSubmissionResult(result.documentSubmissionResult);
@@ -103,15 +107,17 @@ const DocumentVerification = () => {
       } catch (err) {
         setError(err.message);
         setSubmissionResult(null);
+      } finally {
+        setIsLoading(false);
       }
     } else {
-      console.log('Setting error: Please select a file to submit.');
       setError('Please select a file to submit.');
     }
   };
 
   const handleVerify = async () => {
     if (file) {
+      setIsLoading(true);
       try {
         const result = await processor.verifyDocument(file);
         setVerificationResult(result.document);
@@ -119,45 +125,74 @@ const DocumentVerification = () => {
       } catch (err) {
         setError(err.message);
         setVerificationResult(null);
+      } finally {
+        setIsLoading(false);
       }
     } else {
-      console.log('Setting error: Please select a file to verify.');
       setError('Please select a file to verify.');
     }
   };
 
   return (
-      <div>
-        <h1>Document Verification</h1>
-        <div>
-          <label htmlFor="file-input">Choose a file:</label>
-          <input id="file-input" type="file" onChange={handleFileChange} />
-        </div>
-        <div>
-          <button onClick={handleSubmit}>
-            Submit Document
-          </button>
-        </div>
-        <div>
-          <button onClick={handleVerify}>
-            Verify Document
-          </button>
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {submissionResult && <p>Document submitted. Result: {submissionResult}</p>}
-        {verificationResult && (
-            <div>
+    <div className="container mt-5">
+      <h1 className="mb-4">Document Verification</h1>
+      <div className="card">
+        <div className="card-body">
+          <div className="mb-3">
+            <label htmlFor="file-input" className="form-label">Choose a file:</label>
+            <input id="file-input" type="file" className="form-control" onChange={handleFileChange} />
+          </div>
+          <div className="d-flex gap-2 mb-3">
+            <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading || !file}>
+              {isLoading ? 'Submitting...' : 'Submit Document'}
+            </button>
+            <button className="btn btn-secondary" onClick={handleVerify} disabled={isLoading || !file}>
+              {isLoading ? 'Verifying...' : 'Verify Document'}
+            </button>
+          </div>
+          {error && <div className="alert alert-danger">{error}</div>}
+          {submissionResult && <div className="alert alert-success">Document submitted. Result: {submissionResult}</div>}
+          {verificationResult && (
+            <div className="mt-4">
               <h2>Verification Result:</h2>
-              <p>Document ID: {verificationResult.documentId}</p>
-              <p>File Name: {verificationResult.name}</p>
-              <p>Hash: {verificationResult.hashString}</p>
+              <table className="table table-bordered">
+                <tbody>
+                  <tr>
+                    <th>Document ID</th>
+                    <td>{verificationResult.documentId}</td>
+                  </tr>
+                  <tr>
+                    <th>File Name</th>
+                    <td>{verificationResult.name}</td>
+                  </tr>
+                  <tr>
+                    <th>Hash</th>
+                    <td>{verificationResult.hashString}</td>
+                  </tr>
+                </tbody>
+              </table>
               <h3>Owner Information:</h3>
-              <p>Name: {verificationResult.owner.name}</p>
-              <p>Email: {verificationResult.owner.email}</p>
-              <p>Position: {verificationResult.owner.position}</p>
+              <table className="table table-bordered">
+                <tbody>
+                  <tr>
+                    <th>Name</th>
+                    <td>{verificationResult.owner.name}</td>
+                  </tr>
+                  <tr>
+                    <th>Email</th>
+                    <td>{verificationResult.owner.email}</td>
+                  </tr>
+                  <tr>
+                    <th>Position</th>
+                    <td>{verificationResult.owner.position}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-        )}
+          )}
+        </div>
       </div>
+    </div>
   );
 };
 

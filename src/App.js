@@ -16,6 +16,13 @@ const ViewUsers = lazy(() => import('./components/ViewUsers'));
 const EditProfile = lazy(() => import('./components/EditProfile'));
 const ConfigOrganisation = lazy(() => import('./components/ConfigOrganisation'));
 const ViewDocuments = lazy(() => import('./components/ViewDocuments'));
+const MomofinDashboard = lazy(() => import('./components/MomofinDashboard'));
+const AddUserOrgAdmin = lazy(() => import('./components/AddUserOrgAdmin'));
+const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'));
+const ViewOrganisationUsers = lazy(() => import('./components/ViewOrganisationUsers'));
+const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
+
+
 
 function App() {
   return (
@@ -36,16 +43,15 @@ function App() {
           <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
           <Route path="viewUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense>} />
           <Route path="viewDocuments" element={<Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense>} /> 
+          <Route path="momofinDashboard" element={<Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense>} /> 
+          <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
+          <Route path="configOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
+          <Route path="editProfile" element={<Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense>} />
+          <Route path="configOrganisation/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
+          <Route path="addUserMomofinAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense>} />
+          <Route path="configOrganisation/viewOrganisationUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisationUsers /></Suspense>} />
+          <Route path="momofinDashboard/addNewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense>} />
         </Route>
-
-        {/* Route for Edit Profile */}
-        <Route path="/editProfile" element={<Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense>} />
-        
-        {/* Route for Config Organisation */}
-        <Route path="/configOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
-        
-        {/* Route for View Organisation */}
-        <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
 
         {/* Auth layout routes */}
         <Route path="auth" element={<AuthLayout />}>
