@@ -143,10 +143,10 @@ const DocumentVerification = () => {
             <input id="file-input" type="file" className="form-control" onChange={handleFileChange} />
           </div>
           <div className="d-flex gap-2 mb-3">
-            <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading || !file}>
+            <button className="btn btn-primary" onClick={handleSubmit} disabled={isLoading }>
               {isLoading ? 'Submitting...' : 'Submit Document'}
             </button>
-            <button className="btn btn-secondary" onClick={handleVerify} disabled={isLoading || !file}>
+            <button className="btn btn-secondary" onClick={handleVerify} disabled={isLoading }>
               {isLoading ? 'Verifying...' : 'Verify Document'}
             </button>
           </div>

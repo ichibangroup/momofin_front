@@ -21,6 +21,13 @@ const ViewOrganisation = () => {
       address: '456 Oak St, City, State, Country',
       description: 'This is a shorter description for Organization 2.',
     },
+    {
+      id: 3,
+      name: 'Organization 3',
+      industry: 'Entertainment',
+      address: 'Depok City',
+      description: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    },
   ]);
 
   // Replace this with a function to fetch organization data from your backend

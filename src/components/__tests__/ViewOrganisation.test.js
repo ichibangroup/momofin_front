@@ -84,8 +84,8 @@ describe('ViewOrganisation Component', () => {
     const editButtons = screen.getAllByText('EDIT');
     const deleteButtons = screen.getAllByText('DELETE');
 
-    expect(editButtons).toHaveLength(2);
-    expect(deleteButtons).toHaveLength(2);
+    expect(editButtons).toHaveLength(3);
+    expect(deleteButtons).toHaveLength(3);
   });
 
   it('navigates to add new organisation page when "Add Organisation" button is clicked', () => {
