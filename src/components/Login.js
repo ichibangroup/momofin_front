@@ -99,11 +99,6 @@ function Login({ onSubmit }) {
             <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
           </form>
         </div>
-        <div className="login-welcome-container">
-          <h2>Welcome Back!</h2>
-          <p>Enter your personal details or Sign Up if you don't have an account</p>
-          <button className="btn-signup" onClick={handleSignUp}>Sign Up</button>
-        </div>
       </div>
   );
 }
