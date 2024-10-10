@@ -1,9 +1,8 @@
 import React from 'react';
-import '../Home.css';  
 import { useNavigate } from 'react-router-dom';
+import '../Home.css';
 
-
-function Home() {
+function MomofinHome() {
   const navigate = useNavigate();
 
   const handleKeyDown = (event) => {
@@ -18,19 +17,18 @@ function Home() {
         <h1>MOMOFIN</h1>
         <p>A safer place to store your documents.</p>
       </div>
-      
+
       <div className="action-boxes-container">
-        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} role="button" onKeyDown={handleKeyDown}style={{ cursor: 'pointer' }}>
-          <h3>View Documents</h3>
+        <div className="action-box view-box" onClick={() => navigate('/app/viewUsers')} onKeyDown={handleKeyDown} role="button">
+          <h3>View All Users</h3>
         </div>
 
-        <div className="action-box verify-box" onClick={() => navigate('verify')}  role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }}>
-          <h3>Upload and Verify Documents</h3>
+        <div className="action-box verify-box" onClick={() => navigate('/app/viewOrganisation')} onKeyDown={handleKeyDown} role="button">
+          <h3>View All Organisations</h3>
         </div>
-
       </div>
     </div>
   );
 }
 
-export default Home;
+export default MomofinHome;

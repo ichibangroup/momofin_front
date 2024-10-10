@@ -1,33 +1,74 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Home from '../Home';
 
-describe('Home Component', () => {
-  test('renders Home component with correct content', () => {
-    render(
-      <BrowserRouter>
-        <Home />
-      </BrowserRouter>
-    );
+// Mock the useNavigate hook
+const mockedUsedNavigate = jest.fn();
 
+jest.mock('react-router-dom', () => ({
+   ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockedUsedNavigate,
+}));
+
+describe('Home Component', () => {
+  beforeEach(() => {
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>
+    );
+  });
+
+  test('renders branding elements', () => {
     expect(screen.getByText('MOMOFIN')).toBeInTheDocument();
     expect(screen.getByText('A safer place to store your documents.')).toBeInTheDocument();
   });
 
-  test('renders action boxes with correct links', () => {
-    render(
-      <BrowserRouter>
-        <Home />
-      </BrowserRouter>
-    );
+  test('renders View Documents box', () => {
+    expect(screen.getByText('View Documents')).toBeInTheDocument();
+  });
 
-    const learnMoreLinks = screen.getAllByText('Learn More');
+  test('renders Upload and Verify Documents box', () => {
+    expect(screen.getByText('Upload and Verify Documents')).toBeInTheDocument();
+  });
 
-    expect(learnMoreLinks[0]).toHaveAttribute('href', '/viewDocuments');
+  test('navigates to viewDocuments when View Documents is clicked', () => {
+    fireEvent.click(screen.getByText('View Documents'));
+    expect(mockedUsedNavigate).toHaveBeenCalledWith('viewDocuments');
+  });
 
-    expect(learnMoreLinks[1]).toHaveAttribute('href', '/uploadDocuments');
+  test('navigates to verify when Upload and Verify Documents is clicked', () => {
+    fireEvent.click(screen.getByText('Upload and Verify Documents'));
+    expect(mockedUsedNavigate).toHaveBeenCalledWith('verify');
+  });
 
-    expect(learnMoreLinks[2]).toHaveAttribute('href', '/verifyDocuments');
+  test('action boxes have correct cursor style', () => {
+    const viewBox = screen.getByText('View Documents').closest('div');
+    const verifyBox = screen.getByText('Upload and Verify Documents').closest('div');
+
+    expect(viewBox).toHaveStyle('cursor: pointer');
+    expect(verifyBox).toHaveStyle('cursor: pointer');
+  });
+
+  test('home-container class is applied', () => {
+    const container = screen.getByRole('heading', { name: /MOMOFIN/i }).closest('div').parentElement; // Access the parent element
+    expect(container).toHaveClass('home-container');
+  });
+  
+
+  test('action-boxes-container class is applied', () => {
+    const actionBoxesContainer = screen.getByText('View Documents').closest('div').parentElement;
+    expect(actionBoxesContainer).toHaveClass('action-boxes-container');
+  });
+
+  test('action-box class is applied to both boxes', () => {
+    const viewBox = screen.getByText('View Documents').closest('div');
+    const verifyBox = screen.getByText('Upload and Verify Documents').closest('div');
+
+    expect(viewBox).toHaveClass('action-box');
+    expect(viewBox).toHaveClass('view-box');
+    expect(verifyBox).toHaveClass('action-box');
+    expect(verifyBox).toHaveClass('verify-box');
   });
 });

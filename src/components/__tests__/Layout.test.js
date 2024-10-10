@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Layout from '../Layout';
 import api from '../../utils/api';
+
 // Mock the api module
 jest.mock('../../utils/api', () => ({
   get: jest.fn(),
@@ -30,8 +31,7 @@ describe('Layout Component', () => {
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Upload and Verify')).toBeInTheDocument();
-    expect(screen.getByText('View Users')).toBeInTheDocument();
-    expect(screen.getByText('View Organisations')).toBeInTheDocument();
+    expect(screen.getByText('Momofin Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Config Organisation')).toBeInTheDocument();
 
     await waitFor(() => {
@@ -116,6 +116,5 @@ describe('Layout Component', () => {
 
     fireEvent.click(screen.getByText('Test User'));
     expect(screen.getByText('Log Out')).toBeInTheDocument();
-    // Note: Add more assertions if you implement logout functionality
   });
 });
