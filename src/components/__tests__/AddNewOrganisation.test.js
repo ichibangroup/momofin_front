@@ -6,7 +6,7 @@ import AddOrganisation from '../AddNewOrganisation';
 // Test that the component renders correctly
 test('renders Add Organisation form', () => {
   render(<AddOrganisation />);
-  expect(screen.getByText('Add Organisation')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Add Organisation' })).toBeInTheDocument();
   expect(screen.getByLabelText('Organisation Name:')).toBeInTheDocument();
   expect(screen.getByLabelText('Industry:')).toBeInTheDocument();
   expect(screen.getByLabelText('Address:')).toBeInTheDocument();
@@ -80,7 +80,7 @@ test('logs submitted data correctly', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
 
   // Check if the data was logged correctly
-  expect(console.log).toHaveBeenCalledWith('Submitted organisation and admin data:', {
+  expect(console.log).toHaveBeenCalledWith('Submitted organization and admin data:', { // Note the word "organization"
     name: 'TestOrg',
     industry: 'Technology',
     address: '123 Main St',
