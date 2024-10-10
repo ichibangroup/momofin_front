@@ -19,11 +19,11 @@ function MomofinHome() {
       </div>
 
       <div className="action-boxes-container">
-        <div className="action-box view-box" onClick={() => navigate('/app/viewUsers')} onKeyDown={handleKeyDown} role="button">
+        <div className="action-box view-box" onClick={() => navigate('/app/viewUsers')} onKeyDown={handleKeyDown} role="button" tabIndex="0">
           <h3>View All Users</h3>
         </div>
 
-        <div className="action-box verify-box" onClick={() => navigate('/app/viewOrganisation')} onKeyDown={handleKeyDown} role="button">
+        <div className="action-box verify-box" onClick={() => navigate('/app/viewOrganisation')} onKeyDown={handleKeyDown} role="button" tabIndex="0">
           <h3>View All Organisations</h3>
         </div>
       </div>

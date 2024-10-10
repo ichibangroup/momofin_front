@@ -20,11 +20,11 @@ function Home() {
       </div>
       
       <div className="action-boxes-container">
-        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} role="button" onKeyDown={handleKeyDown}style={{ cursor: 'pointer' }}>
-          <h3>View Documents</h3>
+        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }} tabIndex="0">
+          <h3>View All Documents</h3>
         </div>
 
-        <div className="action-box verify-box" onClick={() => navigate('verify')}  role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }}>
+        <div className="action-box verify-box" onClick={() => navigate('verify')}  role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }} tabIndex="0">
           <h3>Upload and Verify Documents</h3>
         </div>
 
