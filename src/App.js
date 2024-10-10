@@ -8,8 +8,6 @@ import Register from './components/Register';
 
 // Lazy load other components
 const Home = lazy(() => import('./components/Home'));
-const About = lazy(() => import('./components/About'));
-const Contact = lazy(() => import('./components/Contact'));
 const DocumentVerification = lazy(() => import('./components/DocumentVerification'));
 const ViewOrganisation = lazy(() => import('./components/viewOrganisation'));
 const ViewUsers = lazy(() => import('./components/ViewUsers'));
@@ -38,8 +36,6 @@ function App() {
         {/* Main Layout */}
         <Route path="/app" element={<Layout />}>
           <Route path="/app" element={<Suspense fallback={<LoadingIndicator />}><Home /></Suspense>} />
-          <Route path="about" element={<Suspense fallback={<LoadingIndicator />}><About /></Suspense>} />
-          <Route path="contact" element={<Suspense fallback={<LoadingIndicator />}><Contact /></Suspense>} />
           <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
           <Route path="viewUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense>} />
           <Route path="viewDocuments" element={<Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense>} /> 
