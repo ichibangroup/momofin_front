@@ -33,7 +33,7 @@ const ViewOrganisation = () => {
   // Replace this with a function to fetch organization data from your backend
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch('http://your-api-endpoint/organizations'); // Replace with your API endpoint
+      const response = await fetch('https://your-api-endpoint/organizations'); // Replace with your API endpoint
       const data = await response.json();
       setOrganizations(data);
     } catch (error) {

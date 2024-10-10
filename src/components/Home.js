@@ -6,6 +6,12 @@ import { useNavigate } from 'react-router-dom';
 function Home() {
   const navigate = useNavigate();
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      // Handle navigation or other actions as needed
+    }
+  };
+
   return (
     <div className="home-container">
       <div className="branding">
@@ -14,11 +20,11 @@ function Home() {
       </div>
       
       <div className="action-boxes-container">
-        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} style={{ cursor: 'pointer' }}>
+        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} role="button" onKeyDown={handleKeyDown}style={{ cursor: 'pointer' }}>
           <h3>View Documents</h3>
         </div>
 
-        <div className="action-box verify-box" onClick={() => navigate('verify')} style={{ cursor: 'pointer' }}>
+        <div className="action-box verify-box" onClick={() => navigate('verify')}  role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }}>
           <h3>Upload and Verify Documents</h3>
         </div>
 

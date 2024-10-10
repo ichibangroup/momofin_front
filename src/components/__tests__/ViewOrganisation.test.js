@@ -115,7 +115,7 @@ describe('ViewOrganisation Component', () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('http://your-api-endpoint/organizations');
+      expect(global.fetch).toHaveBeenCalledWith('https://your-api-endpoint/organizations');
       expect(screen.getByText('API Org')).toBeInTheDocument();
     });
   });

@@ -53,7 +53,7 @@ describe('ViewUsers Component', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith('http://your-api-endpoint/users');
+      expect(fetch).toHaveBeenCalledWith('https://your-api-endpoint/users');
     });
 
     expect(screen.getByText('Galih Ibrahim Kurniawan')).toBeInTheDocument();

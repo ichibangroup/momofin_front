@@ -20,7 +20,7 @@ const ViewUsers = () => {
   // Replace this with a function to fetch user data from your backend
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://your-api-endpoint/users'); // Replace with your API endpoint
+      const response = await fetch('https://your-api-endpoint/users'); // Replace with your API endpoint
       const data = await response.json();
       setUsers(data);
     } catch (error) {
