@@ -11,6 +11,7 @@ import DocumentVerification, {
 } from '../DocumentVerification';
 import api from '../../utils/api';
 
+
 jest.mock('../../utils/api');
 
 describe('DocumentVerification Component', () => {
