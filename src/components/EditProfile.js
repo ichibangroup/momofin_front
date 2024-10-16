@@ -34,7 +34,7 @@ const EditProfile = () => {
           email: response.data.email
         }));
       } catch (error) {
-        setError('Failed to fetch user data. Please try again.');
+        setApiError('Failed to fetch user data. Please try again.');
       }
     };
 
@@ -44,16 +44,6 @@ const EditProfile = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUser(prevUser => ({ ...prevUser, [name]: value }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!user.username.trim()) newErrors.username = 'Username is required';
-    if (!user.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(user.email)) newErrors.email = 'Invalid email format';
-    if (!user.oldPassword.trim()) newErrors.oldPassword = 'Old password is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
