@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { validateUserProfile } from '../utils/validationUtils';
 
 const FormField = ({ label, id, name, type = 'text', value, onChange, error }) => (
   <div>
@@ -23,7 +24,27 @@ const EditProfile = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState(null);
 
-  // ... (previous useEffect and handleInputChange remain the same)
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get(`/api/user/profile/${userId}`);
+        setUser(prevUser => ({
+          ...prevUser,
+          username: response.data.username,
+          email: response.data.email
+        }));
+      } catch (error) {
+        setError('Failed to fetch user data. Please try again.');
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser(prevUser => ({ ...prevUser, [name]: value }));
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -37,7 +58,9 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
+    const newErrors = validateUserProfile(user);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) {
       try {
         await api.put(`/api/user/profile/${userId}`, user);
         navigate('/app');
