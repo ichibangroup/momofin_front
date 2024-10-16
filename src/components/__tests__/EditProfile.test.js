@@ -80,4 +80,27 @@ describe('EditProfile Component', () => {
 
     expect(await screen.findByText('Invalid old password')).toBeInTheDocument();
   });
+
+  test('displays validation errors for empty fields', async () => {
+    renderWithRouter(<EditProfile />);
+  
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+  
+    await waitFor(() => {
+      expect(screen.getByText('Username is required')).toBeInTheDocument();
+      expect(screen.getByText('Email is required')).toBeInTheDocument();
+      expect(screen.getByText('Old password is required')).toBeInTheDocument();
+    });
+  });
+  
+  test('displays validation error for invalid email', async () => {
+    renderWithRouter(<EditProfile />);
+  
+    fireEvent.change(screen.getByLabelText('Email:'), { target: { value: 'invalidemail' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+  
+    await waitFor(() => {
+      expect(screen.getByText('Invalid email format')).toBeInTheDocument();
+    });
+  });
 });
