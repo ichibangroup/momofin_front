@@ -1,91 +1,83 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import EditProfile from '../EditProfile';
-import api from '../../utils/api';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import EditProfile from '../components/EditProfile';
+import api from '../utils/api';
 
-jest.mock('react-router-dom', () => ({
-  useNavigate: jest.fn(),
-  useLocation: jest.fn(),
-}));
+jest.mock('../utils/api');
 
-jest.mock('../../utils/api');
+const renderWithRouter = (ui, { route = '/app/editProfile/123' } = {}) => {
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      <Routes>
+        <Route path="/app/editProfile/:userId" element={ui} />
+      </Routes>
+    </MemoryRouter>
+  );
+};
 
 describe('EditProfile Component', () => {
-  let mockNavigate;
-
-  beforeEach(() => {
-    mockNavigate = jest.fn();
-    useNavigate.mockReturnValue(mockNavigate);
-    useLocation.mockReturnValue({ state: { userId: '123' } });
-  });
-
-  test('renders EditProfile component', () => {
-    render(<EditProfile />);
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-    expect(screen.getByText('Here, you can edit your profile information.')).toBeInTheDocument();
-  });
-
-  test('renders form fields', () => {
-    render(<EditProfile />);
-    expect(screen.getByLabelText('Username:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Old Password:')).toBeInTheDocument();
-    expect(screen.getByLabelText('New Password:')).toBeInTheDocument();
-  });
-
-  test('renders buttons', () => {
-    render(<EditProfile />);
-    expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-  });
-
-  test('handles back button click', () => {
-    render(<EditProfile />);
-    const backButton = screen.getByRole('button', { name: 'Back' });
-    fireEvent.click(backButton);
-    expect(mockNavigate).toHaveBeenCalledWith(-1);
-  });
-
-
-  test('handles input changes', () => {
-    render(<EditProfile />);
-    const usernameInput = screen.getByLabelText('Username:');
-    fireEvent.change(usernameInput, { target: { value: 'newusername' } });
-    expect(usernameInput.value).toBe('newusername');
-
-    const emailInput = screen.getByLabelText('Email:');
-    fireEvent.change(emailInput, { target: { value: 'newemail@example.com' } });
-    expect(emailInput.value).toBe('newemail@example.com');
-
-    const oldPasswordInput = screen.getByLabelText('Old Password:');
-    fireEvent.change(oldPasswordInput, { target: { value: 'oldpassword' } });
-    expect(oldPasswordInput.value).toBe('oldpassword');
-
-    const newPasswordInput = screen.getByLabelText('New Password:');
-    fireEvent.change(newPasswordInput, { target: { value: 'newpassword' } });
-    expect(newPasswordInput.value).toBe('newpassword');
-  });
-
-  test('cancel button is present', () => {
-    render(<EditProfile />);
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-    expect(cancelButton).toBeInTheDocument();
-    // Note: Add more assertions if you implement cancel functionality
-  });
-
   test('fetches and displays user data', async () => {
-    const mockUser = { username: 'testuser', email: 'test@example.com' };
-    api.get.mockResolvedValue({ data: mockUser });
-
-    render(<EditProfile />);
+    api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
+    renderWithRouter(<EditProfile />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Username:').value).toBe('testuser');
-      expect(screen.getByLabelText('Email:').value).toBe('test@example.com');
+      expect(screen.getByLabelText('Username:')).toHaveValue('testuser');
+      expect(screen.getByLabelText('Email:')).toHaveValue('test@example.com');
     });
 
     expect(api.get).toHaveBeenCalledWith('/api/user/profile/123');
+  });
+
+  test('handles input changes', async () => {
+    renderWithRouter(<EditProfile />);
+    
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'newusername' } });
+      expect(screen.getByLabelText('Username:')).toHaveValue('newusername');
+
+      fireEvent.change(screen.getByLabelText('Email:'), { target: { value: 'newemail@example.com' } });
+      expect(screen.getByLabelText('Email:')).toHaveValue('newemail@example.com');
+
+      fireEvent.change(screen.getByLabelText('Old Password:'), { target: { value: 'oldpass' } });
+      expect(screen.getByLabelText('Old Password:')).toHaveValue('oldpass');
+
+      fireEvent.change(screen.getByLabelText('New Password:'), { target: { value: 'newpass' } });
+      expect(screen.getByLabelText('New Password:')).toHaveValue('newpass');
+    });
+  });
+
+  test('submits updated profile with password verification', async () => {
+    api.put.mockResolvedValue({ data: { success: true } });
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'newusername' } });
+      fireEvent.change(screen.getByLabelText('Email:'), { target: { value: 'newemail@example.com' } });
+      fireEvent.change(screen.getByLabelText('Old Password:'), { target: { value: 'oldpass' } });
+      fireEvent.change(screen.getByLabelText('New Password:'), { target: { value: 'newpass' } });
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/api/user/profile/123', {
+        username: 'newusername',
+        email: 'newemail@example.com',
+        oldPassword: 'oldpass',
+        newPassword: 'newpass'
+      });
+    });
+  });
+
+  test('displays error message on update failure', async () => {
+    api.put.mockRejectedValue({ response: { data: { message: 'Invalid old password' } } });
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+    });
+
+    expect(await screen.findByText('Invalid old password')).toBeInTheDocument();
   });
 });

@@ -1,48 +1,94 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './EditProfile.css';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 const EditProfile = () => {
-    const navigate = useNavigate(); // Hook to programmatically navigate
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ username: '', email: '', oldPassword: '', newPassword: '' });
+  const [error, setError] = useState(null);
 
-    const handleBackClick = () => {
-        navigate(-1); // Navigate back to the previous page
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get(`/api/user/profile/${userId}`);
+        setUser(prevUser => ({
+          ...prevUser,
+          username: response.data.username,
+          email: response.data.email
+        }));
+      } catch (error) {
+        setError('Failed to fetch user data. Please try again.');
+      }
     };
 
-    return (
-        <div className="edit-profile">
-            <h1>Edit Profile</h1>
-            <p>Here, you can edit your profile information.</p>
+    fetchUserData();
+  }, [userId]);
 
-            <form className="profile-form">
-                <div className="form-group">
-                    <label htmlFor="username">Username:</label>
-                    <input type="text" id="username" placeholder="Enter your username" />
-                </div>
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser(prevUser => ({ ...prevUser, [name]: value }));
+  };
 
-                <div className="form-group">
-                    <label htmlFor="email">Email:</label>
-                    <input type="email" id="email" placeholder="Enter your email" />
-                </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/api/user/profile/${userId}`, user);
+      navigate('/app');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to update profile. Please try again.');
+    }
+  };
 
-                <div className="form-group">
-                    <label htmlFor="old-password">Old Password:</label>
-                    <input type="password" id="old-password" placeholder="Enter your old password" />
-                </div>
+  if (error) return <div className="error">{error}</div>;
 
-                <div className="form-group">
-                    <label htmlFor="new-password">New Password:</label>
-                    <input type="password" id="new-password" placeholder="Enter your new password" />
-                </div>
-
-                <div className="button-group">
-                    <button type="button" onClick={handleBackClick} className="back-button">Back</button>
-                    <button type="submit">Save Changes</button>
-                    <button type="button" className="cancel-button">Cancel</button>
-                </div>
-            </form>
+  return (
+    <div className="edit-profile">
+      <h1>Edit Profile</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="username">Username:</label>
+          <input
+            id="username"
+            name="username"
+            value={user.username}
+            onChange={handleInputChange}
+          />
         </div>
-    );
+        <div>
+          <label htmlFor="email">Email:</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={user.email}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div>
+          <label htmlFor="oldPassword">Old Password:</label>
+          <input
+            id="oldPassword"
+            name="oldPassword"
+            type="password"
+            value={user.oldPassword}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div>
+          <label htmlFor="newPassword">New Password:</label>
+          <input
+            id="newPassword"
+            name="newPassword"
+            type="password"
+            value={user.newPassword}
+            onChange={handleInputChange}
+          />
+        </div>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  );
 };
 
 export default EditProfile;
