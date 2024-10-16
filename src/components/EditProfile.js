@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
+const FormField = ({ label, id, name, type = 'text', value, onChange }) => (
+  <div>
+    <label htmlFor={id}>{label}</label>
+    <input
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+    />
+  </div>
+);
+
 const EditProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -46,45 +59,10 @@ const EditProfile = () => {
     <div className="edit-profile">
       <h1>Edit Profile</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input
-            id="username"
-            name="username"
-            value={user.username}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={user.email}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="oldPassword">Old Password:</label>
-          <input
-            id="oldPassword"
-            name="oldPassword"
-            type="password"
-            value={user.oldPassword}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="newPassword">New Password:</label>
-          <input
-            id="newPassword"
-            name="newPassword"
-            type="password"
-            value={user.newPassword}
-            onChange={handleInputChange}
-          />
-        </div>
+        <FormField label="Username:" id="username" name="username" value={user.username} onChange={handleInputChange} />
+        <FormField label="Email:" id="email" name="email" type="email" value={user.email} onChange={handleInputChange} />
+        <FormField label="Old Password:" id="oldPassword" name="oldPassword" type="password" value={user.oldPassword} onChange={handleInputChange} />
+        <FormField label="New Password:" id="newPassword" name="newPassword" type="password" value={user.newPassword} onChange={handleInputChange} />
         <button type="submit">Save Changes</button>
       </form>
     </div>
