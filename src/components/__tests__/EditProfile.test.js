@@ -1,12 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { useNavigate } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import EditProfile from '../EditProfile';
+import api from '../../utils/api';
 
-// Mock the react-router-dom module
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
+  useLocation: jest.fn(),
 }));
+
+jest.mock('../../utils/api');
 
 describe('EditProfile Component', () => {
   let mockNavigate;
@@ -14,6 +17,7 @@ describe('EditProfile Component', () => {
   beforeEach(() => {
     mockNavigate = jest.fn();
     useNavigate.mockReturnValue(mockNavigate);
+    useLocation.mockReturnValue({ state: { userId: '123' } });
   });
 
   test('renders EditProfile component', () => {
@@ -69,5 +73,19 @@ describe('EditProfile Component', () => {
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     expect(cancelButton).toBeInTheDocument();
     // Note: Add more assertions if you implement cancel functionality
+  });
+
+  test('fetches and displays user data', async () => {
+    const mockUser = { username: 'testuser', email: 'test@example.com' };
+    api.get.mockResolvedValue({ data: mockUser });
+
+    render(<EditProfile />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Username:').value).toBe('testuser');
+      expect(screen.getByLabelText('Email:').value).toBe('test@example.com');
+    });
+
+    expect(api.get).toHaveBeenCalledWith('/api/user/profile/123');
   });
 });
