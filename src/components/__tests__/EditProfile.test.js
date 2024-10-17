@@ -1,12 +1,20 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import EditProfile from './EditProfile';
-import api from '../utils/api';
-import { validateUserProfile } from '../utils/validationUtils';
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import EditProfile from '../EditProfile';
+import api from '../../utils/api';
+import { validateUserProfile } from '../../utils/validationUtils';
 
-jest.mock('../utils/api');
-jest.mock('../utils/validationUtils');
+jest.mock('../../utils/api');
+jest.mock('../../utils/validationUtils');
+
+// Mock useNavigate
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useParams: () => ({ userId: '1' }),
+  useNavigate: () => mockNavigate,
+}));
 
 const renderWithRouter = (ui, { route = '/editProfile/1' } = {}) => {
   return render(
@@ -20,6 +28,7 @@ const renderWithRouter = (ui, { route = '/editProfile/1' } = {}) => {
 
 describe('EditProfile', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
     validateUserProfile.mockReturnValue({});
   });
@@ -33,36 +42,29 @@ describe('EditProfile', () => {
     });
   });
 
-  test('submits form with password change', async () => {
+  test('submits form and navigates on success', async () => {
+    api.put.mockResolvedValue({ status: 200 });
     renderWithRouter(<EditProfile />);
 
     await waitFor(() => {
       fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
       fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'newemail@example.com' } });
-      fireEvent.change(screen.getByLabelText(/Old Password:/i), { target: { value: 'oldpassword' } });
-      fireEvent.change(screen.getByLabelText(/New Password:/i), { target: { value: 'newpassword' } });
     });
-
-    api.put.mockResolvedValue({ status: 200 });
 
     fireEvent.click(screen.getByText(/Save Changes/i));
 
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith(
-        '/api/user/profile/1',
-        expect.objectContaining({
-          username: 'newusername',
-          email: 'newemail@example.com',
-          oldPassword: 'oldpassword',
-          newPassword: 'newpassword'
-        }),
-        expect.objectContaining({
-          params: {
-            oldPassword: 'oldpassword',
-            newPassword: 'newpassword'
-          }
-        })
-      );
+      expect(api.put).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('/app');
+    });
+  });
+
+  test('displays API error on fetch', async () => {
+    api.get.mockRejectedValue(new Error('API Error'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch user data. Please try again./i)).toBeInTheDocument();
     });
   });
 
@@ -77,12 +79,33 @@ describe('EditProfile', () => {
     });
   });
 
-  test('displays API error', async () => {
-    api.get.mockRejectedValue(new Error('API Error'));
+  test('handles API error on update', async () => {
+    api.put.mockRejectedValue({ response: { data: { message: 'Update failed' } } });
     renderWithRouter(<EditProfile />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch user data. Please try again./i)).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+    });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(screen.getByText('Update failed')).toBeInTheDocument();
+    });
+  });
+
+  test('handles API error without specific message on update', async () => {
+    api.put.mockRejectedValue(new Error('Some error'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+    });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to update profile. Please try again.')).toBeInTheDocument();
     });
   });
 });

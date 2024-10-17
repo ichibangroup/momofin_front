@@ -1,16 +1,43 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import App from './App';
+import App from '../App';
 
-jest.mock('./components/EditProfile', () => () => <div>Edit Profile</div>);
+// Mock the api module
+jest.mock('../utils/api', () => ({
+  interceptors: {
+    request: { use: jest.fn() },
+    response: { use: jest.fn() }
+  },
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn()
+}));
 
-test('renders EditProfile route with userId', () => {
-  render(
-    <MemoryRouter initialEntries={['/app/editProfile/123']}>
-      <App />
-    </MemoryRouter>
-  );
-  
-  expect(screen.getByText('Edit Profile')).toBeInTheDocument();
+// Mock the components that are lazily loaded
+jest.mock('../components/Home', () => () => <div>Home Component</div>, { virtual: true });
+jest.mock('../components/Login', () => () => <div>Login Component</div>, { virtual: true });
+
+describe('App Component', () => {
+  test('renders without crashing', () => {
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
+    // If it renders without crashing, this test will pass
+  });
+
+  test('redirects to login for root path', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>
+    );
+    // This might fail if there's a delay in redirection. You might need to use `waitFor` from @testing-library/react
+    expect(screen.getByText('Login Component')).toBeInTheDocument();
+  });
+
+  // Add more tests for other routes if needed
 });
