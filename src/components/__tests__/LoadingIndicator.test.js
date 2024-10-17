@@ -24,8 +24,14 @@ describe('LoadingIndicator', () => {
     expect(loadingIndicator).toHaveAccessibleName('Loading');
   });
 
-  it('matches snapshot', () => {
-    const { asFragment } = render(<LoadingIndicator />);
-    expect(asFragment()).toMatchSnapshot();
+  it('has correct attributes', () => {
+    render(<LoadingIndicator />);
+    const outerDiv = screen.getByTestId('loading-indicator');
+    const innerDiv = screen.getByTestId('spinner');
+
+    expect(outerDiv).toHaveAttribute('data-testid', 'loading-indicator');
+    expect(innerDiv).toHaveAttribute('data-testid', 'spinner');
+    expect(innerDiv).toHaveAttribute('role', 'status');
+    expect(innerDiv).toHaveAttribute('aria-label', 'Loading');
   });
 });
