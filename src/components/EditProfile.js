@@ -24,20 +24,31 @@ const EditProfile = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await api.get(`/api/user/profile/${userId}`);
-        setUser(prevUser => ({
-          ...prevUser,
-          username: response.data.username,
-          email: response.data.email
-        }));
-      } catch (error) {
-        setApiError('Failed to fetch user data. Please try again.');
-      }
-    };
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get(`/api/user/profile/${userId}`);
+      setUser(prevUser => ({
+        ...prevUser,
+        username: response.data.username,
+        email: response.data.email
+      }));
+    } catch (error) {
+      setApiError('Failed to fetch user data. Please try again.');
+    }
+  };
 
+  const updateUserProfile = async () => {
+    try {
+      await api.put(`/api/user/profile/${userId}`, user, {
+        params: { oldPassword: user.oldPassword, newPassword: user.newPassword }
+      });
+      navigate('/app');
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
+    }
+  };
+
+  useEffect(() => {
     fetchUserData();
   }, [userId]);
 
@@ -51,14 +62,7 @@ const EditProfile = () => {
     const newErrors = validateUserProfile(user);
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      try {
-        await api.put(`/api/user/profile/${userId}`, user, {
-          params: { oldPassword: user.oldPassword, newPassword: user.newPassword }
-        });
-        navigate('/app');
-      } catch (error) {
-        setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
-      }
+      await updateUserProfile();
     }
   };
 
