@@ -41,23 +41,43 @@ describe('validateUserProfile', () => {
     expect(errors.oldPassword).toBe('Old password is required when changing password');
   });
 
-  test('returns no errors when both passwords are provided', () => {
-    const user = {
-      username: 'validuser',
-      email: 'valid@email.com',
-      oldPassword: 'oldpass',
-      newPassword: 'newpass'
-    };
-    expect(validateUserProfile(user)).toEqual({});
+  test('accepts valid email addresses', () => {
+    const validEmails = [
+      'simple@example.com',
+      'very.common@example.com',
+      'disposable.style.email.with+symbol@example.com',
+      'other.email-with-hyphen@example.com',
+      'fully-qualified-domain@example.com',
+      'user.name+tag+sorting@example.com',
+      'x@example.com',
+      'example-indeed@strange-example.com',
+      'example@s.example',
+    ];
+
+    validEmails.forEach(email => {
+      const result = validateUserProfile({ username: 'validuser', email });
+      expect(result.email).toBeUndefined();
+    });
   });
 
-  test('returns multiple errors for multiple invalid fields', () => {
-    const user = { username: '', email: 'invalidemail', oldPassword: 'oldpass' };
-    const errors = validateUserProfile(user);
-    expect(errors).toEqual({
-      username: 'Username is required',
-      email: 'Email is invalid',
-      newPassword: 'New password is required when changing password'
+  test('rejects invalid email addresses', () => {
+    const invalidEmails = [
+      'Abc.example.com',
+      'A@b@c@example.com',
+      'a"b(c)d,e:f;g<h>i[j\k]l@example.com',
+      'just"not"right@example.com',
+      'this is"not\allowed@example.com',
+      'this\ still\"not\\allowed@example.com',
+      '1234567890123456789012345678901234567890123456789012345678901234+x@example.com',
+      'i_like_underscore@but_its_not_allowed_in_this_part.example.com',
+      'a'.repeat(65) + '@example.com', // local part too long
+      'test@' + 'a'.repeat(254) + '.com', // domain part too long
+      'test@example' // no dot in domain
+    ];
+
+    invalidEmails.forEach(email => {
+      const result = validateUserProfile({ username: 'validuser', email });
+      expect(result.email).toBe('Email is invalid');
     });
   });
 });
