@@ -40,12 +40,12 @@ const Layout = () => {
                         {user && (
                             <div className="user-dropdown">
                                 <button onClick={toggleDropdown} className="dropdown-button">
-                                    {user.name} <span>&#x25BC;</span> {/* Down arrow */}
+                                    {user.name} <span>&#x25BC;</span>
                                 </button>
                             {dropdownOpen && (
                                 <ul className="dropdown-menu">
                                     <li>
-                                        <Link to="editProfile">
+                                        <Link to={`editProfile/${user.userId}`}>
                                             <button>Edit Profile</button>
                                         </Link>
                                     </li>
@@ -71,8 +71,5 @@ const Layout = () => {
         </div>
     );
 };
-
-
-//RAHHHHHHHHHHHHHHHHHHHHH
 
 export default Layout;

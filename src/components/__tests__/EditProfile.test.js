@@ -1,73 +1,111 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { useNavigate } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import EditProfile from '../EditProfile';
+import api from '../../utils/api';
+import { validateUserProfile } from '../../utils/validationUtils';
 
-// Mock the react-router-dom module
+jest.mock('../../utils/api');
+jest.mock('../../utils/validationUtils');
+
+// Mock useNavigate
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
-  useNavigate: jest.fn(),
+  ...jest.requireActual('react-router-dom'),
+  useParams: () => ({ userId: '1' }),
+  useNavigate: () => mockNavigate,
 }));
 
-describe('EditProfile Component', () => {
-  let mockNavigate;
+const renderWithRouter = (ui, { route = '/editProfile/1' } = {}) => {
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      <Routes>
+        <Route path="/editProfile/:userId" element={ui} />
+      </Routes>
+    </MemoryRouter>
+  );
+};
 
+describe('EditProfile', () => {
   beforeEach(() => {
-    mockNavigate = jest.fn();
-    useNavigate.mockReturnValue(mockNavigate);
+    jest.clearAllMocks();
+    api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
+    validateUserProfile.mockReturnValue({});
   });
 
-  test('renders EditProfile component', () => {
-    render(<EditProfile />);
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-    expect(screen.getByText('Here, you can edit your profile information.')).toBeInTheDocument();
+  test('renders EditProfile form with fetched user data', async () => {
+    renderWithRouter(<EditProfile />);
+    
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Username:/i)).toHaveValue('testuser');
+      expect(screen.getByLabelText(/Email:/i)).toHaveValue('test@example.com');
+    });
   });
 
-  test('renders form fields', () => {
-    render(<EditProfile />);
-    expect(screen.getByLabelText('Username:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email:')).toBeInTheDocument();
-    expect(screen.getByLabelText('Old Password:')).toBeInTheDocument();
-    expect(screen.getByLabelText('New Password:')).toBeInTheDocument();
+  test('submits form and navigates on success', async () => {
+    api.put.mockResolvedValue({ status: 200 });
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+      fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'newemail@example.com' } });
+    });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('/app');
+    });
   });
 
-  test('renders buttons', () => {
-    render(<EditProfile />);
-    expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  test('displays API error on fetch', async () => {
+    api.get.mockRejectedValue(new Error('API Error'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch user data. Please try again./i)).toBeInTheDocument();
+    });
   });
 
-  test('handles back button click', () => {
-    render(<EditProfile />);
-    const backButton = screen.getByRole('button', { name: 'Back' });
-    fireEvent.click(backButton);
-    expect(mockNavigate).toHaveBeenCalledWith(-1);
+  test('displays validation errors', async () => {
+    validateUserProfile.mockReturnValue({ username: 'Username is required' });
+    renderWithRouter(<EditProfile />);
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Username is required/i)).toBeInTheDocument();
+    });
   });
 
+  test('handles API error on update', async () => {
+    api.put.mockRejectedValue({ response: { data: { message: 'Update failed' } } });
+    renderWithRouter(<EditProfile />);
 
-  test('handles input changes', () => {
-    render(<EditProfile />);
-    const usernameInput = screen.getByLabelText('Username:');
-    fireEvent.change(usernameInput, { target: { value: 'newusername' } });
-    expect(usernameInput.value).toBe('newusername');
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+    });
 
-    const emailInput = screen.getByLabelText('Email:');
-    fireEvent.change(emailInput, { target: { value: 'newemail@example.com' } });
-    expect(emailInput.value).toBe('newemail@example.com');
+    fireEvent.click(screen.getByText(/Save Changes/i));
 
-    const oldPasswordInput = screen.getByLabelText('Old Password:');
-    fireEvent.change(oldPasswordInput, { target: { value: 'oldpassword' } });
-    expect(oldPasswordInput.value).toBe('oldpassword');
-
-    const newPasswordInput = screen.getByLabelText('New Password:');
-    fireEvent.change(newPasswordInput, { target: { value: 'newpassword' } });
-    expect(newPasswordInput.value).toBe('newpassword');
+    await waitFor(() => {
+      expect(screen.getByText('Update failed')).toBeInTheDocument();
+    });
   });
 
-  test('cancel button is present', () => {
-    render(<EditProfile />);
-    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-    expect(cancelButton).toBeInTheDocument();
-    // Note: Add more assertions if you implement cancel functionality
+  test('handles API error without specific message on update', async () => {
+    api.put.mockRejectedValue(new Error('Some error'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+    });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to update profile. Please try again.')).toBeInTheDocument();
+    });
   });
 });

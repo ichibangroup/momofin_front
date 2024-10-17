@@ -93,7 +93,7 @@ describe('Layout Component', () => {
   });
 
   test('navigates to Edit Profile page', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
+    api.get.mockResolvedValueOnce({ data: { name: 'Test User' , userId: 10} });
     renderWithRouter(<Layout />);
 
     await waitFor(() => {
@@ -103,7 +103,7 @@ describe('Layout Component', () => {
     fireEvent.click(screen.getByText('Test User'));
     fireEvent.click(screen.getByText('Edit Profile'));
 
-    expect(window.location.pathname).toBe('/editProfile');
+    expect(window.location.pathname).toBe('/editProfile/10');
   });
 
   test('Log Out button is present', async () => {
