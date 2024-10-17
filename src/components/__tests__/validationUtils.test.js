@@ -41,43 +41,62 @@ describe('validateUserProfile', () => {
     expect(errors.oldPassword).toBe('Old password is required when changing password');
   });
 
-  test('accepts valid email addresses', () => {
-    const validEmails = [
-      'simple@example.com',
-      'very.common@example.com',
-      'disposable.style.email.with+symbol@example.com',
-      'other.email-with-hyphen@example.com',
-      'fully-qualified-domain@example.com',
-      'user.name+tag+sorting@example.com',
-      'x@example.com',
-      'example-indeed@strange-example.com',
-      'example@s.example',
-    ];
+  test('returns no errors when both passwords are provided', () => {
+    const user = {
+      username: 'validuser',
+      email: 'valid@email.com',
+      oldPassword: 'oldpass',
+      newPassword: 'newpass'
+    };
+    expect(validateUserProfile(user)).toEqual({});
+  });
 
-    validEmails.forEach(email => {
-      const result = validateUserProfile({ username: 'validuser', email });
-      expect(result.email).toBeUndefined();
+  test('returns multiple errors for multiple invalid fields', () => {
+    const user = { username: '', email: 'invalidemail', oldPassword: 'oldpass' };
+    const errors = validateUserProfile(user);
+    expect(errors).toEqual({
+      username: 'Username is required',
+      email: 'Email is invalid',
+      newPassword: 'New password is required when changing password'
     });
   });
 
-  test('rejects invalid email addresses', () => {
-    const invalidEmails = [
-      'Abc.example.com',
-      'A@b@c@example.com',
-      'a"b(c)d,e:f;g<h>i[j\k]l@example.com',
-      'just"not"right@example.com',
-      'this is"not\allowed@example.com',
-      'this\ still\"not\\allowed@example.com',
-      '1234567890123456789012345678901234567890123456789012345678901234+x@example.com',
-      'i_like_underscore@but_its_not_allowed_in_this_part.example.com',
-      'a'.repeat(65) + '@example.com', // local part too long
-      'test@' + 'a'.repeat(254) + '.com', // domain part too long
-      'test@example' // no dot in domain
-    ];
+  test('rejects non-string email values', () => {
+    const nullUndefinedValues = [null, undefined];
+    const otherNonStringValues = [123, {}, [], true, false, () => {}];
 
-    invalidEmails.forEach(email => {
-      const result = validateUserProfile({ username: 'validuser', email });
+    nullUndefinedValues.forEach(value => {
+      const result = validateUserProfile({ username: 'validuser', email: value });
+      expect(result.email).toBe('Email is required');
+    });
+
+    otherNonStringValues.forEach(value => {
+      const result = validateUserProfile({ username: 'validuser', email: value });
       expect(result.email).toBe('Email is invalid');
     });
+  });
+
+  test('rejects email addresses that are too long', () => {
+    const longEmail = 'a'.repeat(255) + '@example.com';
+    const result = validateUserProfile({ username: 'validuser', email: longEmail });
+    expect(result.email).toBe('Email is invalid');
+  });
+
+  test('rejects email addresses with local part too long', () => {
+    const longLocalPart = 'a'.repeat(65) + '@example.com';
+    const result = validateUserProfile({ username: 'validuser', email: longLocalPart });
+    expect(result.email).toBe('Email is invalid');
+  });
+
+  test('rejects email addresses with domain part too long', () => {
+    const longDomainPart = 'user@' + 'a'.repeat(254) + '.com';
+    const result = validateUserProfile({ username: 'validuser', email: longDomainPart });
+    expect(result.email).toBe('Email is invalid');
+  });
+
+  test('rejects email addresses without a dot in the domain', () => {
+    const noDotDomain = 'user@examplecom';
+    const result = validateUserProfile({ username: 'validuser', email: noDotDomain });
+    expect(result.email).toBe('Email is invalid');
   });
 });

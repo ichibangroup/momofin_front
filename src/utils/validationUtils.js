@@ -5,7 +5,7 @@ export const validateUserProfile = (user) => {
     errors.username = 'Username is required';
   }
 
-  if (!user.email || user.email.trim() === '') {
+  if (user.email === undefined || user.email === null || (typeof user.email === 'string' && user.email.trim() === '')) {
     errors.email = 'Email is required';
   } else if (!isValidEmail(user.email)) {
     errors.email = 'Email is invalid';
