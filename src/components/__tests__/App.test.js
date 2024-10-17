@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
+import App from '../../App';
 
 // Mock the api module
-jest.mock('../utils/api', () => ({
+jest.mock('../../utils/api', () => ({
   interceptors: {
     request: { use: jest.fn() },
     response: { use: jest.fn() }
@@ -22,21 +22,17 @@ jest.mock('../components/Login', () => () => <div>Login Component</div>, { virtu
 describe('App Component', () => {
   test('renders without crashing', () => {
     render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
+      <App />
     );
     // If it renders without crashing, this test will pass
   });
 
   test('redirects to login for root path', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
         <App />
-      </MemoryRouter>
     );
     // This might fail if there's a delay in redirection. You might need to use `waitFor` from @testing-library/react
-    expect(screen.getByText('Login Component')).toBeInTheDocument();
+    expect(screen.getByText('Sign In', { selector: 'h2' })).toBeInTheDocument();
   });
 
   // Add more tests for other routes if needed
