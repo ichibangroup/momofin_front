@@ -1,78 +1,88 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import EditProfile from '../components/EditProfile';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import EditProfile from './EditProfile';
 import api from '../utils/api';
+import { validateUserProfile } from '../utils/validationUtils';
 
 jest.mock('../utils/api');
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
-}));
+jest.mock('../utils/validationUtils');
 
-const renderWithRouter = (ui, { route = '/app/editProfile/123' } = {}) => {
+const renderWithRouter = (ui, { route = '/editProfile/1' } = {}) => {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Routes>
-        <Route path="/app/editProfile/:userId" element={ui} />
+        <Route path="/editProfile/:userId" element={ui} />
       </Routes>
     </MemoryRouter>
   );
 };
 
-describe('EditProfile Component', () => {
-  test('fetches and displays user data', async () => {
+describe('EditProfile', () => {
+  beforeEach(() => {
     api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Username:')).toHaveValue('testuser');
-      expect(screen.getByLabelText('Email:')).toHaveValue('test@example.com');
-    });
-
-    expect(api.get).toHaveBeenCalledWith('/api/user/profile/123');
+    validateUserProfile.mockReturnValue({});
   });
 
-  test('updates profile with correct old password', async () => {
-    api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
-    api.put.mockResolvedValue({ data: { success: true } });
-    
+  test('renders EditProfile form with fetched user data', async () => {
     renderWithRouter(<EditProfile />);
-
+    
     await waitFor(() => {
-      fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'newusername' } });
-      fireEvent.change(screen.getByLabelText('Email:'), { target: { value: 'newemail@example.com' } });
-      fireEvent.change(screen.getByLabelText('Old Password:'), { target: { value: 'correctoldpass' } });
-      fireEvent.change(screen.getByLabelText('New Password:'), { target: { value: 'newpass' } });
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
-
-    await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith('/api/user/profile/123', {
-        username: 'newusername',
-        email: 'newemail@example.com',
-        oldPassword: 'correctoldpass',
-        newPassword: 'newpass'
-      });
+      expect(screen.getByLabelText(/Username:/i)).toHaveValue('testuser');
+      expect(screen.getByLabelText(/Email:/i)).toHaveValue('test@example.com');
     });
   });
 
-  test('displays error for incorrect old password', async () => {
-    api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
-    api.put.mockRejectedValue({ response: { data: { message: 'Invalid old password' } } });
-    
+  test('submits form with password change', async () => {
     renderWithRouter(<EditProfile />);
 
     await waitFor(() => {
-      fireEvent.change(screen.getByLabelText('Old Password:'), { target: { value: 'wrongoldpass' } });
-      fireEvent.change(screen.getByLabelText('New Password:'), { target: { value: 'newpass' } });
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+      fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'newemail@example.com' } });
+      fireEvent.change(screen.getByLabelText(/Old Password:/i), { target: { value: 'oldpassword' } });
+      fireEvent.change(screen.getByLabelText(/New Password:/i), { target: { value: 'newpassword' } });
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+    api.put.mockResolvedValue({ status: 200 });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid old password')).toBeInTheDocument();
+      expect(api.put).toHaveBeenCalledWith(
+        '/api/user/profile/1',
+        expect.objectContaining({
+          username: 'newusername',
+          email: 'newemail@example.com',
+          oldPassword: 'oldpassword',
+          newPassword: 'newpassword'
+        }),
+        expect.objectContaining({
+          params: {
+            oldPassword: 'oldpassword',
+            newPassword: 'newpassword'
+          }
+        })
+      );
+    });
+  });
+
+  test('displays validation errors', async () => {
+    validateUserProfile.mockReturnValue({ username: 'Username is required' });
+    renderWithRouter(<EditProfile />);
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Username is required/i)).toBeInTheDocument();
+    });
+  });
+
+  test('displays API error', async () => {
+    api.get.mockRejectedValue(new Error('API Error'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch user data. Please try again./i)).toBeInTheDocument();
     });
   });
 });

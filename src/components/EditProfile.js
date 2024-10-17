@@ -52,7 +52,9 @@ const EditProfile = () => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
       try {
-        await api.put(`/api/user/profile/${userId}`, user);
+        await api.put(`/api/user/profile/${userId}`, user, {
+          params: { oldPassword: user.oldPassword, newPassword: user.newPassword }
+        });
         navigate('/app');
       } catch (error) {
         setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
@@ -99,6 +101,7 @@ const EditProfile = () => {
           type="password" 
           value={user.newPassword} 
           onChange={handleInputChange}
+          error={errors.newPassword}
         />
         <button type="submit">Save Changes</button>
       </form>
