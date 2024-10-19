@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import './ViewOrganisationUsers.css';
-import { Link } from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
+import api from "../utils/api";
 
 
 const ViewUsers = () => {
+  const { id } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: 'Galih Ibrahim Kurniawan',
-      username: 'Sirered',
-      position: 'CHIEF EXECUTIVE OFFICER',
-      email: 'emailme@example.com',
-      avatar: 'https://randomuser.me/api/portraits/men/79.jpg', // Replace with actual avatar URL
-      organisation: 'ICHIBAN GROUP',
-    },
-    // Add more users here
+
   ]);
 
   // Replace this with a function to fetch user data from your backend
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('https://your-api-endpoint/users'); // Replace with your API endpoint
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const fetchOrganizationUsers = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/api/organizations/${id}/users`);
+        setUsers(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch organisation users');
+        console.error('Error fetching organisation users:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchOrganizationUsers();
+    }
+  }, [id]);
 
   return (
     <div className="view-users" data-testid="viewUsers-1">
@@ -49,7 +50,7 @@ const ViewUsers = () => {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
-              <td><img src={user.avatar} alt={user.name} className="user-avatar" /></td>
+              <td><img src={user.avatar} alt={user.username} className="user-avatar" /></td>
               <td>{user.name}</td>
               <td>{user.username}</td>
               <td>{user.position}</td>
@@ -64,7 +65,7 @@ const ViewUsers = () => {
         </tbody>
       </table>
     <button className="add-users-button">
-        <Link to="app/configOrganisation/addUserOrgAdmin">ADD USER</Link>
+        <Link to={`/app/configOrganisation/${id}/addUserOrgAdmin`}>ADD USER</Link>
     </button>
     </div>
   );
