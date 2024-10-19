@@ -31,15 +31,16 @@ describe('Register Component', () => {
     const heading = screen.getByRole('heading', { name: /register/i });
     expect(heading).toBeInTheDocument();
 
-    const usernameInput = screen.getByLabelText(/username/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    // These should use getByPlaceholderText if not labeled by a <label>
+    const usernameInput = screen.getByPlaceholderText(/username/i);  // Adjust based on actual placeholders or labels
+    const passwordInput = screen.getByPlaceholderText(/password/i);
     expect(usernameInput).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
 
     const registerButton = screen.getByRole('button', { name: /register/i });
     expect(registerButton).toBeInTheDocument();
 
-    const loginLink = screen.getByText(/login instead/i);
+    const loginLink = screen.getByRole('link', { name: /login instead/i });
     expect(loginLink).toBeInTheDocument();
   });
 
@@ -50,8 +51,9 @@ describe('Register Component', () => {
       </MemoryRouter>
     );
 
-    const usernameInput = screen.getByLabelText(/username/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    // Use placeholder or labels accordingly
+    const usernameInput = screen.getByPlaceholderText(/username/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
 
     fireEvent.change(usernameInput, { target: { value: 'newuser' } });
     fireEvent.change(passwordInput, { target: { value: 'newpassword' } });
@@ -68,7 +70,6 @@ describe('Register Component', () => {
     );
 
     const registerButton = screen.getByRole('button', { name: /register/i });
-
     fireEvent.click(registerButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/app');
