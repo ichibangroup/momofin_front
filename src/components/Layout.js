@@ -96,14 +96,20 @@ const Layout = () => {
                             )}
                         </ul>
 
-                        <div className="hamburger" onClick={toggleSidebar} data-testid="hamburger">
+                        <button 
+                            className="hamburger"
+                            onClick={toggleSidebar}
+                            data-testid="hamburger"
+                            aria-label="Toggle sidebar"
+                            type="button"
+                        >
                             <div className="inner_hamburger">
                                 <span className="arrow">
                                     <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left" />
                                     <FontAwesomeIcon icon={faLongArrowAltRight} className="fa-long-arrow-alt-right" />
                                 </span>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
