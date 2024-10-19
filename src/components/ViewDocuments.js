@@ -58,6 +58,18 @@ function Page() {
   return (
       <div className="page-container">
         <h1 className="page-title">Your Documents</h1>
+        {/* Modal */}
+        {showModal && (
+            <div className="modal-backdrop">
+              <div className="modal">
+                <h2>Error</h2>
+                <p>{errorMessage}</p>
+                <button onClick={closeModal} className="modal-close-button">
+                  Close
+                </button>
+              </div>
+            </div>
+        )}
         <input
             type="text"
             className="search-input"
@@ -92,18 +104,6 @@ function Page() {
               ))}
           </tbody>
         </table>
-        {/* Modal */}
-        {showModal && (
-            <div className="modal-backdrop">
-              <div className="modal">
-                <h2>Error</h2>
-                <p>{errorMessage}</p>
-                <button onClick={closeModal} className="modal-close-button">
-                  Close
-                </button>
-              </div>
-            </div>
-        )}
       </div>
   );
 }

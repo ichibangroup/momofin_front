@@ -1,25 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import '../ViewOrgUsers.css';
+import api from "../utils/api";
+import {Link, useParams} from "react-router-dom";
 
 function UserManagement(orgId) {
+    const { id } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [users, setUsers] = useState([
-        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', position: 'CEO', email: 'email.yeah@gmail.com' },
-        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', position: 'CTO', email: 'email.yeah@gmail.com' },
-        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', position: 'Head of Diagnostics', email: 'email.yeah@gmail.com' },
-        { name: 'Gregorius Samuel Hutahaean', username: 'FreddyFazbear', position: 'Mere Peasant', email: 'email.yeah@gmail.com' },
-        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', position: 'CEO', email: 'email.yeah@gmail.com' },
-        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', position: 'CTO', email: 'email.yeah@gmail.com' },
-        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', position: 'Head of Diagnostics', email: 'email.yeah@gmail.com' },
-        { name: 'Gregorius Samuel Hutahaean', username: 'FreddyFazbear', position: 'Mere Peasant', email: 'email.yeah@gmail.com' },
     ]);
 
     useEffect(() => {
-        // to do, fetch user data from an API
-    }, []);
+        const fetchOrganizationUsers = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get(`/api/organizations/${id}/users`);
+                setUsers(response.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch organisation users');
+                console.error('Error fetching organisation users:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchOrganizationUsers();
+        }
+    }, [id]);
     
     return (
-        <div className="user-management">
-            <h1>View Ichiban Group Users</h1>
+        <div className="user-management" data-testid="viewUsers-1">
+            <h1>View Organisation Users</h1>
             <div className="headers">
                 <div><span>Icon</span></div>
                 <div><span>Name</span></div>
@@ -43,7 +56,7 @@ function UserManagement(orgId) {
                     </div>
                 ))}
             </div>
-            <button className="add-btn">ADD USERS</button>
+            <button className="add-btn"><Link to={`/app/configOrganisation/${id}/addUserOrgAdmin`}>ADD USER</Link></button>
         </div>
     );
 }

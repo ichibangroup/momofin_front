@@ -13,22 +13,19 @@ describe('AddUserForm', () => {
   const mockFormData = {
     name: 'John Doe',
     username: 'johndoe',
-    password: 'password123',
+    password: 'password123456', // Updated to meet 10 character requirement
     email: 'john@example.com',
     position: 'Developer'
   };
 
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
-    // Reset window.alert
     global.alert = jest.fn();
   });
 
   it('renders form with correct title and all input fields', () => {
     render(<AddUserForm title={mockTitle} />);
 
-    // Check title
     expect(screen.getByText(mockTitle)).toBeInTheDocument();
 
     // Check all form inputs are present
@@ -37,8 +34,6 @@ describe('AddUserForm', () => {
     expect(screen.getByLabelText(/password:/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email:/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/position:/i)).toBeInTheDocument();
-
-    // Check submit button
     expect(screen.getByText(/register user/i)).toBeInTheDocument();
   });
 
@@ -51,14 +46,12 @@ describe('AddUserForm', () => {
     const emailInput = screen.getByLabelText(/email:/i);
     const positionInput = screen.getByLabelText(/position:/i);
 
-    // Type in each field
     await userEvent.type(nameInput, mockFormData.name);
     await userEvent.type(usernameInput, mockFormData.username);
     await userEvent.type(passwordInput, mockFormData.password);
     await userEvent.type(emailInput, mockFormData.email);
     await userEvent.type(positionInput, mockFormData.position);
 
-    // Check if values are updated
     expect(nameInput).toHaveValue(mockFormData.name);
     expect(usernameInput).toHaveValue(mockFormData.username);
     expect(passwordInput).toHaveValue(mockFormData.password);
@@ -66,8 +59,38 @@ describe('AddUserForm', () => {
     expect(positionInput).toHaveValue(mockFormData.position);
   });
 
-  it('submits form successfully if valid', async () => {
-    // Mock successful API response
+  it('displays validation errors for empty fields', async () => {
+    render(<AddUserForm title={mockTitle} />);
+
+    // Submit empty form
+    await userEvent.click(screen.getByText(/register user/i));
+
+    // Check for error messages
+    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    expect(screen.getByText('Username is required')).toBeInTheDocument();
+    expect(screen.getByText('Password must be at least 10 characters')).toBeInTheDocument();
+    expect(screen.getByText('Email is invalid')).toBeInTheDocument();
+    expect(screen.getByText('Position is required')).toBeInTheDocument();
+
+    // API should not be called
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('clears error message when user starts typing', async () => {
+    render(<AddUserForm title={mockTitle} />);
+
+    // Submit empty form to trigger errors
+    await userEvent.click(screen.getByText(/register user/i));
+    expect(screen.getByText('Name is required')).toBeInTheDocument();
+
+    // Type in name field
+    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), 'J');
+
+    // Error message should be gone
+    expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+  });
+
+  it('submits form successfully when all fields are valid', async () => {
     api.post.mockResolvedValueOnce({ status: 200, data: { message: 'Success' } });
 
     render(<AddUserForm title={mockTitle} />);
@@ -79,10 +102,8 @@ describe('AddUserForm', () => {
     await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
     await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
 
-    // Submit the form
     await userEvent.click(screen.getByText(/register user/i));
 
-    // Check if API was called with correct data
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/auth/register', mockFormData);
       expect(global.alert).toHaveBeenCalledWith('Registration successful!');
@@ -96,25 +117,27 @@ describe('AddUserForm', () => {
     });
   });
 
-  it('does not submit form when required fields are missing', async () => {
+  it('displays validation error for short password', async () => {
     render(<AddUserForm title={mockTitle} />);
 
-    // Submit the form without filling the fields
+    await userEvent.type(screen.getByLabelText(/password:/i), 'short');
     await userEvent.click(screen.getByText(/register user/i));
 
-    // Expect HTML5 validation error for required fields
-    expect(screen.getByLabelText('Name:', { exact: true })).toBeInvalid();
-    expect(screen.getByLabelText(/username:/i)).toBeInvalid();
-    expect(screen.getByLabelText(/password:/i)).toBeInvalid();
-    expect(screen.getByLabelText(/email:/i)).toBeInvalid();
-    expect(screen.getByLabelText(/position:/i)).toBeInvalid();
+    expect(screen.getByText('Password must be at least 10 characters')).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
 
-    // API should not be called
+  it('displays validation error for invalid email', async () => {
+    render(<AddUserForm title={mockTitle} />);
+
+    await userEvent.type(screen.getByLabelText(/email:/i), 'invalid-email');
+    await userEvent.click(screen.getByText(/register user/i));
+
+    expect(screen.getByText('Email is invalid')).toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
   });
 
   it('handles API error during submission', async () => {
-    // Mock API error
     const errorMessage = 'Registration failed';
     api.post.mockRejectedValueOnce({
       response: {
@@ -133,37 +156,17 @@ describe('AddUserForm', () => {
     await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
     await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
 
-    // Submit the form
     await userEvent.click(screen.getByText(/register user/i));
 
-    // Check if error alert was shown
     await waitFor(() => {
       expect(global.alert).toHaveBeenCalledWith(errorMessage);
+
+      // Form data should remain
+      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
+      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
+      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
+      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
+      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
     });
-
-    // Check if form data remains (not cleared)
-    expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
-    expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
-    expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
-    expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
-    expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
-  });
-
-  it('validates email format', async () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    const emailInput = screen.getByLabelText(/email:/i);
-
-    // Type invalid email
-    await userEvent.type(emailInput, 'invalid-email');
-
-    // Try to submit the form
-    await userEvent.click(screen.getByText(/register user/i));
-
-    // Check if HTML5 validation catches invalid email
-    expect(emailInput).toBeInvalid();
-
-    // API should not be called
-    expect(api.post).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,26 @@
 import React, { useState } from 'react';
-import api from '../utils/api'; // Assuming this is the correct path to your api file
+import api from '../utils/api';
+
+// Move FormField outside the main component
+const FormField = ({ id, label, type = 'text', value, onChange, error }) => (
+    <div className="mb-3">
+      <label htmlFor={id} className="block mb-1 font-medium">
+        {label}:
+      </label>
+      <input
+          type={type}
+          id={id}
+          value={value}
+          onChange={onChange}
+          className={`w-full p-2 border rounded ${error ? 'border-red-500' : 'border-gray-300'}`}
+      />
+      {error && (
+          <p className="mt-1 text-sm text-red-500">
+            {error}
+          </p>
+      )}
+    </div>
+);
 
 const AddUserForm = ({ title, onSubmit }) => {
   const [errors, setErrors] = useState({});
@@ -12,16 +33,23 @@ const AddUserForm = ({ title, onSubmit }) => {
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value
-    });
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+
+    if (errors[id]) {
+      setErrors(prev => ({
+        ...prev,
+        [id]: ''
+      }));
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Basic validation rules
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.username.trim()) newErrors.username = 'Username is required';
     if (!formData.password || formData.password.length < 10) newErrors.password = 'Password must be at least 10 characters';
@@ -29,8 +57,6 @@ const AddUserForm = ({ title, onSubmit }) => {
     if (!formData.position.trim()) newErrors.position = 'Position is required';
 
     setErrors(newErrors);
-
-    // Return whether the form is valid
     return Object.keys(newErrors).length === 0;
   };
 
@@ -38,14 +64,13 @@ const AddUserForm = ({ title, onSubmit }) => {
     event.preventDefault();
 
     if (!validateForm()) {
-      return; // Stop form submission if validation fails
+      return;
     }
 
     try {
       const response = await api.post('/auth/register', formData);
 
       if (response.status === 200) {
-        // Clear form
         setFormData({
           name: '',
           username: '',
@@ -53,83 +78,64 @@ const AddUserForm = ({ title, onSubmit }) => {
           email: '',
           position: ''
         });
-
-        // You might want to add success message handling here
         alert('Registration successful!');
       }
     } catch (error) {
-      // Handle errors
       console.error('Registration error:', error);
       alert(error.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
-      <div className="container mt-5">
-        <h1 className="text-3xl font-bold">{title}</h1>
-        <div className="card">
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="name" className="form-label">Name:</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    id="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="username" className="form-label">Username:</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    id="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password:</label>
-                <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email:</label>
-                <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="position" className="form-label">Position:</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    id="position"
-                    value={formData.position}
-                    onChange={handleChange}
-                    required
-                />
-              </div>
-              <button type="submit" className="btn btn-primary">
-                Register User
-              </button>
-            </form>
-          </div>
+      <div className="container mx-auto mt-8 max-w-2xl">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h1 className="text-2xl font-bold mb-6">{title}</h1>
+          <form onSubmit={handleSubmit}>
+            <FormField
+                id="name"
+                label="Name"
+                value={formData.name}
+                onChange={handleChange}
+                error={errors.name}
+            />
+            <FormField
+                id="username"
+                label="Username"
+                value={formData.username}
+                onChange={handleChange}
+                error={errors.username}
+            />
+            <FormField
+                id="password"
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+            />
+            <FormField
+                id="email"
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+            />
+            <FormField
+                id="position"
+                label="Position"
+                value={formData.position}
+                onChange={handleChange}
+                error={errors.position}
+            />
+
+            <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Register User
+            </button>
+          </form>
         </div>
       </div>
   );
