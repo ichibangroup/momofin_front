@@ -34,19 +34,18 @@ const Layout = () => {
                     <ul>
                         <li><Link to="/app">Home</Link></li>
                         <li><Link to="verify">Upload and Verify</Link></li>
-                        <li><Link to="viewUsers">View Users</Link></li>
-                        <li><Link to="/viewOrganisation">View Organisations</Link></li>
-                        <li><Link to="/configOrganisation">Config Organisation</Link></li>
+                        <li><Link to="momofinDashboard">Momofin Dashboard </Link> </li>
+                        <li><Link to="configOrganisation">Config Organisation</Link></li>
                         <li>
                         {user && (
                             <div className="user-dropdown">
                                 <button onClick={toggleDropdown} className="dropdown-button">
-                                    {user.name} <span>&#x25BC;</span> {/* Down arrow */}
+                                    {user.name} <span>&#x25BC;</span>
                                 </button>
                             {dropdownOpen && (
                                 <ul className="dropdown-menu">
                                     <li>
-                                        <Link to="/editProfile">
+                                        <Link to={`editProfile/${user.userId}`}>
                                             <button>Edit Profile</button>
                                         </Link>
                                     </li>

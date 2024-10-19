@@ -129,17 +129,4 @@ describe('Login Component', () => {
     expect(forgotPasswordLink).toBeInTheDocument();
     expect(forgotPasswordLink.getAttribute('href')).toBe('/forgot-password');
   });
-
-  test('navigates to signup page when "Sign Up" button is clicked', () => {
-    const mockNavigate = jest.fn();
-    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
-
-    renderWithRouter(<Login />);
-
-    const signUpButton = screen.getByRole('button', { name: /sign up/i });
-
-    fireEvent.click(signUpButton);
-
-    expect(mockNavigate).toHaveBeenCalledWith('/signup');
-  });
 });

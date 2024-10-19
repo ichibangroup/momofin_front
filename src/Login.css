@@ -1,101 +1,92 @@
+/* Main container for centering the form */
 .login-container {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .login-form-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #fff;
-  }
-  
-  .login-welcome-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #A0C6E4;
-  }
-  
-  .login-form {
-    max-width: 300px;
-    width: 100%;
-    padding: 20px;
-  }
-  
-  h2 {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  input {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  button.btn-signin {
-    width: 100%;
-    padding: 10px;
-    background-color: #EB774D;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  button.btn-signin:hover {
-    background-color: #d45a2e;
-  }
-  
-  .forgot-password {
-    display: block;
-    text-align: center;
-    margin-top: 10px;
-    color: #333;
-    text-decoration: none;
-  }
-  
-  .forgot-password:hover {
-    text-decoration: underline;
-  }
-  
-  .login-welcome-container h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
-  }
-  
-  .login-welcome-container p {
-    margin-bottom: 20px;
-    font-size: 14px;
-    text-align: center;
-    color: #333;
-  }
-  
-.login-welcome-container .btn-signup {
-    padding: 10px 20px;
-    background-color: #EB774D ; 
-    color: white; 
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  .login-welcome-container .btn-signup:hover {
-    background-color: #d45a2e;
-  }
-  
-  
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4; /* light background */
+}
+
+/* Styling for the login form */
+.login-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form {
+  background-color: #A0C6E4; /* light grey background for the form */
+  padding: 40px;
+  border-radius: 20px; /* rounded corners */
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 400px; /* form width */
+}
+
+/* Logo positioning */
+.logo img {
+  width: 60px;
+  height: auto;
+  margin-bottom: 20px;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+/* Title */
+h2 {
+  font-family: 'Courier New', Courier, monospace; /* matching font style */
+  font-size: 28px;
+  margin-bottom: 30px;
+  text-align: left;
+  width: 100%; /* Aligns text with form width */
+}
+
+/* Form input styling */
+.form-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #000; /* border line */
+  padding-bottom: 5px;
+}
+
+.form-group i {
+  font-size: 1.2rem;
+  margin-right: 10px; /* spacing between icon and input */
+}
+
+.form-group input {
+  border: none;
+  background: none;
+  outline: none;
+  flex: 1;
+  font-size: 1rem;
+}
+
+/* Button */
+.btn-signin {
+  background-color: #EB774D;/* matching grey button */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px; /* rounded button */
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.btn-signin:hover {
+  background-color: #808080; /* darker on hover */
+}
+
+/* Error message styling */
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
