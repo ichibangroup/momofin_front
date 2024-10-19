@@ -35,7 +35,7 @@ const Layout = () => {
     };
 
     return (
-        <div className={`wrapper ${isActive ? 'active' : ''}`}>
+        <div className={`wrapper ${isActive ? 'active' : ''}`} data-testid="wrapper">
             <div className="top_navbar">
                 <div className="logo">
                     <Link to="/app">MOMOFIN</Link>
@@ -96,7 +96,7 @@ const Layout = () => {
                             )}
                         </ul>
 
-                        <div className="hamburger" onClick={toggleSidebar}>
+                        <div className="hamburger" onClick={toggleSidebar} data-testid="hamburger">
                             <div className="inner_hamburger">
                                 <span className="arrow">
                                     <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left" />
