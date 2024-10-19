@@ -41,12 +41,13 @@ function App() {
           <Route path="viewDocuments" element={<Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense>} /> 
           <Route path="momofinDashboard" element={<Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense>} /> 
           <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
-          <Route path="configOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
           <Route path="editProfile/:userId" element={<Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense>} />
           <Route path="configOrganisation/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
           <Route path="addUserMomofinAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense>} />
-          <Route path="configOrganisation/viewOrganisationUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisationUsers /></Suspense>} />
+          <Route path="configOrganisation/:id/viewOrganisationUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisationUsers /></Suspense>} />
           <Route path="momofinDashboard/addNewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense>} />
+          <Route path="configOrganisation/:id" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
+          <Route path="configOrganisation/:id/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
         </Route>
 
         {/* Auth layout routes */}

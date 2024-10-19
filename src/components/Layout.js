@@ -35,10 +35,11 @@ const Layout = () => {
                         <li><Link to="/app">Home</Link></li>
                         <li><Link to="verify">Upload and Verify</Link></li>
                         <li><Link to="momofinDashboard">Momofin Dashboard </Link> </li>
-                        <li><Link to="configOrganisation">Config Organisation</Link></li>
+                        <li><Link to={`configOrganisation/${user?.organization?.organizationId}`}>Config
+                            Organisation</Link></li>
                         <li>
-                        {user && (
-                            <div className="user-dropdown">
+                            {user && (
+                                <div className="user-dropdown">
                                 <button onClick={toggleDropdown} className="dropdown-button">
                                     {user.name} <span>&#x25BC;</span>
                                 </button>
