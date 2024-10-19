@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
 import '../ViewOrgUsers.css';
 
 function UserManagement(orgId) {
-    const [users, setUsers] = useState([]); 
+    const [users, setUsers] = useState([
+        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', position: 'CEO', email: 'email.yeah@gmail.com' },
+        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', position: 'CTO', email: 'email.yeah@gmail.com' },
+        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', position: 'Head of Diagnostics', email: 'email.yeah@gmail.com' },
+        { name: 'Gregorius Samuel Hutahaean', username: 'FreddyFazbear', position: 'Mere Peasant', email: 'email.yeah@gmail.com' },
+        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', position: 'CEO', email: 'email.yeah@gmail.com' },
+        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', position: 'CTO', email: 'email.yeah@gmail.com' },
+        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', position: 'Head of Diagnostics', email: 'email.yeah@gmail.com' },
+        { name: 'Gregorius Samuel Hutahaean', username: 'FreddyFazbear', position: 'Mere Peasant', email: 'email.yeah@gmail.com' },
+    ]);
 
     useEffect(() => {
-        handleGetUsers();
+        // to do, fetch user data from an API
     }, []);
-
-    const handleGetUsers = async () => {
-        try {
-        const response = await api.get('/doc/view');
-        setUsers(response.data.documents);
-        } catch (error) {
-        console.error('Failed to fetch users:', error);
-        }
-    };
-
+    
     return (
         <div className="user-management">
             <h1>View Ichiban Group Users</h1>
