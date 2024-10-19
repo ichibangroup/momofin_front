@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import api from '../utils/api'; // import the configured axios instance
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCogs, faUpload, faHome, faBorderAll, faAddressBook, faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut} from '@fortawesome/free-solid-svg-icons';
+import api from '../utils/api';
 import './Layout.css';
-
 
 const Layout = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [isActive, setIsActive] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -21,53 +23,95 @@ const Layout = () => {
         };
 
         fetchUserInfo();
-    }, []); // Fetch the data when the component mounts
+    }, []);
 
-    const toggleDropdown = () => {
-        setDropdownOpen(!dropdownOpen);
+    const handleLogout = () => {
+        // Implement logout logic here
+        navigate('/login');
+    };
+
+    const toggleSidebar = () => {
+        setIsActive(!isActive);
     };
 
     return (
-        <div>
-            <header>
-                <nav>
-                    <ul>
-                        <li><Link to="/app">Home</Link></li>
-                        <li><Link to="verify">Upload and Verify</Link></li>
-                        <li><Link to="momofinDashboard">Momofin Dashboard </Link> </li>
-                        <li><Link to="configOrganisation">Config Organisation</Link></li>
-                        <li>
-                        {user && (
-                            <div className="user-dropdown">
-                                <button onClick={toggleDropdown} className="dropdown-button">
-                                    {user.name} <span>&#x25BC;</span>
-                                </button>
-                            {dropdownOpen && (
-                                <ul className="dropdown-menu">
+        <div className={`wrapper ${isActive ? 'active' : ''}`}>
+            <div className="top_navbar">
+                <div className="logo">
+                    <Link to="/app">MOMOFIN</Link>
+                </div>
+                <div className="top_menu">
+                    <div className="home_link">
+                        <Link to="/app">
+                            <span className="icon"><FontAwesomeIcon icon={faHome} /></span>
+                            <span>Home</span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            <div className="main_body">
+                <div className="sidebar_menu">
+                    <div className="inner__sidebar_menu">
+                        <ul>
+                            <li>
+                                <Link to="/app">
+                                    <span className="icon"><FontAwesomeIcon icon={faBorderAll} /></span>
+                                    <span className="list">Dashboard</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="verify">
+                                    <span className="icon"><FontAwesomeIcon icon={faUpload} /></span>
+                                    <span className="list">Upload and Verify</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="momofinDashboard">
+                                    <span className="icon"><FontAwesomeIcon icon={faAddressBook} /></span>
+                                    <span className="list">Momofin Dashboard</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="configOrganisation">
+                                    <span className="icon"><FontAwesomeIcon icon={faCogs} /></span>
+                                    <span className="list">Config Organisation</span>
+                                </Link>
+                            </li>
+                            {user && (
+                                <>
                                     <li>
                                         <Link to={`editProfile/${user.userId}`}>
-                                            <button>Edit Profile</button>
+                                            <span className="icon"><FontAwesomeIcon icon={faAddressCard} /></span>
+                                            <span className="list">Edit Profile</span>
                                         </Link>
                                     </li>
-                                    <li><button>Log Out</button></li>
-                                </ul>
+                                    <li>
+                                        <a href="#" onClick={handleLogout}>
+                                            <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
+                                            <span className="list">Log Out</span>
+                                        </a>
+                                    </li>
+                                </>
                             )}
+                        </ul>
+
+                        <div className="hamburger" onClick={toggleSidebar}>
+                            <div className="inner_hamburger">
+                                <span className="arrow">
+                                    <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left" />
+                                    <FontAwesomeIcon icon={faLongArrowAltRight} className="fa-long-arrow-alt-right" />
+                                </span>
                             </div>
-                        )}
-                        </li>
-                    </ul>
-                </nav>
+                        </div>
+                    </div>
+                </div>
 
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-            </header>
-
-            <main>
-                <Outlet />
-            </main>
-
-            <footer>
-                <p>&copy; 2024 Your App Name. All rights reserved.</p>
-            </footer>
+                <div className="container">
+                    {error && <p className="error-message">{error}</p>}
+                    <Outlet />
+                </div>
+            </div>
         </div>
     );
 };
