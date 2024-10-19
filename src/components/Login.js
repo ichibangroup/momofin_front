@@ -29,6 +29,7 @@ function Login({ onSubmit }) {
     };
 
     try {
+      setAuthToken();
       const response = await api.post('/auth/login', payload);
       const { jwt } = response.data;
       setAuthToken(jwt);
