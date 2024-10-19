@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ViewUsers from '../ViewUsers';
 import '@testing-library/jest-dom';
+import api from "../../utils/api";
 
 const mockUsers = [
   {
@@ -14,6 +15,7 @@ const mockUsers = [
   }
 ];
 
+jest.mock('../../utils/api');
 // Mock the fetch function
 global.fetch = jest.fn(() =>
   Promise.resolve({
@@ -24,16 +26,22 @@ global.fetch = jest.fn(() =>
 describe('ViewUsers component', () => {
   beforeEach(() => {
     fetch.mockClear(); // Clear the mock before each test
+
+    api.get.mockResolvedValue({
+      data: mockUsers,
+      status: 200
+    });
   });
 
   test('renders the ViewUsers component correctly', async () => {
+
     render(<ViewUsers />);
 
     // Check if the title renders
     expect(screen.getByText('View All Users')).toBeInTheDocument();
 
     // Ensure the fetch is called once
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
 
     // Check if the user data is rendered correctly
     await waitFor(() => {
@@ -44,7 +52,7 @@ describe('ViewUsers component', () => {
     });
 
     // Check for avatar
-    expect(screen.getByAltText('Galih Ibrahim Kurniawan')).toBeInTheDocument();
+    expect(screen.getByAltText('Sirered')).toBeInTheDocument();
 
     // Check for actions buttons
     expect(screen.getByText('EDIT')).toBeInTheDocument();
@@ -53,6 +61,8 @@ describe('ViewUsers component', () => {
 
   test('clicking the edit button', async () => {
     render(<ViewUsers />);
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
 
     // Wait for user data to be rendered
     await waitFor(() => {
@@ -69,6 +79,8 @@ describe('ViewUsers component', () => {
   test('clicking the delete button', async () => {
     render(<ViewUsers />);
 
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
     // Wait for user data to be rendered
     await waitFor(() => {
       expect(screen.getByText('DELETE')).toBeInTheDocument();
@@ -82,12 +94,24 @@ describe('ViewUsers component', () => {
   });
 
   test('handles fetch failure gracefully', async () => {
-    fetch.mockImplementationOnce(() => Promise.reject('API error'));
+    api.get.mockRejectedValue({
+      response: {
+        status: 404,
+        data: { message: 'Users not found' }
+      }
+    });
 
     render(<ViewUsers />);
 
     // Ensure the fetch was called
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    await expect(api.get('/api/momofin-admin/users'))
+        .rejects
+        .toMatchObject({
+          response: {
+            status: 404,
+            data: { message: 'Users not found' }
+          }
+        });
 
     // Since no error handling UI is implemented, we only check if the table is still rendered
     expect(screen.getByTestId('viewUsers-1')).toBeInTheDocument();
