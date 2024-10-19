@@ -19,7 +19,7 @@ const AddUserOrgAdmin = lazy(() => import('./components/AddUserOrgAdmin'));
 const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'));
 const ViewOrganisationUsers = lazy(() => import('./components/ViewOrganisationUsers'));
 const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
-
+const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers')); 
 
 
 function App() {
@@ -48,6 +48,7 @@ function App() {
           <Route path="momofinDashboard/addNewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense>} />
           <Route path="configOrganisation/:id" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
           <Route path="configOrganisation/:id/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
+          <Route path="viewOrgUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrgUsers /></Suspense>} /> 
         </Route>
 
         {/* Auth layout routes */}
