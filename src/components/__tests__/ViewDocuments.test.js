@@ -43,7 +43,7 @@ describe('Page component tests', () => {
     await waitFor(() => {
       expect(screen.queryByText('Document1')).not.toBeInTheDocument();
       expect(screen.queryByText('Document2')).not.toBeInTheDocument();
-      expect(console.error).toHaveBeenCalledWith('Failed to fetch users:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith('Failed to fetch documents:', expect.any(Error));
     });
   });
 
@@ -76,6 +76,79 @@ describe('Page component tests', () => {
     await waitFor(() => {
       expect(screen.queryByText('Document1')).not.toBeInTheDocument();
       expect(screen.queryByText('Document2')).not.toBeInTheDocument();
+    });
+  });
+
+  test('opens the document in a new tab when "View" button is clicked', async () => {
+    const mockDocuments = {
+      data: {
+        documents: [
+          { documentId: '1', name: 'Document 1' },
+        ],
+      },
+    };
+
+    const mockViewResponse = {
+      data: { url: 'http://example.com/document.pdf' },
+    };
+
+    // Mock API calls
+    api.get
+        .mockResolvedValueOnce(mockDocuments) // Initial fetch
+        .mockResolvedValueOnce(mockViewResponse); // Fetch document URL
+
+    render(<Page />);
+
+    // Wait for documents to be displayed
+    await waitFor(() => {
+      expect(screen.getByText('Document 1')).toBeInTheDocument();
+    });
+
+    // Spy on `window.open`
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {});
+
+    // Click on the "View" button
+    const viewButton = screen.getByRole('button', { name: /view/i });
+    fireEvent.click(viewButton);
+
+    // Assert window.open was called with the correct URL
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalledWith('http://example.com/document.pdf', '_blank');
+    });
+
+    // Cleanup spy
+    openSpy.mockRestore();
+  });
+
+  test('displays an error if document fetching fails', async () => {
+    const mockDocuments = {
+      data: {
+        documents: [
+          { documentId: '1', name: 'Document 1' },
+        ],
+      },
+    };
+
+    // Mock successful fetch for documents
+    api.get.mockResolvedValueOnce(mockDocuments);
+
+    // Mock failed fetch for document URL
+    api.get.mockRejectedValueOnce(new Error('Failed to get document URL'));
+
+    render(<Page />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Document 1')).toBeInTheDocument();
+    });
+
+    const viewButton = screen.getByRole('button', { name: /view/i });
+    fireEvent.click(viewButton);
+
+    await waitFor(() => {
+      const errorText = screen.getByText('Failed to load document: An unknown error occurred')
+      expect(errorText).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Close'))
+      expect(errorText).not.toBeInTheDocument();
     });
   });
 });

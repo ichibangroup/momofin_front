@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import { validateLogin } from './LoginValidation';
 import '../Login.css';
 import api from '../utils/api';
@@ -11,9 +11,26 @@ function Login({ onSubmit }) {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [authMessage, setAuthMessage] = useState('');
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check for message from URL params (API redirects)
+    const urlMessage = searchParams.get('message');
+    if (urlMessage) {
+      setAuthMessage(decodeURIComponent(urlMessage));
+    }
+    // Check for message from navigation state (Protected Route redirects)
+    else if (location.state?.message) {
+      setAuthMessage(location.state.message);
+    }
+  }, [location, searchParams]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setAuthMessage('');
 
     // Perform validation
     const validationErrors = validateLogin({ username, password });
@@ -29,6 +46,7 @@ function Login({ onSubmit }) {
     };
 
     try {
+      setAuthToken();
       const response = await api.post('/auth/login', payload);
       const { jwt } = response.data;
       setAuthToken(jwt);
@@ -38,7 +56,9 @@ function Login({ onSubmit }) {
         if (onSubmit) {
           onSubmit(response.data);
         }
-        navigate('/app');
+        // Redirect to the originally requested page or default to /app
+        const redirectTo = location.state?.from || '/app';
+        navigate(redirectTo);
       } else {
         throw new Error('Login failed');
       }
@@ -50,10 +70,6 @@ function Login({ onSubmit }) {
         setErrors({ server: 'Login failed. Please try again.' });
       }
     }
-  };
-
-  const handleSignUp = () => {
-    navigate('/signup');
   };
 
   return (
@@ -95,6 +111,12 @@ function Login({ onSubmit }) {
               {errors.password && <span className="error">{errors.password}</span>}
             </div>
             {errors.server && <span className="error">{errors.server}</span>}
+            {/* Display auth message if present */}
+            {authMessage && (
+                <div className="auth-message">
+                  {authMessage}
+                </div>
+            )}
             <button type="submit" className="btn-signin">Sign In</button>
             <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
           </form>
