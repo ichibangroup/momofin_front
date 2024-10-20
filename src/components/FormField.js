@@ -34,9 +34,4 @@ FormField.propTypes = {
     error: PropTypes.string
 };
 
-FormField.defaultProps = {
-    type: 'text',
-    error: null
-};
-
 export default FormField;

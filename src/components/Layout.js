@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCogs, faUpload, faHome, faBorderAll, faAddressBook, faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut} from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
+import {setAuthToken} from "../utils/auth";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -26,6 +27,7 @@ const Layout = () => {
     }, []);
 
     const handleLogout = () => {
+        setAuthToken();
         // Implement logout logic here
         navigate('/login');
     };
@@ -87,7 +89,7 @@ const Layout = () => {
                                         </Link>
                                     </li>
                                     <li>
-                                        <a href="#" onClick={handleLogout}>
+                                        <a href="" onClick={handleLogout}>
                                             <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
                                             <span className="list">Log Out</span>
                                         </a>
