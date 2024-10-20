@@ -5,6 +5,7 @@ import AuthLayout from './components/AuthLayout';
 import LoadingIndicator from './components/LoadingIndicator';
 import Login from './components/Login';
 import Register from './components/Register';
+import ProtectedRoute from './utils/ProtectedRoute';
 
 // Lazy load other components
 const Home = lazy(() => import('./components/Home'));
@@ -35,20 +36,20 @@ function App() {
 
         {/* Main Layout */}
         <Route path="/app" element={<Layout />}>
-          <Route path="/app" element={<Suspense fallback={<LoadingIndicator />}><Home /></Suspense>} />
-          <Route path="verify" element={<Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense>} />
-          <Route path="viewUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense>} />
-          <Route path="viewDocuments" element={<Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense>} /> 
-          <Route path="momofinDashboard" element={<Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense>} /> 
-          <Route path="viewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense>} />
-          <Route path="editProfile/:userId" element={<Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense>} />
-          <Route path="configOrganisation/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
-          <Route path="addUserMomofinAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense>} />
-          <Route path="configOrganisation/:id/viewOrganisationUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrgUsers /></Suspense>} />
-          <Route path="momofinDashboard/addNewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense>} />
-          <Route path="configOrganisation/:id" element={<Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense>} />
-          <Route path="configOrganisation/:id/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
-          <Route path="viewOrgUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrgUsers /></Suspense>} /> 
+          <Route path="/app" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><Home /></Suspense></ProtectedRoute>} />
+          <Route path="verify" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense></ProtectedRoute>} />
+          <Route path="viewUsers" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense></ProtectedRoute>} />
+          <Route path="viewDocuments" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense></ProtectedRoute>} />
+          <Route path="momofinDashboard" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense></ProtectedRoute>} />
+          <Route path="viewOrganisation" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense></ProtectedRoute>} />
+          <Route path="editProfile/:userId" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense></ProtectedRoute>} />
+          <Route path="configOrganisation/addUserOrgAdmin" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense></ProtectedRoute>} />
+          <Route path="addUserMomofinAdmin" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense></ProtectedRoute>} />
+          <Route path="configOrganisation/:id/viewOrganisationUsers" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewOrgUsers /></Suspense></ProtectedRoute>} />
+          <Route path="momofinDashboard/addNewOrganisation" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense></ProtectedRoute>} />
+          <Route path="configOrganisation/:id" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ConfigOrganisation /></Suspense></ProtectedRoute>} />
+          <Route path="configOrganisation/:id/addUserOrgAdmin" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense></ProtectedRoute>} />
+          <Route path="viewOrgUsers" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewOrgUsers /></Suspense></ProtectedRoute>} />
         </Route>
 
         {/* Auth layout routes */}
