@@ -17,7 +17,7 @@ jest.mock('react-router-dom', () => ({
 const mockOrganisation = {
   name: 'ICHIBAN GROUP',
   industry: 'Medicine',
-  address: '25 Plainsboro Rd, Princeton, NJ 08540, United States',
+  location: '25 Plainsboro Rd, Princeton, NJ 08540, United States',
   description: '',
   mainAdmin: '',
 }
@@ -96,7 +96,7 @@ describe('ConfigOrganisation component',  () => {
       expect(descriptionInput.value).toBe('New Description');
     });
 
-    expect(api.put).toHaveBeenCalledWith('/api/organizations/123',  {"address": "123 New Address", "description": "New Description", "industry": "Tech", "mainAdmin": "", "name": "New Group Name"});
+    expect(api.put).toHaveBeenCalledWith('/api/organizations/123',  {"location": "123 New Address", "description": "New Description", "industry": "Tech", "mainAdmin": "", "name": "New Group Name"});
   });
 
   test('renders the ADD USER and VIEW ORG USERS LIST links', async () => {
@@ -170,7 +170,7 @@ describe('ConfigOrganisation component',  () => {
         data: {
           name: 'Test Org',
           industry: 'Tech',
-          address: '123 Test St',
+          location: '123 Test St',
           description: 'Test Description',
           mainAdmin: 'Admin User'
         }
@@ -264,7 +264,7 @@ describe('ConfigOrganisation component',  () => {
       resolvePromise({ data: {
           name: 'Test Org',
           industry: 'Tech',
-          address: '123 Test St',
+          location: '123 Test St',
           description: 'Test Description',
           mainAdmin: 'Admin User'
         }});
