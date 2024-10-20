@@ -6,8 +6,8 @@ import api from "../utils/api";
 
 const ViewOrganisation = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState(null);
   const [organizations, setOrganizations] = useState([
   ]);
 

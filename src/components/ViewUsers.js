@@ -3,8 +3,8 @@ import './ViewUsers.css';
 import api from "../utils/api";
 
 const ViewUsers = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState(null);
   const [users, setUsers] = useState([
 
   ]);

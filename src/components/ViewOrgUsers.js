@@ -5,8 +5,8 @@ import {Link, useNavigate, useParams} from "react-router-dom";
 
 function UserManagement(orgId) {
     const { id } = useParams();
-    const [loading, setLoading] = useState({});
-    const [error, setError] = useState({});
+    const [, setLoading] = useState({});
+    const [, setError] = useState({});
     const navigate = useNavigate();
     const [users, setUsers] = useState([
     ]);
