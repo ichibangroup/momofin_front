@@ -1,120 +1,116 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { act } from 'react-dom/test-utils';
 import Layout from '../Layout';
-import api from '../../utils/api';
 
 // Mock the api module
 jest.mock('../../utils/api', () => ({
   get: jest.fn(),
 }));
 
-// Mock the Outlet component from react-router-dom
+// Mock the react-router-dom module
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+  useNavigate: () => jest.fn(),
 }));
 
-const renderWithRouter = (ui, { route = '/' } = {}) => {
-  window.history.pushState({}, 'Test page', route);
-  return render(ui, { wrapper: BrowserRouter });
-};
+// Import the mocked api after mocking
+import api from '../../utils/api';
 
 describe('Layout Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders Layout component with navigation links', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
+  test('renders layout correctly', async () => {
+    api.get.mockResolvedValue({ data: { userId: '123' } });
 
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      );
+    });
+
+    expect(screen.getByText('MOMOFIN')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Upload and Verify')).toBeInTheDocument();
     expect(screen.getByText('Momofin Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Config Organisation')).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText('Test User')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
+    expect(screen.getByText('Log Out')).toBeInTheDocument();
   });
 
   test('fetches user info on mount', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
+    const mockUserData = { userId: '123' };
+    api.get.mockResolvedValue({ data: mockUserData });
 
-    await waitFor(() => {
-      expect(api.get).toHaveBeenCalledWith('/auth/info');
-      expect(screen.getByText('Test User')).toBeInTheDocument();
-    });
-  });
-
-  test('displays error message when API call fails', async () => {
-    api.get.mockRejectedValueOnce(new Error('API Error'));
-    renderWithRouter(<Layout />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Failed to fetch user information')).toBeInTheDocument();
-    });
-  });
-
-  test('toggles dropdown menu', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      );
     });
 
-    const dropdownButton = screen.getByText('Test User');
-    fireEvent.click(dropdownButton);
-
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
-    expect(screen.getByText('Log Out')).toBeInTheDocument();
-
-    fireEvent.click(dropdownButton);
-
-    expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument();
-    expect(screen.queryByText('Log Out')).not.toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith('/auth/info');
   });
 
-  test('renders Outlet component', () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
+  test('handles error when fetching user info', async () => {
+    api.get.mockRejectedValue(new Error('API error'));
 
-    expect(screen.getByTestId('outlet')).toBeInTheDocument();
-  });
-
-  test('renders footer', () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
-
-    expect(screen.getByText(/© 2024 Your App Name. All rights reserved./)).toBeInTheDocument();
-  });
-
-  test('navigates to Edit Profile page', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      );
     });
 
-    fireEvent.click(screen.getByText('Test User'));
-    fireEvent.click(screen.getByText('Edit Profile'));
-
-    expect(window.location.pathname).toBe('/editProfile');
+    expect(screen.getByText('Failed to fetch user information')).toBeInTheDocument();
   });
 
-  test('Log Out button is present', async () => {
-    api.get.mockResolvedValueOnce({ data: { name: 'Test User' } });
-    renderWithRouter(<Layout />);
+  test('toggles sidebar when hamburger is clicked', async () => {
+    api.get.mockResolvedValue({ data: { userId: '123' } });
 
-    await waitFor(() => {
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      );
     });
 
-    fireEvent.click(screen.getByText('Test User'));
-    expect(screen.getByText('Log Out')).toBeInTheDocument();
+    const wrapper = screen.getByTestId('wrapper');
+    const hamburger = screen.getByTestId('hamburger');
+
+    expect(wrapper).not.toHaveClass('active');
+    fireEvent.click(hamburger);
+    expect(wrapper).toHaveClass('active');
+    fireEvent.click(hamburger);
+    expect(wrapper).not.toHaveClass('active');
+  });
+
+  test('navigates to login page on logout', async () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+
+    api.get.mockResolvedValue({ data: { userId: '123' } });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
+      );
+    });
+
+    const logoutButton = screen.getByText('Log Out');
+    fireEvent.click(logoutButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 });

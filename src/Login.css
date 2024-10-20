@@ -1,92 +1,97 @@
-/* Main container for centering the form */
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f4f4f4; /* light background */
+  background-color: #f4f4f4;
+  margin: 0;
 }
 
-/* Styling for the login form */
-.login-form-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-form {
-  background-color: #A0C6E4; /* light grey background for the form */
-  padding: 40px;
-  border-radius: 20px; /* rounded corners */
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* subtle shadow */
+form {
+  background: white;
+  padding: 3em;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 350px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  position: relative;
-  width: 400px; /* form width */
 }
 
-/* Logo positioning */
-.logo img {
-  width: 60px;
-  height: auto;
-  margin-bottom: 20px;
-  position: absolute;
-  top: 10px;
-  right: 20px;
-}
-
-/* Title */
-h2 {
-  font-family: 'Courier New', Courier, monospace; /* matching font style */
-  font-size: 28px;
-  margin-bottom: 30px;
-  text-align: left;
-  width: 100%; /* Aligns text with form width */
-}
-
-/* Form input styling */
-.form-group {
+.header-container {
   display: flex;
   align-items: center;
-  width: 100%;
+  justify-content: space-between;
+}
+
+.login-logo {
+  width: 50px;
+  height: auto;
+  border-radius: 10%;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  position: relative;
   margin-bottom: 20px;
-  border-bottom: 1px solid #000; /* border line */
-  padding-bottom: 5px;
 }
 
-.form-group i {
-  font-size: 1.2rem;
-  margin-right: 10px; /* spacing between icon and input */
+.input-icon {
+  width: 24px; /* Adjust as needed */
+  height: auto;
+  margin-right: 10px; /* Space between icon and input */
 }
 
-.form-group input {
+input[type="text"],
+input[type="password"] {
+  flex-grow: 1;
+  background: transparent;
   border: none;
-  background: none;
+  border-bottom: 2px solid #ccc;
   outline: none;
-  flex: 1;
-  font-size: 1rem;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #333;
 }
 
-/* Button */
-.btn-signin {
-  background-color: #EB774D;/* matching grey button */
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px; /* rounded button */
-  cursor: pointer;
-  font-size: 1rem;
+h2 {
+  color: #333;
+  font-family: Arial, sans-serif;
+  margin-right: 10px;
+}
+
+button {
   width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background-color: #0056b3;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #004494;
+}
+
+.forgot-password {
+  text-align: center;
   margin-top: 20px;
 }
 
-.btn-signin:hover {
-  background-color: #808080; /* darker on hover */
+p, a {
+  text-align: center;
+  font-size: 14px;
 }
 
-/* Error message styling */
-.error {
-  color: red;
-  font-size: 0.9rem;
-  margin-top: 10px;
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

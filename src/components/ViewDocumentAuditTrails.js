@@ -9,7 +9,6 @@ const ViewAuditTrails = () => {
 
     ]);
 
-    // Replace this with a function to fetch user data from your backend
     const fetchAuditTrails = async () => {
         try {
             setLoading(true);

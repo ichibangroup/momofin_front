@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import { validateLogin } from './LoginValidation';
 import '../Login.css';
 import api from '../utils/api';
 import { setAuthToken } from '../utils/auth';
+import logo from '../assets/logo.png'; // Ensure the path to your logo is correct
+import { Building,User,Lock } from 'lucide-react';
 
 function Login({ onSubmit }) {
   const [organizationName, setOrganizationName] = useState('');
@@ -11,9 +13,26 @@ function Login({ onSubmit }) {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [authMessage, setAuthMessage] = useState('');
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check for message from URL params (API redirects)
+    const urlMessage = searchParams.get('message');
+    if (urlMessage) {
+      setAuthMessage(decodeURIComponent(urlMessage));
+    }
+    // Check for message from navigation state (Protected Route redirects)
+    else if (location.state?.message) {
+      setAuthMessage(location.state.message);
+    }
+  }, [location, searchParams]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setAuthMessage('');
 
     // Perform validation
     const validationErrors = validateLogin({ username, password });
@@ -29,6 +48,7 @@ function Login({ onSubmit }) {
     };
 
     try {
+      setAuthToken();
       const response = await api.post('/auth/login', payload);
       const { jwt } = response.data;
       setAuthToken(jwt);
@@ -38,7 +58,9 @@ function Login({ onSubmit }) {
         if (onSubmit) {
           onSubmit(response.data);
         }
-        navigate('/app');
+        // Redirect to the originally requested page or default to /app
+        const redirectTo = location.state?.from || '/app';
+        navigate(redirectTo);
       } else {
         throw new Error('Login failed');
       }
@@ -52,16 +74,15 @@ function Login({ onSubmit }) {
     }
   };
 
-  const handleSignUp = () => {
-    navigate('/signup');
-  };
-
   return (
       <div className="login-container">
-        <div className="login-form-container">
-          <form className="login-form" onSubmit={handleSubmit}>
-            <h2>Sign In</h2>
-            <div className="form-group">
+          <form onSubmit={handleSubmit}>
+            <div className="header-container">
+                <h2>Sign In</h2>
+                <img src={logo} alt="Logo" className="login-logo" />
+            </div>
+            <div className="input-group">
+              <Building className="input-icon"/>
               <input
                   type="text"
                   id="organizationName"
@@ -72,7 +93,8 @@ function Login({ onSubmit }) {
               />
               {errors.organizationName && <span className="error">{errors.organizationName}</span>}
             </div>
-            <div className="form-group">
+            <div className="input-group">
+              <User className="input-icon"/>
               <input
                   type="text"
                   id="username"
@@ -83,7 +105,8 @@ function Login({ onSubmit }) {
               />
               {errors.username && <span className="error">{errors.username}</span>}
             </div>
-            <div className="form-group">
+            <div className="input-group">
+              <Lock className="input-icon"/>
               <input
                   type="password"
                   id="password"
@@ -95,10 +118,15 @@ function Login({ onSubmit }) {
               {errors.password && <span className="error">{errors.password}</span>}
             </div>
             {errors.server && <span className="error">{errors.server}</span>}
+            {/* Display auth message if present */}
+            {authMessage && (
+                <div className="auth-message">
+                  {authMessage}
+                </div>
+            )}
             <button type="submit" className="btn-signin">Sign In</button>
             <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
           </form>
-        </div>
       </div>
   );
 }

@@ -1,78 +1,125 @@
 import React, { useState } from 'react';
+import api from '../utils/api';
+import FormField from "./FormField";
+
+
 
 const AddUserForm = ({ title, onSubmit }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [position, setPosition] = useState('');
+  const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState({
+    name: '',
+    username: '',
+    password: '',
+    email: '',
+    position: ''
+  });
 
-  const handleSubmit = (event) => {
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+
+    if (errors[id]) {
+      setErrors(prev => ({
+        ...prev,
+        [id]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (!formData.password || formData.password.length < 10) newErrors.password = 'Password must be at least 10 characters';
+    if (!formData.email.includes('@')) newErrors.email = 'Email is invalid';
+    if (!formData.position.trim()) newErrors.position = 'Position is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    onSubmit({ username, password, email, position });
-    // Clear form after submit (optional, can be handled in parent component)
-    setUsername('');
-    setPassword('');
-    setEmail('');
-    setPosition('');
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await api.post('/auth/register', formData);
+
+      if (response.status === 200) {
+        setFormData({
+          name: '',
+          username: '',
+          password: '',
+          email: '',
+          position: ''
+        });
+        alert('Registration successful!');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert(error.response?.data?.message || 'Registration failed');
+    }
   };
 
   return (
-    <div className="container mt-5">
-      <h1 className="text-3xl font-bold">{title}</h1>
-      <div className="card">
-        <div className="card-body">
+      <div className="container mx-auto mt-8 max-w-2xl">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h1 className="text-2xl font-bold mb-6">{title}</h1>
           <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="username" className="form-label">Username:</label>
-              <input
-                type="text"
-                className="form-control"
+            <FormField
+                id="name"
+                label="Name"
+                value={formData.name}
+                onChange={handleChange}
+                error={errors.name}
+            />
+            <FormField
                 id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">Password:</label>
-              <input
-                type="password"
-                className="form-control"
+                label="Username"
+                value={formData.username}
+                onChange={handleChange}
+                error={errors.username}
+            />
+            <FormField
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">Email:</label>
-              <input
-                type="email"
-                className="form-control"
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+            />
+            <FormField
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="position" className="form-label">Position:</label>
-              <input
-                type="text"
-                className="form-control"
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                error={errors.email}
+            />
+            <FormField
                 id="position"
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Add User
+                label="Position"
+                value={formData.position}
+                onChange={handleChange}
+                error={errors.position}
+            />
+
+            <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Register User
             </button>
           </form>
         </div>
       </div>
-    </div>
   );
 };
 
