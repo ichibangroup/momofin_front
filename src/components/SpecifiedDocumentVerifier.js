@@ -7,7 +7,7 @@ const SpecifiedDocumentVerifier = () => {
     const [document, setDocument] = useState(null);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
-    const [error, setError] = useState(null);
+    const [, setError] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
 
     useEffect(() => {

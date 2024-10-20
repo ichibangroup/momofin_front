@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import '../ViewDocuments.css';
-import { Eye, Link, Check, Copy } from 'lucide-react'; // Added Link, Check, and Copy icons
+import { Eye, Link, Check } from 'lucide-react'; // Added Link, Check, and Copy icons
 
 function Page() {
   const [documents, setDocuments] = useState([]);
