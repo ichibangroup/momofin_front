@@ -6,6 +6,7 @@ import LoadingIndicator from './components/LoadingIndicator';
 import Login from './components/Login';
 import Register from './components/Register';
 import ProtectedRoute from './utils/ProtectedRoute';
+import SpecifiedDocumentVerifier from "./components/SpecifiedDocumentVerifier";
 
 // Lazy load other components
 const Home = lazy(() => import('./components/Home'));
@@ -37,6 +38,7 @@ function App() {
         <Route path="/app" element={<Layout />}>
           <Route path="/app" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><Home /></Suspense></ProtectedRoute>} />
           <Route path="verify" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense></ProtectedRoute>} />
+          <Route path="verify/:id" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><SpecifiedDocumentVerifier /></Suspense></ProtectedRoute>} />
           <Route path="viewUsers" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewUsers /></Suspense></ProtectedRoute>} />
           <Route path="viewDocuments" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense></ProtectedRoute>} />
           <Route path="momofinDashboard" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense></ProtectedRoute>} />
