@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuthToken } from './auth';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://minor-phedra-sirered-14f3fd33.koyeb.app',
 });
 
 // Request interceptor - only handles adding the token
