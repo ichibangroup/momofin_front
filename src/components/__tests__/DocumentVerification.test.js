@@ -55,7 +55,7 @@ describe('DocumentVerification Component', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Result: Success')).toBeInTheDocument();
+      expect(screen.getByText('Document submitted. Result: Success')).toBeInTheDocument();
     });
   });
 
