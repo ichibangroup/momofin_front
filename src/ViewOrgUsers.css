@@ -17,7 +17,7 @@
     margin-bottom: 10px; 
 }
 
-.headers div {
+.headers tr td {
     text-align: center;
     padding: 10px 20px;
     margin: 0 5px;
@@ -39,10 +39,16 @@
     border-bottom: 1px solid #ccc;
 }
 
-.user-row div {
+.user-row tr td {
     padding: 10px;
     text-align: center;
 }
+
+td, th {
+    padding: 10px;
+    text-align: center;
+}
+
 
 .actions {
     display: flex;

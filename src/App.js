@@ -18,7 +18,6 @@ const ViewDocuments = lazy(() => import('./components/ViewDocuments'));
 const MomofinDashboard = lazy(() => import('./components/MomofinDashboard'));
 const AddUserOrgAdmin = lazy(() => import('./components/AddUserOrgAdmin'));
 const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'));
-const ViewOrganisationUsers = lazy(() => import('./components/ViewOrganisationUsers'));
 const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
 const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers')); 
 

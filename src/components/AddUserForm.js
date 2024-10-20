@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
+import PropTypes from 'prop-types';
 
 // Move FormField outside the main component
 const FormField = ({ id, label, type = 'text', value, onChange, error }) => (
@@ -21,6 +22,23 @@ const FormField = ({ id, label, type = 'text', value, onChange, error }) => (
       )}
     </div>
 );
+
+FormField.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['text', 'password', 'email', 'number', 'tel', 'url']),
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number
+  ]).isRequired,
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.string
+};
+
+FormField.defaultProps = {
+  type: 'text',
+  error: null
+};
 
 const AddUserForm = ({ title, onSubmit }) => {
   const [errors, setErrors] = useState({});
