@@ -15,21 +15,21 @@ const mockOrganisations = [{
       id: 1,
       name: 'Organization 1',
       industry: 'Technology',
-      address: '123 Main St, City, State, Country',
+      location: '123 Main St, City, State, Country',
       description: 'This is a long description about Organization 1. It provides technology solutions.',
     },
     {
       id: 2,
       name: 'Organization 2',
       industry: 'Healthcare',
-      address: '456 Oak St, City, State, Country',
+      location: '456 Oak St, City, State, Country',
       description: 'This is a shorter description for Organization 2.',
     },
     {
       id: 3,
       name: 'Organization 3',
       industry: 'Entertainment',
-      address: 'Depok City',
+      location: 'Depok City',
       description: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     },]
 jest.mock('../../utils/api');
@@ -86,7 +86,7 @@ describe('ViewOrganisation Component', () => {
   it('truncates long descriptions', async () => {
     const longDescription = 'A'.repeat(150);
     const organizations = [
-      { id: 1, name: 'Test Org', industry: 'Test', address: 'Test Address', description: longDescription },
+      { id: 1, name: 'Test Org', industry: 'Test', location: 'Test Address', description: longDescription },
     ];
     render(
       <BrowserRouter>

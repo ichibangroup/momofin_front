@@ -53,7 +53,7 @@ const ViewOrganisation = () => {
             <tr key={organization.id}>
               <td>{organization.name}</td>
               <td>{organization.industry}</td>
-              <td>{organization.address}</td>
+              <td>{organization.location}</td>
               <td>
                 <div className="description-cell">
                   {organization.description.length > 100 ? (
