@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './DocumentAuditLogs.css';
+import './ViewDocumentAuditTrails.css';
 import api from "../utils/api";
 
 const ViewAuditTrails = () => {
