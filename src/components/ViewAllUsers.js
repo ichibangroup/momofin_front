@@ -29,8 +29,8 @@ function ViewUsers() {
                 <div>Actions</div>
             </div>
             <div className="user-rows-container">
-                {users.map((user, index) => (
-                    <div key={index} className="user-row">
+                {users.map((user) => (
+                    <div key={user.id} className="user-row">
                         <div>👤</div>
                         <div>{user.name}</div>
                         <div>{user.username}</div>
