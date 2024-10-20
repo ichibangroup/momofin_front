@@ -5,9 +5,63 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Theme variables */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --header-bg: #f0f0f0;
+  --footer-bg: #f0f0f0;
+}
+
+.dark-theme {
+  --bg-color: #333333;
+  --text-color: #ffffff;
+  --header-bg: #1a1a1a;
+  --footer-bg: #1a1a1a;
+}
+
+/* Layout styles */
+header, footer {
+  background-color: var(--header-bg);
+  padding: 1rem;
+}
+
+main {
+  padding: 2rem;
+}
+
+/* Button styles */
+button {
+  padding: 0.5rem 1rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #357abd;
+}
+
+/* Navigation styles */
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+nav ul li a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+nav ul li a:hover {
+  text-decoration: underline;
 }
