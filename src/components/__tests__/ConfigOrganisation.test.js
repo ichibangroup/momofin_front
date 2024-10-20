@@ -7,6 +7,12 @@ import api from "../../utils/api";
 import userEvent from "@testing-library/user-event";
 
 jest.mock('../../utils/api');
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: jest.fn()
+}));
 
 const mockOrganisation = {
   name: 'ICHIBAN GROUP',
@@ -30,7 +36,7 @@ const renderWithRouter = (organizationId = '123') => {
 };
 describe('ConfigOrganisation component',  () => {
   beforeEach( () => {
-
+    jest.mocked(useParams).mockReturnValue({ id: '123' });
     api.get.mockResolvedValue({
       data: mockOrganisation,
       status: 200
@@ -271,7 +277,14 @@ describe('ConfigOrganisation component',  () => {
   });
 
   it('should not retrieve organisation if id is undefined', async () => {
-    renderWithRouter( '' );
+    // Mock useParams to return no id
+    jest.mocked(useParams).mockReturnValue({ id: undefined });
+
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
 
     // Verify API was not called
     expect(api.get).not.toHaveBeenCalled();

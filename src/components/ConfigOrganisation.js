@@ -34,6 +34,8 @@ const ConfigOrganisation = () => {
 
     if (id) {
       fetchOrganization();
+    } else {
+      navigate('/login')
     }
   }, [id]);
 
