@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {BrowserRouter, MemoryRouter, Route, Routes} from 'react-router-dom';
 import ViewOrganisation from '../viewOrganisation';
-import ViewOrganisationUsers from "../ViewOrganisationUsers";
 import api from "../../utils/api";
 
 // Mock the useNavigate hook

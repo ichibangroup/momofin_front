@@ -1,8 +1,7 @@
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
 import ViewOrgUsers from '../ViewOrgUsers';
-import {MemoryRouter, Route, Routes} from "react-router-dom";
-import ViewOrganisationUsers from "../ViewOrganisationUsers";
+import {MemoryRouter, Route, Routes, useParams} from "react-router-dom";
 import api from "../../utils/api";
 const mockUsers = [
     { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', position: 'CHIEF EXECUTIVE OFFICER', email: 'emailme@example.com' },
@@ -28,6 +27,12 @@ const renderWithRouter = (organizationId = '123') => {
 };
 
 jest.mock('../../utils/api');
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+    useParams: jest.fn()
+}));
 describe('ViewUsers Component', () => {
     beforeEach(() => {
         // Clear all mocks before each test
@@ -42,16 +47,19 @@ describe('ViewUsers Component', () => {
 
 
     it('renders without crashing', () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         renderWithRouter('123')
         expect(screen.getByTestId('viewUsers-1')).toBeInTheDocument();
     });
 
     it('displays the correct title', () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         renderWithRouter('123')
         expect(screen.getByText('View Organisation Users')).toBeInTheDocument();
     });
 
     it('fetches and displays users', async () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         renderWithRouter('123');
 
         // Wait for the API call to complete
@@ -69,6 +77,7 @@ describe('ViewUsers Component', () => {
     });
 
     it('renders action buttons for each user', async () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         renderWithRouter('123')
 
         await waitFor(() => {
@@ -86,6 +95,7 @@ describe('ViewUsers Component', () => {
     });
 
     it('renders the ADD USER button with correct link', () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         renderWithRouter('123')
 
         const addUserButton = screen.getByText('ADD USER');
@@ -94,6 +104,7 @@ describe('ViewUsers Component', () => {
     });
 
     it('handles fetch error gracefully', async () => {
+        jest.mocked(useParams).mockReturnValue({ id: '123' });
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         api.get.mockImplementationOnce(() => Promise.reject(new Error('API Error')));
 
@@ -104,5 +115,19 @@ describe('ViewUsers Component', () => {
         });
 
         consoleSpy.mockRestore();
+    });
+
+    it('should navigate to login when id is not present', async () => {
+        // Mock useParams to return no id
+        jest.mocked(useParams).mockReturnValue({ id: undefined });
+
+        renderWithRouter();
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith('/login');
+        });
+
+        // Verify API was not called
+        expect(api.get).not.toHaveBeenCalled();
     });
 });

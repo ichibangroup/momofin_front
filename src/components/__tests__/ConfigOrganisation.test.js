@@ -1,10 +1,9 @@
 // ConfigOrganisation.test.js
 import React from 'react';
 import {render, screen, fireEvent, waitFor} from '@testing-library/react';
-import {BrowserRouter as Router, MemoryRouter, Route, Routes} from 'react-router-dom';
+import {BrowserRouter as Router, MemoryRouter, Route, Routes, useParams} from 'react-router-dom';
 import ConfigOrganisation from '../ConfigOrganisation';
 import api from "../../utils/api";
-import ViewOrganisationUsers from "../ViewOrganisationUsers";
 import userEvent from "@testing-library/user-event";
 
 jest.mock('../../utils/api');
@@ -269,5 +268,12 @@ describe('ConfigOrganisation component',  () => {
         expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
       });
     });
+  });
+
+  it('should not retrieve organisation if id is undefined', async () => {
+    renderWithRouter( '' );
+
+    // Verify API was not called
+    expect(api.get).not.toHaveBeenCalled();
   });
 });

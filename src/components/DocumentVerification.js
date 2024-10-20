@@ -64,7 +64,6 @@ export class DocumentProcessor {
         },});
       return response.data;
     } catch (error) {
-      if (error.response?.status === 403) { window.location.href = '/login';}
       throw new Error(error.response?.data?.errorMessage || 'Error verifying document');
     }
   }

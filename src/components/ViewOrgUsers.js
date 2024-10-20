@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import '../ViewOrgUsers.css';
 import api from "../utils/api";
-import {Link, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 
 function UserManagement(orgId) {
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
     const [users, setUsers] = useState([
     ]);
 
@@ -27,6 +28,8 @@ function UserManagement(orgId) {
 
         if (id) {
             fetchOrganizationUsers();
+        } else {
+            navigate('/login');
         }
     }, [id]);
     

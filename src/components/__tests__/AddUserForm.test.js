@@ -117,6 +117,33 @@ describe('AddUserForm', () => {
     });
   });
 
+  it('submits form successfully but not status 200', async () => {
+    api.post.mockResolvedValueOnce({ status: 500, data: { message: 'Success' } });
+
+    render(<AddUserForm title={mockTitle} />);
+
+    // Fill out the form
+    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
+    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
+    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
+    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
+    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
+
+    await userEvent.click(screen.getByText(/register user/i));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/auth/register', mockFormData);
+      expect(global.alert).not.toHaveBeenCalled();
+
+      // Check if form was reset
+      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
+      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
+      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
+      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
+      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
+    });
+  });
+
   it('displays validation error for short password', async () => {
     render(<AddUserForm title={mockTitle} />);
 
@@ -138,7 +165,7 @@ describe('AddUserForm', () => {
   });
 
   it('handles API error during submission', async () => {
-    const errorMessage = 'Registration failed';
+    const errorMessage = 'error message';
     api.post.mockRejectedValueOnce({
       response: {
         data: {
@@ -160,6 +187,37 @@ describe('AddUserForm', () => {
 
     await waitFor(() => {
       expect(global.alert).toHaveBeenCalledWith(errorMessage);
+
+      // Form data should remain
+      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
+      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
+      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
+      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
+      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
+    });
+  });
+
+  it('handles API error with no message', async () => {
+    api.post.mockRejectedValueOnce({
+      response: {
+        data: {
+        }
+      }
+    });
+
+    render(<AddUserForm title={mockTitle} />);
+
+    // Fill out the form
+    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
+    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
+    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
+    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
+    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
+
+    await userEvent.click(screen.getByText(/register user/i));
+
+    await waitFor(() => {
+      expect(global.alert).toHaveBeenCalledWith('Registration failed');
 
       // Form data should remain
       expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
