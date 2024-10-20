@@ -72,9 +72,8 @@ describe('EditProfile', () => {
     validateUserProfile.mockReturnValue({ username: 'Username is required' });
     renderWithRouter(<EditProfile />);
 
-    fireEvent.click(screen.getByText(/Save Changes/i));
-
     await waitFor(() => {
+      fireEvent.click(screen.getByText(/Save Changes/i));
       expect(screen.getByText(/Username is required/i)).toBeInTheDocument();
     });
   });

@@ -1,20 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const SpecifiedDocumentVerifier = () => {
     const { id } = useParams();
     const [document, setDocument] = useState(null);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
-    const [, setError] = useState(null);
+    const [error, setError] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
 
-    useEffect(() => {
-        fetchDocument();
-    }, [id]);
-
-    const fetchDocument = async () => {
+    const fetchDocument = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get(`/doc/verify/${id}`);
@@ -25,7 +21,11 @@ const SpecifiedDocumentVerifier = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchDocument();
+    }, [fetchDocument]);
 
     const handleFileUpload = async (event) => {
         const file = event.target.files[0];
@@ -47,7 +47,7 @@ const SpecifiedDocumentVerifier = () => {
 
             setVerificationResult({
                 success: true,
-                message: 'Document verified successfully',
+                message: response.data.message || 'Document verified successfully',
                 data: response.data
             });
         } catch (err) {
@@ -82,6 +82,30 @@ const SpecifiedDocumentVerifier = () => {
                     </p>
                 </div>
 
+                {error && !verificationResult && (
+                    <div className="border-l-4 border-red-400 bg-red-50 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg
+                                    className="h-4 w-4 text-red-400"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {document && (
                     <div className="space-y-2">
                         <p className="text-sm font-medium">Document Details:</p>
@@ -99,7 +123,7 @@ const SpecifiedDocumentVerifier = () => {
                         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <svg
-                                    className="w-6 h-6 mb-2 text-gray-500" // Reduced from w-8 h-8
+                                    className="w-6 h-6 mb-2 text-gray-500"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -142,7 +166,7 @@ const SpecifiedDocumentVerifier = () => {
                                 <div className="flex-shrink-0">
                                     {verificationResult.success ? (
                                         <svg
-                                            className="h-4 w-4 text-green-400" // Reduced from h-5 w-5
+                                            className="h-4 w-4 text-green-400"
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 20 20"
                                             fill="currentColor"
@@ -155,7 +179,7 @@ const SpecifiedDocumentVerifier = () => {
                                         </svg>
                                     ) : (
                                         <svg
-                                            className="h-4 w-4 text-red-400" // Reduced from h-5 w-5
+                                            className="h-4 w-4 text-red-400"
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 20 20"
                                             fill="currentColor"
