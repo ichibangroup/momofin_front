@@ -19,6 +19,7 @@ const AddUserOrgAdmin = lazy(() => import('./components/AddUserOrgAdmin'));
 const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'));
 const ViewOrganisationUsers = lazy(() => import('./components/ViewOrganisationUsers'));
 const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
+const ViewDocumentAudits = lazy(() => import('./components/ViewDocumentAuditTrails'));
 
 
 
@@ -46,6 +47,7 @@ function App() {
           <Route path="configOrganisation/addUserOrgAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense>} />
           <Route path="addUserMomofinAdmin" element={<Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense>} />
           <Route path="configOrganisation/viewOrganisationUsers" element={<Suspense fallback={<LoadingIndicator />}><ViewOrganisationUsers /></Suspense>} />
+          <Route path="view-document-audit-trails" element={<Suspense fallback={<LoadingIndicator />}><ViewDocumentAudits /></Suspense>} />
           <Route path="momofinDashboard/addNewOrganisation" element={<Suspense fallback={<LoadingIndicator />}><AddNewOrganisation /></Suspense>} />
         </Route>
 
