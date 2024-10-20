@@ -109,7 +109,7 @@ describe('ConfigOrganisation component',  () => {
   });
 
   test('renders the CANCEL and SAVE buttons', async () => {
-    renderWithRouter()
+    renderWithRouter();
 
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
@@ -122,6 +122,152 @@ describe('ConfigOrganisation component',  () => {
       fireEvent.click(cancelButton);
 
 
+    });
+  });
+
+  describe('Fetch Organization Errors', () => {
+    it('should display error message when fetching organization fails', async () => {
+      // Mock the API call to fail
+      api.get.mockRejectedValueOnce(new Error('Network error'));
+
+      renderWithRouter();
+
+      // Wait for the error message to appear
+      await waitFor(() => {
+        expect(screen.getByText('Error: Failed to fetch organization details')).toBeInTheDocument();
+      });
+
+      // Verify the API was called with correct parameters
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    it('should handle API errors with specific error responses', async () => {
+      // Mock API call with a 404 response
+      api.get.mockRejectedValueOnce({
+        response: {
+          status: 404,
+          data: { message: 'Organization not found' }
+        }
+      });
+
+      renderWithRouter();
+
+      await waitFor(() => {
+        expect(screen.getByText('Error: Failed to fetch organization details')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Update Organization Errors', () => {
+    beforeEach(() => {
+      // Mock successful initial fetch
+      api.get.mockResolvedValueOnce({
+        data: {
+          name: 'Test Org',
+          industry: 'Tech',
+          address: '123 Test St',
+          description: 'Test Description',
+          mainAdmin: 'Admin User'
+        }
+      });
+    });
+
+    it('should display error message when updating organization fails', async () => {
+      // Render the component and wait for initial load
+      renderWithRouter();
+
+      // Wait for the component to load
+      await waitFor(() => {
+        expect(screen.getByText('Test Org')).toBeInTheDocument();
+      });
+
+      // Mock the update call to fail
+      api.put.mockRejectedValueOnce(new Error('Update failed'));
+
+      // Trigger form submission
+      fireEvent.click(screen.getByText('SAVE'));
+
+      // Verify error message is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Error: Failed to update organization')).toBeInTheDocument();
+      });
+
+      // Verify the API was called with correct parameters
+      expect(api.put).toHaveBeenCalledWith('/api/organizations/123', expect.any(Object));
+    });
+
+    it('should handle network errors during update', async () => {
+      renderWithRouter();
+
+      // Wait for initial load
+      await waitFor(() => {
+        expect(screen.getByText('Test Org')).toBeInTheDocument();
+      });
+
+      // Mock network error
+      api.put.mockRejectedValueOnce(new Error('Network Error'));
+
+      // Try to update
+      fireEvent.click(screen.getByText('SAVE'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Error: Failed to update organization')).toBeInTheDocument();
+      });
+    });
+
+    it('should handle API errors with specific status codes during update', async () => {
+      renderWithRouter();
+
+      // Wait for initial load
+      await waitFor(() => {
+        expect(screen.getByText('Test Org')).toBeInTheDocument();
+      });
+
+      // Mock API error response
+      api.put.mockRejectedValueOnce({
+        response: {
+          status: 400,
+          data: { message: 'Invalid data' }
+        }
+      });
+
+      // Try to update
+      fireEvent.click(screen.getByText('SAVE'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Error: Failed to update organization')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Loading States', () => {
+    it('should show loading state while fetching data', async () => {
+      // Create a promise that won't resolve immediately
+      let resolvePromise;
+      const promise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+
+      api.get.mockReturnValue(promise);
+
+      renderWithRouter();
+
+      // Verify loading state is shown
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+      // Resolve the promise
+      resolvePromise({ data: {
+          name: 'Test Org',
+          industry: 'Tech',
+          address: '123 Test St',
+          description: 'Test Description',
+          mainAdmin: 'Admin User'
+        }});
+
+      // Verify loading state is removed
+      await waitFor(() => {
+        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+      });
     });
   });
 });
