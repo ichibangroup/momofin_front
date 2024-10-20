@@ -38,7 +38,7 @@ const ConfigOrganisation = () => {
     } else {
       navigate('/login')
     }
-  }, [id]);
+  }, [id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
