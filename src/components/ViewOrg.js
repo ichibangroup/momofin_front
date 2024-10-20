@@ -32,8 +32,8 @@ function ViewOrganisations() {
                 <div>Actions</div>
             </div>
             <div className="organisation-rows-container">
-                {organisations.map((org, index) => (
-                    <div key={index} className="organisation-row">
+                {organisations.map((org) => (
+                    <div key={org.id} className="organisation-row">
                         <div>👤</div> {/* Display user icon */}
                         <div>{org.name}</div>
                         <div>{org.industry}</div>
