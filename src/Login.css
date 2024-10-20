@@ -90,3 +90,12 @@ h2 {
   font-size: 0.9rem;
   margin-top: 10px;
 }
+
+.auth-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  text-align: center;
+}

@@ -1,43 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ViewOrganisation.css';
+import api from "../utils/api";
 
 
 const ViewOrganisation = () => {
   const navigate = useNavigate();
+  const [, setLoading] = useState(true);
+  const [, setError] = useState(null);
   const [organizations, setOrganizations] = useState([
-    // Sample data for demonstration
-    {
-      id: 1,
-      name: 'Organization 1',
-      industry: 'Technology',
-      address: '123 Main St, City, State, Country',
-      description: 'This is a long description about Organization 1. It provides technology solutions.',
-    },
-    {
-      id: 2,
-      name: 'Organization 2',
-      industry: 'Healthcare',
-      address: '456 Oak St, City, State, Country',
-      description: 'This is a shorter description for Organization 2.',
-    },
-    {
-      id: 3,
-      name: 'Organization 3',
-      industry: 'Entertainment',
-      address: 'Depok City',
-      description: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-    },
   ]);
 
   // Replace this with a function to fetch organization data from your backend
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch('https://your-api-endpoint/organizations'); // Replace with your API endpoint
-      const data = await response.json();
-      setOrganizations(data);
+      setLoading(true);
+      const response = await api.get('/api/momofin-admin/organizations');
+      setOrganizations(response.data);
+      setError(null);
     } catch (error) {
       console.error('Error fetching organizations:', error);
+      setError('Failed to fetch organizations. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 

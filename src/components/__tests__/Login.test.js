@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import {BrowserRouter, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import Login from '../Login';
 import { act } from 'react';
 import api from '../../utils/api';
@@ -11,7 +11,10 @@ jest.mock('../../utils/api');
 jest.mock('../../utils/auth');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
+  useNavigate: jest.fn(),
+  useLocation: jest.fn(),
+  useSearchParams: jest.fn(),
+  Link: ({ children, to }) => <a href={to}>{children}</a>
 }));
 
 const renderWithRouter = (component) => {
@@ -25,8 +28,15 @@ const renderWithRouter = (component) => {
 };
 
 describe('Login Component', () => {
+  const mockNavigate = jest.fn();
+  const mockOnSubmit = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    useNavigate.mockReturnValue(mockNavigate);
+    useLocation.mockReturnValue({ state: null, search: '' });
+    useSearchParams.mockReturnValue([new URLSearchParams(), jest.fn()]);
+
   });
 
   test('renders the login form with organization name, username, and password fields', () => {
@@ -128,5 +138,55 @@ describe('Login Component', () => {
 
     expect(forgotPasswordLink).toBeInTheDocument();
     expect(forgotPasswordLink.getAttribute('href')).toBe('/forgot-password');
+  });
+
+  test('displays auth message from URL params', () => {
+    const message = 'Session expired';
+    require('react-router-dom').useSearchParams.mockImplementation(() => [
+      new URLSearchParams(`?message=${encodeURIComponent(message)}`),
+      jest.fn()
+    ]);
+
+    renderWithRouter(<Login />);
+
+    expect(screen.getByText(message)).toBeInTheDocument();
+  });
+
+  test('displays auth message from location state', () => {
+    const message = 'Please log in';
+    require('react-router-dom').useLocation.mockImplementation(() => ({
+      state: { message },
+      search: ''
+    }));
+
+    renderWithRouter(<Login />);
+
+    expect(screen.getByText(message)).toBeInTheDocument();
+  });
+
+  test('redirects to original location after successful login', async () => {
+    const mockResponse = {
+      data: { jwt: 'test-token' },
+      status: 200
+    };
+    api.post.mockResolvedValueOnce(mockResponse);
+
+    require('react-router-dom').useLocation.mockImplementation(() => ({
+      state: { from: '/protected-page' },
+      search: ''
+    }));
+
+    renderWithRouter(<Login />);
+
+    await act(async () => {
+      fireEvent.change(screen.getByPlaceholderText(/organization name/i), { target: { value: 'TestOrg' } });
+      fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'testuser' } });
+      fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/protected-page');
+    });
   });
 });
