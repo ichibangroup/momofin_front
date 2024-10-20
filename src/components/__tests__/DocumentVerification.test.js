@@ -55,7 +55,7 @@ describe('DocumentVerification Component', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Document submitted. Result: Success')).toBeInTheDocument();
+      expect(screen.getByText('Result: Success')).toBeInTheDocument();
     });
   });
 
@@ -228,7 +228,7 @@ describe('DocumentProcessor', () => {
     await processor.submitDocument(mockFile);
 
     expect(api.post).toHaveBeenCalledWith(
-        'http://localhost:8080/doc/submit',
+        '/doc/submit',
         expect.any(FormData),
         { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -241,7 +241,7 @@ describe('DocumentProcessor', () => {
     await processor.verifyDocument(mockFile);
 
     expect(api.post).toHaveBeenCalledWith(
-        'http://localhost:8080/doc/verify',
+        '/doc/verify',
         expect.any(FormData),
         { headers: { 'Content-Type': 'multipart/form-data' } }
     );
