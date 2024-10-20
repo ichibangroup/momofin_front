@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import '../ViewDocuments.css';
-import { Eye } from 'lucide-react'; // Import the eye icon for the view button
+import { Eye, Link, Check, Copy } from 'lucide-react'; // Added Link, Check, and Copy icons
 
 function Page() {
   const [documents, setDocuments] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false); // Modal state
-  const [errorMessage, setErrorMessage] = useState(''); // Error message state
+  const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [copiedId, setCopiedId] = useState(null); // Track which link was copied
 
   useEffect(() => {
     handleGetDocuments();
@@ -28,21 +29,30 @@ function Page() {
       setLoading(true);
       const response = await api.get(`/doc/view/${documentId}`);
       const url = response.data.url;
-
-      // Open the document URL in a new tab
       window.open(url, '_blank');
     } catch (error) {
       console.error('Failed to get document URL:', error);
-      alert('Failed to load document. Please try again.');
-
-      // Get the error message from the backend response (if available)
       const errorMsg = error.response?.data?.message || 'An unknown error occurred';
-
-      // Set error message and show modal
       setErrorMessage(`Failed to load document: ${errorMsg}`);
       setShowModal(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyLink = async (documentId) => {
+    const verificationUrl = `http://localhost:3000/app/verify/${documentId}`;
+    try {
+      await navigator.clipboard.writeText(verificationUrl);
+      setCopiedId(documentId);
+      // Reset the copied status after 2 seconds
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      setErrorMessage('Failed to copy link to clipboard');
+      setShowModal(true);
     }
   };
 
@@ -58,7 +68,6 @@ function Page() {
   return (
       <div className="page-container">
         <h1 className="page-title">Your Documents</h1>
-        {/* Modal */}
         {showModal && (
             <div className="modal-backdrop">
               <div className="modal">
@@ -90,7 +99,7 @@ function Page() {
               .map(document => (
                   <tr key={document.documentId}>
                     <td>{document.name}</td>
-                    <td>
+                    <td className="flex gap-2">
                       <button
                           onClick={() => handleViewDocument(document.documentId)}
                           disabled={loading}
@@ -98,6 +107,22 @@ function Page() {
                       >
                         <Eye size={16} />
                         View
+                      </button>
+                      <button
+                          onClick={() => handleCopyLink(document.documentId)}
+                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600"
+                      >
+                        {copiedId === document.documentId ? (
+                            <>
+                              <Check size={16} />
+                              Copied!
+                            </>
+                        ) : (
+                            <>
+                              <Link size={16} />
+                              Copy Link
+                            </>
+                        )}
                       </button>
                     </td>
                   </tr>
