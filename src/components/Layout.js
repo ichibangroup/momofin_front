@@ -89,7 +89,7 @@ const Layout = () => {
                                         </Link>
                                     </li>
                                     <li>
-                                        <a href="" onClick={handleLogout}>
+                                        <a href="/login" onClick={handleLogout}>
                                             <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
                                             <span className="list">Log Out</span>
                                         </a>

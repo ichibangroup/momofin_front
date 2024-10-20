@@ -50,7 +50,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, [userId]);
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

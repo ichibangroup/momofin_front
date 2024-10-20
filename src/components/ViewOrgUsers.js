@@ -31,7 +31,7 @@ function UserManagement(orgId) {
         } else {
             navigate('/login');
         }
-    }, [id]);
+    }, [id, navigate]);
     
     return (
         <div className="user-management" data-testid="viewUsers-1">
