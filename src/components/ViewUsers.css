@@ -1,20 +1,58 @@
 .view-users {
     padding: 20px;
-    text-align: center;
-}
-
-.title {
+  }
+  
+  .title {
     font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.user-list {
-    margin-top: 20px;
-}
-
-.user-item {
-    margin: 10px 0;
+    margin-bottom: 20px;
+  }
+  
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .user-table th, .user-table td {
     padding: 10px;
-    background-color: #f0f0f0;
-    border-radius: 5px;
-}
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .user-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .edit-button, .delete-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  .edit-button:hover, .delete-button:hover {
+    background-color: #3e8e41;
+  }
+  
+  .add-users-button {
+    display: block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  .add-users-button:hover {
+    background-color: #3e8e41;
+  }

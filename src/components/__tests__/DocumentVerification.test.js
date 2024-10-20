@@ -11,6 +11,7 @@ import DocumentVerification, {
 } from '../DocumentVerification';
 import api from '../../utils/api';
 
+
 jest.mock('../../utils/api');
 
 describe('DocumentVerification Component', () => {
@@ -54,7 +55,7 @@ describe('DocumentVerification Component', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Result: Success')).toBeInTheDocument();
+      expect(screen.getByText('Document submitted. Result: Success')).toBeInTheDocument();
     });
   });
 
@@ -89,23 +90,23 @@ describe('DocumentVerification Component', () => {
         }
       }
     });
-
+  
     render(<DocumentVerification />);
     const fileInput = screen.getByLabelText('Choose a file:');
     const verifyButton = screen.getByText('Verify Document');
-
+  
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
     fireEvent.change(fileInput, { target: { files: [file] } });
     fireEvent.click(verifyButton);
-
+  
     await waitFor(() => {
       expect(screen.getByText('Verification Result:')).toBeInTheDocument();
-      expect(screen.getByText('Document ID: 123')).toBeInTheDocument();
-      expect(screen.getByText('File Name: test.pdf')).toBeInTheDocument();
-      expect(screen.getByText('Hash: abc123')).toBeInTheDocument();
-      expect(screen.getByText('Name: John Doe')).toBeInTheDocument();
-      expect(screen.getByText('Email: john@example.com')).toBeInTheDocument();
-      expect(screen.getByText('Position: Manager')).toBeInTheDocument();
+      expect(screen.getByText('123')).toBeInTheDocument();
+      expect(screen.getByText('test.pdf')).toBeInTheDocument();
+      expect(screen.getByText('abc123')).toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+      expect(screen.getByText('john@example.com')).toBeInTheDocument();
+      expect(screen.getByText('Manager')).toBeInTheDocument();
     });
   });
 
