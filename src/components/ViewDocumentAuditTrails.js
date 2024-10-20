@@ -3,9 +3,9 @@ import './ViewDocumentAuditTrails.css';
 import api from "../utils/api";
 
 const ViewAuditTrails = () => {
-    const [, setLoading] = useState(true);
-    const [, setError] = useState(null);
-    const [audits, setAuditTrails] = useState([
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [auditTrails, setAuditTrails] = useState([
 
     ]);
 
@@ -42,7 +42,7 @@ const ViewAuditTrails = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {audits.map((audittrail) => (
+                    {auditTrails.map((audittrail) => (
                         <tr key={audittrail.id}>
                             <td>{audittrail.id}</td>
                             <td>{audittrail.username}</td>
