@@ -11,7 +11,7 @@ const ConfigOrganisation = () => {
   const [organization, setOrganization] = useState({
     name: '',
     industry: '',
-    address: '',
+    location: '',
     description: '',
     mainAdmin: '',
   });
@@ -77,7 +77,7 @@ const ConfigOrganisation = () => {
             <div className="org-details">
               <h2>{organization.name}</h2>
               <p>MAIN ADMIN: {organization.mainAdmin}</p>
-              <p>{organization.address}</p>
+              <p>{organization.location}</p>
               <p>{organization.industry} Industry</p>
 
               <button className="add-user-button">
@@ -114,12 +114,12 @@ const ConfigOrganisation = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="address">ADDRESS</label>
+                <label htmlFor="location">ADDRESS</label>
                 <input
                     type="text"
-                    id="address"
-                    name="address"
-                    value={organization.address}
+                    id="location"
+                    name="location"
+                    value={organization.location}
                     onChange={handleChange}
                 />
               </div>
