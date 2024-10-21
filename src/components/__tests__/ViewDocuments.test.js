@@ -201,7 +201,7 @@ describe('Page Component - Link Copying Tests', () => {
     await fireEvent.click(copyButtons[0]);
 
     expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        'http://localhost:3000/app/verify/1'
+        'https://momofin-docuver-staging.netlify.app/app/verify/1'
     );
   });
 
@@ -268,7 +268,7 @@ describe('Page Component - Link Copying Tests', () => {
     // Should only copy once for multiple rapid clicks
     expect(mockClipboard.writeText).toHaveBeenCalledTimes(3);
     expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        'http://localhost:3000/app/verify/1'
+        'https://momofin-docuver-staging.netlify.app/app/verify/1'
     );
   });
 
@@ -300,11 +300,11 @@ describe('Page Component - Link Copying Tests', () => {
     // Verify correct URLs were copied
     expect(mockClipboard.writeText).toHaveBeenNthCalledWith(
         1,
-        'http://localhost:3000/app/verify/1'
+        'https://momofin-docuver-staging.netlify.app/app/verify/1'
     );
     expect(mockClipboard.writeText).toHaveBeenNthCalledWith(
         2,
-        'http://localhost:3000/app/verify/2'
+        'https://momofin-docuver-staging.netlify.app/app/verify/2'
     );
   });
 
@@ -327,7 +327,7 @@ describe('Page Component - Link Copying Tests', () => {
     await userEvent.click(copyButton);
 
     expect(mockClipboard.writeText).toHaveBeenCalledWith(
-        'http://localhost:3000/app/verify/1'
+        'https://momofin-docuver-staging.netlify.app/app/verify/1'
     );
   });
 });
