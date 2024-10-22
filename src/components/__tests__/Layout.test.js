@@ -18,6 +18,8 @@ jest.mock('react-router-dom', () => ({
 // Import the mocked api after mocking
 import api from '../../utils/api';
 
+//RAHHHHHHHHHH
+
 describe('Layout Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
