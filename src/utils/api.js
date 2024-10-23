@@ -20,7 +20,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 || error.response?.status === 403) {
+        if (error.response?.status === 403) {
             localStorage.removeItem('jwtToken');
             const message = "Your session has expired. Please log in again.";
             window.location.href = `/login?message=${encodeURIComponent(message)}`;
