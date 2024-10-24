@@ -22,7 +22,6 @@ const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'
 const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
 const ViewOrg = lazy(() => import('./components/ViewOrg'));
 const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers'));
-const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers')); 
 const ViewAllUsers = lazy(() => import('./components/ViewAllUsers')); 
 const ViewDocumentAudits = lazy(() => import('./components/ViewDocumentAuditTrails'));
 
