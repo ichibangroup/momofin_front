@@ -1,33 +1,29 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
+import { act } from 'react'; // Import act from react
 import Layout from '../Layout';
+import api from '../../utils/api'; // Import after mocking
 
-// Mock the api module
+// Mock the API module
 jest.mock('../../utils/api', () => ({
   get: jest.fn(),
 }));
 
-// Mock the react-router-dom module
+// Mock useNavigate correctly
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
+  useNavigate: () => mockNavigate,
 }));
-
-// Import the mocked api after mocking
-import api from '../../utils/api';
-
-//RAHHHHHHHHHH
 
 describe('Layout Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders layout correctly', async () => {
-    api.get.mockResolvedValue({ data: { userId: '123' } });
-
+  // Helper function for rendering the Layout with BrowserRouter
+  const renderLayout = async () => {
     await act(async () => {
       render(
         <BrowserRouter>
@@ -35,14 +31,22 @@ describe('Layout Component', () => {
         </BrowserRouter>
       );
     });
+  };
+
+  test('renders layout correctly', async () => {
+    api.get.mockResolvedValue({ data: { userId: '123', roles: ['ROLE_MOMOFIN_ADMIN', 'ROLE_ORG_ADMIN'], organization: { organizationId: '456' } } });
+
+    await renderLayout();
 
     expect(screen.getByText('MOMOFIN')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Upload and Verify')).toBeInTheDocument();
-    expect(screen.getByText('Momofin Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Config Organisation')).toBeInTheDocument();
-    expect(screen.getByText('Edit Profile')).toBeInTheDocument();
+
+    // Use a regex matcher for "Momofin Dashboard" and other elements with complex nesting
+    expect(screen.queryByText((content) => content.includes('Momofin Dashboard'))).toBeInTheDocument();
+    expect(screen.queryByText(/Config Organisation/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Edit Profile/i)).toBeInTheDocument();
     expect(screen.getByText('Log Out')).toBeInTheDocument();
   });
 
@@ -50,13 +54,7 @@ describe('Layout Component', () => {
     const mockUserData = { userId: '123' };
     api.get.mockResolvedValue({ data: mockUserData });
 
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      );
-    });
+    await renderLayout();
 
     expect(api.get).toHaveBeenCalledWith('/auth/info');
   });
@@ -64,13 +62,7 @@ describe('Layout Component', () => {
   test('handles error when fetching user info', async () => {
     api.get.mockRejectedValue(new Error('API error'));
 
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      );
-    });
+    await renderLayout();
 
     expect(screen.getByText('Failed to fetch user information')).toBeInTheDocument();
   });
@@ -78,13 +70,7 @@ describe('Layout Component', () => {
   test('toggles sidebar when hamburger is clicked', async () => {
     api.get.mockResolvedValue({ data: { userId: '123' } });
 
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      );
-    });
+    await renderLayout();
 
     const wrapper = screen.getByTestId('wrapper');
     const hamburger = screen.getByTestId('hamburger');
@@ -97,18 +83,9 @@ describe('Layout Component', () => {
   });
 
   test('navigates to login page on logout', async () => {
-    const mockNavigate = jest.fn();
-    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
-
     api.get.mockResolvedValue({ data: { userId: '123' } });
 
-    await act(async () => {
-      render(
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      );
-    });
+    await renderLayout();
 
     const logoutButton = screen.getByText('Log Out');
     fireEvent.click(logoutButton);

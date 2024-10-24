@@ -32,7 +32,6 @@ function Home() {
       <div className="branding">
         <h1>MOMOFIN</h1>
         <p>A safer place to store your documents.</p>
-        <p>User Roles: {userRoles.join(', ')}</p> {/* Display roles */}
       </div>
       
       <div className="action-boxes-container">
