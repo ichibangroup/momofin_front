@@ -5,7 +5,7 @@ import api from '../utils/api.js'; // Import API instance
 
 function Home() {
   const navigate = useNavigate();
-  const [userRoles, setUserRoles] = useState([]); // State to store roles array
+  const [, setUserRoles] = useState([]); // State to store roles array
 
   // Function to fetch user info
   const fetchUserInfo = async () => {
