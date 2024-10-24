@@ -43,7 +43,7 @@ describe('MomofinDashboard', () => {
     const viewUsersBox = screen.getByText('View All Users');
     fireEvent.click(viewUsersBox);
 
-    expect(mockNavigate).toHaveBeenCalledWith('/app/viewUsers');
+    expect(mockNavigate).toHaveBeenCalledWith('/app/viewAllUsers');
   });
 
   test('navigates to view organisations page when clicking "View All Organisations"', () => {

@@ -1,27 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
+import api from "../utils/api";
 
 function ViewUsers() {
-    const [users] = useState([
-        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Muhammad Sakhran Thayyib', username: 'PeakFiction', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Galih Ibrahim Kurniawan', username: 'Sirered', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
-        { name: 'Clayton Ismail Nagle', username: 'Clay.ton', organisation: 'ICHIBAN GROUP', email: 'email.yeah@gmail.com' },
+    const [, setLoading] = useState(true);
+    const [, setError] = useState(null);
+    const [users, setUsers] = useState([
+
     ]);
 
+    const fetchUsers = async () => {
+        try {
+          setLoading(true);
+          const response = await api.get('/api/momofin-admin/users');
+          setUsers(response.data);
+          setError(null);
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          setError('Failed to fetch users. Please try again later.');
+        } finally {
+          setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // to do fetch the data from an API
+        fetchUsers();
     }, []);
 
     return (
-        <div className="view-users">
+        <div className="view-users" data-testid="viewUsers-1">
             <h1>View All Users</h1>
             <div className="headers">
-                <div>Icon</div>
                 <div>Name</div>
                 <div>Username</div>
                 <div>Organisation</div>
@@ -31,10 +40,9 @@ function ViewUsers() {
             <div className="user-rows-container">
                 {users.map((user) => (
                     <div key={user.id} className="user-row">
-                        <div>👤</div>
                         <div>{user.name}</div>
                         <div>{user.username}</div>
-                        <div>{user.organisation}</div>
+                        <div>{user.organization}</div>
                         <div>{user.email}</div>
                         <div className="actions">
                             <button className="edit-btn">✏️</button>
