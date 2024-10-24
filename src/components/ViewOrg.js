@@ -33,7 +33,6 @@ const ViewOrganisations = () => {
         <div className="view-organisations">
             <h1>View All Organisations</h1>
             <div className="headers">
-                <div>Logo</div>
                 <div>Name</div>
                 <div>Industry</div>
                 <div>Address</div>
@@ -43,7 +42,6 @@ const ViewOrganisations = () => {
             <div className="organisation-rows-container">
                 {organizations.map((org) => (
                     <div key={org.id} className="organisation-row">
-                        <div>👤</div> {/* Display user icon */}
                         <div>{org.name}</div>
                         <div>{org.industry}</div>
                         <div>{org.location}</div>
