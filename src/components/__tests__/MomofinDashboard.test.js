@@ -56,6 +56,6 @@ describe('MomofinDashboard', () => {
     const viewOrganisationsBox = screen.getByText('View All Organisations');
     fireEvent.click(viewOrganisationsBox);
 
-    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrganisation');
+    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
   });
 });
