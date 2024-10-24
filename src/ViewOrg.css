@@ -15,7 +15,7 @@ h1 {
 
 .headers {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* Adjust based on the number of columns */
+    grid-template-columns: repeat(5, 1fr); /* Adjust based on the number of columns */
     gap: 10px; /* Space between each header box */
     margin-bottom: 20px; /* Space between headers and content */
 }
@@ -37,7 +37,7 @@ h1 {
 
 .organisation-row {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* Must match header columns */
+    grid-template-columns: repeat(5, 1fr); /* Must match header columns */
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid #ccc;
