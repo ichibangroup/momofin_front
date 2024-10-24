@@ -28,7 +28,7 @@ function ViewUsers() {
     }, []);
 
     return (
-        <div className="view-users">
+        <div className="view-users" data-testid="viewUsers-1">
             <h1>View All Users</h1>
             <div className="headers">
                 <div>Name</div>
