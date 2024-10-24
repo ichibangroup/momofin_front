@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faUpload, faHome, faBorderAll, faAddressBook, faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut} from '@fortawesome/free-solid-svg-icons';
+import { 
+    faCogs, faUpload, faHome, faBorderAll, faAddressBook, 
+    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut 
+} from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
-import {setAuthToken} from "../utils/auth";
+import { setAuthToken } from "../utils/auth";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -27,14 +30,16 @@ const Layout = () => {
     }, []);
 
     const handleLogout = () => {
-        setAuthToken();
-        // Implement logout logic here
-        navigate('/login');
+        setAuthToken(); // Clear auth token
+        navigate('/login'); // Redirect to login
     };
 
     const toggleSidebar = () => {
         setIsActive(!isActive);
     };
+
+    // Helper functions to check roles
+    const hasRole = (role) => user?.roles?.includes(role);
 
     return (
         <div className={`wrapper ${isActive ? 'active' : ''}`} data-testid="wrapper">
@@ -68,18 +73,22 @@ const Layout = () => {
                                     <span className="list">Upload and Verify</span>
                                 </Link>
                             </li>
-                            <li>
-                                <Link to="momofinDashboard">
-                                    <span className="icon"><FontAwesomeIcon icon={faAddressBook} /></span>
-                                    <span className="list">Momofin Dashboard</span>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to={`configOrganisation/${user?.organization?.organizationId}`}>
-                                    <span className="icon"><FontAwesomeIcon icon={faCogs} /></span>
-                                    <span className="list">Config Organisation</span>
-                                </Link>
-                            </li>
+                            {hasRole('ROLE_MOMOFIN_ADMIN') && (
+                                <li>
+                                    <Link to="momofinDashboard">
+                                        <span className="icon"><FontAwesomeIcon icon={faAddressBook} /></span>
+                                        <span className="list">Momofin Dashboard</span>
+                                    </Link>
+                                </li>
+                            )}
+                            {hasRole('ROLE_ORG_ADMIN') && (
+                                <li>
+                                    <Link to={`configOrganisation/${user?.organization?.organizationId}`}>
+                                        <span className="icon"><FontAwesomeIcon icon={faCogs} /></span>
+                                        <span className="list">Config Organisation</span>
+                                    </Link>
+                                </li>
+                            )}
                             {user && (
                                 <>
                                     <li>
