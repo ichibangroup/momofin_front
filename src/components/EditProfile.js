@@ -54,12 +54,12 @@ const EditProfile = () => {
         email: user.email
       };
 
-      if (user.newPassword) {
-        payload.oldPassword = user.oldPassword;
-        payload.newPassword = user.newPassword;
-      }
-
-      await api.put(`/api/user/profile/${userId}`, payload);
+      await api.put(`/api/user/profile/${userId}`, payload, {
+        params: {
+          oldPassword: user.oldPassword,
+          newPassword: user.newPassword
+        }
+      });
       navigate('/app');
     } catch (error) {
       setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
