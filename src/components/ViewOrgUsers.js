@@ -60,21 +60,21 @@ const UserManagement = () => {
             />
           </span>
         )}
-        {!isMomofinAdmin && (
-          <span className="tooltip-container">
-            <FontAwesomeIcon 
-              icon={faUser} 
-              className="text-gray-600"
-              title="User"
-            />
-          </span>
-        )}
         {isOrgAdmin && (
           <span className="tooltip-container">
             <FontAwesomeIcon 
               icon={faUniversity} 
               className="text-blue-500"
               title="Organisation Admin"
+            />
+          </span>
+        )}
+        {!isMomofinAdmin && !isOrgAdmin && (
+          <span className="tooltip-container">
+            <FontAwesomeIcon 
+              icon={faUser} 
+              className="text-gray-600"
+              title="User"
             />
           </span>
         )}
@@ -117,81 +117,6 @@ const UserManagement = () => {
   return (
     <div className="user-management" data-testid="viewUsers-1">
       <h1>View Organisation Users</h1>
-      <style>
-        {`
-          .tooltip-container {
-            position: relative;
-            display: inline-block;
-            margin: 0 5px;
-          }
-          
-          .tooltip-container [title]:hover:after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 100;
-          }
-
-          .custom-add-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 200px;
-            padding: 10px;
-            margin: 20px auto;
-            background: white;
-            color: #567DF4;
-            border: 2px solid #567DF4;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-          }
-
-          .custom-add-btn:hover {
-            background: #567DF4;
-            color: white;
-          }
-
-          .actions button {
-            padding: 5px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-          }
-
-          .actions button:hover {
-            transform: scale(1.2);
-          }
-
-          .edit-btn {
-            color: #567DF4;
-          }
-
-          .delete-btn {
-            color: #dc3545;
-          }
-
-          .sort-header {
-            cursor: pointer;
-            user-select: none;
-          }
-
-          .sort-header:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-          }
-        `}
-      </style>
       <table>
         <thead>
           <tr className="headers">

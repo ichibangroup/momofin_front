@@ -49,21 +49,83 @@ td, th {
     text-align: center;
 }
 
-
 .actions {
     display: flex;
     justify-content: center;
     gap: 10px;
 }
 
-.add-btn {
-    display: block;
+.custom-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 200px;
     padding: 10px;
     margin: 20px auto;
-    background-color: #567DF4;
-    color: white;
+    background: white;
+    color: #567DF4;
+    border: 2px solid #567DF4;
     border-radius: 20px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.custom-add-btn:hover {
+    background: #567DF4;
+    color: white;
+}
+
+.actions button {
+    padding: 5px;
     border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.actions button:hover {
+    transform: scale(1.2);
+}
+
+.edit-btn {
+    color: #567DF4;
+}
+
+.delete-btn {
+    color: #dc3545;
+}
+
+.sort-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sort-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-container .tooltip {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip-container:hover .tooltip {
+    visibility: visible;
 }
