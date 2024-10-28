@@ -4,9 +4,11 @@ import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import EditProfile from '../EditProfile';
 import api from '../../utils/api';
 import { validateUserProfile } from '../../utils/validationUtils';
+import { sanitizePlainText } from '../../utils/sanitizer'; // Importing the sanitizer for verification
 
 jest.mock('../../utils/api');
 jest.mock('../../utils/validationUtils');
+jest.mock('../../utils/sanitizer'); // Mock the sanitizer utility
 
 // Mock useNavigate
 const mockNavigate = jest.fn();
@@ -105,6 +107,48 @@ describe('EditProfile', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Failed to update profile. Please try again.')).toBeInTheDocument();
+    });
+  });
+
+  // New tests for updateUserProfile
+  test('sanitizes input before sending to API', async () => {
+    sanitizePlainText.mockImplementation((input) => `sanitized-${input}`);
+    api.put.mockResolvedValue({ status: 200 });
+  
+    renderWithRouter(<EditProfile />);
+  
+    // Wait for the loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
+    });
+  
+    // Now interact with the inputs
+    fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'test@example.com' } });
+  
+    fireEvent.click(screen.getByText(/Save Changes/i));
+  
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(
+        expect.any(String), 
+        { username: 'sanitized-testuser', email: 'sanitized-test@example.com' }, 
+        expect.any(Object)
+      );
+    });
+  });
+  
+  test('does not navigate on API error during update', async () => {
+    api.put.mockRejectedValue(new Error('Update failed'));
+    renderWithRouter(<EditProfile />);
+
+    await waitFor(() => {
+      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+    });
+
+    fireEvent.click(screen.getByText(/Save Changes/i));
+
+    await waitFor(() => {
+      expect(mockNavigate).not.toHaveBeenCalled(); // Ensure navigate was not called
     });
   });
 });
