@@ -80,7 +80,8 @@ const UserManagement = () => {
         )}
       </div>
     );
-  };
+};
+
 
   const isAdmin = (user) => {
     return user.momofinAdmin || user.organizationAdmin || 
