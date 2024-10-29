@@ -1,61 +1,125 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import EditUserOrgProfile from '../EditUserOrgProfile';
 
+// Mock console.log to test form submission
+const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+
 describe('EditUserOrgProfile', () => {
-  test('renders all input fields correctly', () => {
-    render(<EditUserOrgProfile />);
-
-    // Check that all input fields are rendered
-    expect(screen.getByLabelText(/Username:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Email:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Old Password:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/New Password:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Name:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Position:/i)).toBeInTheDocument();
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
   });
 
-  test('updates state when inputs change', () => {
-    render(<EditUserOrgProfile />);
-
-    // Select input fields
-    const usernameInput = screen.getByLabelText(/Username:/i);
-    const emailInput = screen.getByLabelText(/Email:/i);
-    const nameInput = screen.getByLabelText(/Name:/i);
-    const positionInput = screen.getByLabelText(/Position:/i);
-
-    // Simulate typing in input fields
-    fireEvent.change(usernameInput, { target: { value: 'newUsername' } });
-    fireEvent.change(emailInput, { target: { value: 'newEmail@example.com' } });
-    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
-    fireEvent.change(positionInput, { target: { value: 'Developer' } });
-
-    // Check if the input values were updated
-    expect(usernameInput.value).toBe('newUsername');
-    expect(emailInput.value).toBe('newEmail@example.com');
-    expect(nameInput.value).toBe('John Doe');
-    expect(positionInput.value).toBe('Developer');
+  afterAll(() => {
+    // Restore console.log after all tests
+    mockConsoleLog.mockRestore();
   });
 
-  test('logs form submission with user data', () => {
+  test('renders all form fields and submit button', () => {
     render(<EditUserOrgProfile />);
 
-    // Select input fields and form submit button
-    const usernameInput = screen.getByLabelText(/Username:/i);
-    const submitButton = screen.getByText(/Save Changes/i);
+    // Check for heading
+    expect(screen.getByRole('heading')).toHaveTextContent('Edit User Organisation Profile');
 
-    // Simulate typing and form submission
-    fireEvent.change(usernameInput, { target: { value: 'testUser' } });
+    // Check for all input fields
+    const fields = ['username', 'email', 'oldPassword', 'newPassword', 'name', 'position'];
+    fields.forEach(field => {
+      expect(screen.getByLabelText(new RegExp(`^${field}:`, 'i'))).toBeInTheDocument();
+    });
+
+    // Check for submit button
+    expect(screen.getByRole('button')).toHaveTextContent('Save Changes');
+  });
+
+  test('input fields have correct types', () => {
+    render(<EditUserOrgProfile />);
+
+    // Password fields should be type="password"
+    expect(screen.getByLabelText(/^oldPassword:/i)).toHaveAttribute('type', 'password');
+    expect(screen.getByLabelText(/^newPassword:/i)).toHaveAttribute('type', 'password');
+
+    // Other fields should be type="text"
+    expect(screen.getByLabelText(/^username:/i)).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText(/^email:/i)).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText(/^name:/i)).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText(/^position:/i)).toHaveAttribute('type', 'text');
+  });
+
+  test('handles input changes correctly', () => {
+    render(<EditUserOrgProfile />);
+
+    // Test data for each field
+    const testData = {
+      username: 'testuser',
+      email: 'test@example.com',
+      oldPassword: 'oldpass123',
+      newPassword: 'newpass123',
+      name: 'Test User',
+      position: 'Developer'
+    };
+
+    // Type into each input field and verify value
+    for (const [field, value] of Object.entries(testData)) {
+      const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
+      fireEvent.change(input, { target: { value } });
+      expect(input).toHaveValue(value);
+    }
+  });
+
+  test('form submission prevents default and logs form data', () => {
+    render(<EditUserOrgProfile />);
+
+    // Fill out the form
+    const testData = {
+      username: 'testuser',
+      email: 'test@example.com',
+      oldPassword: 'oldpass123',
+      newPassword: 'newpass123',
+      name: 'Test User',
+      position: 'Developer'
+    };
+
+    for (const [field, value] of Object.entries(testData)) {
+      const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
+      fireEvent.change(input, { target: { value } });
+    }
+
+    // Submit the form
+    const submitButton = screen.getByRole('button', { name: /save changes/i });
     fireEvent.click(submitButton);
 
-    // Test that the form data is logged (you can check the console)
-    expect(console.log).toHaveBeenCalledWith('Form submitted:', {
-      username: 'testUser',
-      email: '',
-      oldPassword: '',
-      newPassword: '',
-      name: '',
-      position: '',
+    // Verify console.log was called with the form data
+    expect(mockConsoleLog).toHaveBeenCalledWith('Form submitted:', testData);
+  });
+
+  test('form maintains empty initial state', () => {
+    render(<EditUserOrgProfile />);
+
+    // Check that all fields are initially empty
+    const fields = ['username', 'email', 'oldPassword', 'newPassword', 'name', 'position'];
+    fields.forEach(field => {
+      const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
+      expect(input).toHaveValue('');
     });
+  });
+
+  test('handles multiple input changes in sequence', () => {
+    render(<EditUserOrgProfile />);
+
+    const usernameInput = screen.getByLabelText(/^username:/i);
+    const emailInput = screen.getByLabelText(/^email:/i);
+
+    // Change username, then email, then username again
+    fireEvent.change(usernameInput, { target: { value: 'user1' } });
+    expect(usernameInput).toHaveValue('user1');
+
+    fireEvent.change(emailInput, { target: { value: 'user1@test.com' } });
+    expect(emailInput).toHaveValue('user1@test.com');
+
+    fireEvent.change(usernameInput, { target: { value: 'user2' } });
+    expect(usernameInput).toHaveValue('user2');
+    expect(emailInput).toHaveValue('user1@test.com'); // Email should remain unchanged
   });
 });
