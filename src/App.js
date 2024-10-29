@@ -11,7 +11,6 @@ import SpecifiedDocumentVerifier from "./components/SpecifiedDocumentVerifier";
 // Lazy load other components
 const Home = lazy(() => import('./components/Home'));
 const DocumentVerification = lazy(() => import('./components/DocumentVerification'));
-const ViewOrganisation = lazy(() => import('./components/viewOrganisation'));
 const EditProfile = lazy(() => import('./components/EditProfile'));
 const ConfigOrganisation = lazy(() => import('./components/ConfigOrganisation'));
 const ViewDocuments = lazy(() => import('./components/ViewDocuments'));
@@ -43,7 +42,6 @@ function App() {
           <Route path="verify/:id" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><SpecifiedDocumentVerifier /></Suspense></ProtectedRoute>} />
           <Route path="viewDocuments" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewDocuments /></Suspense></ProtectedRoute>} />
           <Route path="momofinDashboard" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><MomofinDashboard /></Suspense></ProtectedRoute>} />
-          <Route path="viewOrganisation" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewOrganisation /></Suspense></ProtectedRoute>} />
           <Route path="editProfile/:userId" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><EditProfile /></Suspense></ProtectedRoute>} />
           <Route path="configOrganisation/addUserOrgAdmin" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddUserOrgAdmin /></Suspense></ProtectedRoute>} />
           <Route path="addUserMomofinAdmin" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><AddUserMomofinAdmin /></Suspense></ProtectedRoute>} />
