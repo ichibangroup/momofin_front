@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { validateUserProfile } from '../utils/validationUtils';
+import { sanitizePlainText } from '../utils/sanitizer'; 
 
 const FormField = ({ label, id, name, type = 'text', value, onChange, error }) => (
     <div>
@@ -49,16 +50,17 @@ const EditProfile = () => {
   const updateUserProfile = async () => {
     try {
       setApiError(null);
-      const payload = {
-        username: user.username,
-        email: user.email
+      // Sanitize the payload before sending
+      const sanitizedPayload = {
+        username: sanitizePlainText(user.username),
+        email: sanitizePlainText(user.email),
       };
 
-      await api.put(`/api/user/profile/${userId}`, payload, {
+      await api.put(`/api/user/profile/${userId}`, sanitizedPayload, {
         params: {
           oldPassword: user.oldPassword,
-          newPassword: user.newPassword
-        }
+          newPassword: user.newPassword,
+        },
       });
       navigate('/app');
     } catch (error) {
@@ -68,7 +70,9 @@ const EditProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setUser(prevUser => ({ ...prevUser, [name]: value }));
+    // Sanitize the input value as it changes
+    const sanitizedValue = sanitizePlainText(value);
+    setUser(prevUser => ({ ...prevUser, [name]: sanitizedValue }));
     // Clear error for the field being changed
     if (errors[name]) {
       setErrors(prevErrors => ({ ...prevErrors, [name]: undefined }));
