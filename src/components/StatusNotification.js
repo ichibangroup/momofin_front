@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import '../StatusNotification.css';
 
 const StatusNotification = ({ message, type }) => {
@@ -9,6 +10,11 @@ const StatusNotification = ({ message, type }) => {
       {message}
     </div>
   );
+};
+
+StatusNotification.propTypes = {
+  message: PropTypes.string.isRequired,
+  type: PropTypes.oneOf(['success', 'error']).isRequired,
 };
 
 export default StatusNotification;
