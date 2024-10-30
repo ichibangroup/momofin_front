@@ -25,11 +25,15 @@ const Layout = () => {
                 setError(null);
             } catch (err) {
                 setError('Failed to fetch user information');
+                // Add this line to handle redirect
+                setAuthToken();
+                navigate('/login');
             }
         };
-
+    
         fetchUserInfo();
-    }, []);
+    }, [navigate]);
+    
 
     const handleLogout = async () => {
         if (user) {
