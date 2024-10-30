@@ -94,6 +94,26 @@ describe('EditUserOrgProfile', () => {
     expect(mockConsoleLog).toHaveBeenCalledWith('Form submitted:', testData);
   });
 
+  test('displays error message on submission failure', async () => {
+    render(<EditUserOrgProfile />);
+    const testData = {
+      username: 'testuser',
+      email: 'test@example.com',
+      name: 'Test User',
+      position: 'Developer'
+    };
+
+    for (const [field, value] of Object.entries(testData)) {
+      const input = screen.getByLabelText(new RegExp('^${field}:', 'i'));
+      fireEvent.change(input, { target: { value } });
+    }
+
+    const submitButton = screen.getByRole('button', { name: /save changes/i });
+    fireEvent.click(submitButton);
+
+    expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
+  });
+
   test('form maintains empty initial state', () => {
     render(<EditUserOrgProfile />);
 
