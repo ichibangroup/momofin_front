@@ -124,7 +124,62 @@ const UserManagement = () => {
     setDeleteModal({ isOpen: false, user: null });
   };
 
-  
+  const handleDeleteConfirm = async () => {
+    const userToDelete = deleteModal.user;
+    
+    try {
+      setLoading(true);
+      // First close the modal
+      handleDeleteClose();
+      
+      // Immediately update the UI
+      setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
+      
+      // Make the API call
+      await api.delete(`/api/organizations/${id}/users/${userToDelete.userId}`);
+      
+      // Clear any existing timeout to prevent multiple messages
+      if (window.statusMessageTimeout) {
+        clearTimeout(window.statusMessageTimeout);
+      }
+      
+      // Show success message
+      setStatusMessage({
+        text: `${userToDelete.username} has been successfully removed from the organization.`,
+        type: 'success'
+      });
+      
+      // Clear the message after 5 seconds and store the timeout ID
+      window.statusMessageTimeout = setTimeout(() => {
+        setStatusMessage({ text: '', type: '' });
+      }, 5000);  // Changed to 5000ms (5 seconds)
+      
+    } catch (err) {
+      // Revert the deletion in UI
+      setUsers(prevUsers => [...prevUsers, userToDelete]);
+      
+      const errorMessage = err.response?.data?.message || 'Failed to delete user';
+      
+      // Clear any existing timeout for error messages too
+      if (window.statusMessageTimeout) {
+        clearTimeout(window.statusMessageTimeout);
+      }
+      
+      setStatusMessage({
+        text: errorMessage,
+        type: 'error'
+      });
+      
+      // Clear error message after 5 seconds
+      window.statusMessageTimeout = setTimeout(() => {
+        setStatusMessage({ text: '', type: '' });
+      }, 5000);  // Changed to 5000ms (5 seconds)
+      
+      console.error('Error deleting user:', err);
+    } finally {
+      setLoading(false);
+    }
+};
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
