@@ -90,6 +90,6 @@ describe('Layout Component', () => {
     const logoutButton = screen.getByText('Log Out');
     fireEvent.click(logoutButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
+    expect(mockNavigate).toHaveBeenCalledWith('/login', {"state": {"message": "You have been successfully logged out."}});
   });
 });
