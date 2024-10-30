@@ -21,18 +21,24 @@ const Layout = () => {
         const fetchUserInfo = async () => {
             try {
                 const response = await api.get('/auth/info');
+                if (!response.data) {
+                    // Handle case where no user data is returned
+                    setAuthToken(); // Set the auth token (clear if needed)
+                    navigate('/login');
+                    return;
+                }
                 setUser(response.data);
                 setError(null);
             } catch (err) {
                 setError('Failed to fetch user information');
-                // Add this line to handle redirect
-                setAuthToken();
+                setAuthToken(); // Set the auth token (clear if needed)
                 navigate('/login');
             }
         };
     
         fetchUserInfo();
     }, [navigate]);
+    
     
 
     const handleLogout = async () => {

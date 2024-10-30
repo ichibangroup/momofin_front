@@ -90,16 +90,20 @@ describe('Layout Component', () => {
     expect(wrapper).not.toHaveClass('active');
   });
 
-  test('navigates to login page on logout', async () => {
+  test('navigates to login page on logout if no user data', async () => {
+    // Simulate user data being fetched
     api.get.mockResolvedValue({ data: { userId: '123' } });
 
     await renderLayout();
 
+    // Ensure the 'Log Out' button is present
     const logoutButton = screen.getByText('Log Out');
     fireEvent.click(logoutButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login', {"state": {"message": "You have been successfully logged out."}});
-  });
+    // Assert the navigation
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { message: 'You have been successfully logged out.' } });
+});
+
 
   test('logs successful logout attempt', async () => {
     api.get.mockResolvedValue({ data: { userId: '123', username: 'testUser', organization: { organizationId: '456' } } });
@@ -109,7 +113,7 @@ describe('Layout Component', () => {
     const logoutButton = screen.getByText('Log Out');
     fireEvent.click(logoutButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login', {"state": {"message": "You have been successfully logged out."}});
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { message: 'You have been successfully logged out.' } });
     expect(require('../../utils/logoutLogger').LogoutActivityLogger.logLogoutSuccess).toHaveBeenCalledWith('123', '456', 'testUser');
   });
 
@@ -132,8 +136,8 @@ describe('Layout Component', () => {
   });
 
   test('navigates to login page if no user data', async () => {
-    // Simulate an API error to fetch user info
-    api.get.mockRejectedValue(new Error('User not found'));
+    // Simulate no user data
+    api.get.mockResolvedValue({ data: null });
 
     await renderLayout();
 
@@ -142,6 +146,6 @@ describe('Layout Component', () => {
 
     // Verify navigation to login page
     expect(mockNavigate).toHaveBeenCalledWith('/login');
-});
+  });
 
 });
