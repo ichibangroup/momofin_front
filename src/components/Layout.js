@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faCogs, faUpload, faHome, faBorderAll, faAddressBook, 
@@ -8,12 +8,14 @@ import {
 import api from '../utils/api';
 import './Layout.css';
 import { setAuthToken } from "../utils/auth";
+import { LogoutActivityLogger } from '../utils/logoutLogger';
 
 const Layout = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const [isActive, setIsActive] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation(); 
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -29,9 +31,58 @@ const Layout = () => {
         fetchUserInfo();
     }, []);
 
-    const handleLogout = () => {
-        setAuthToken(); // Clear auth token
-        navigate('/login'); // Redirect to login
+    const handleLogout = async () => {
+        if (user) {
+            // Log logout attempt
+            LogoutActivityLogger.logLogoutAttempt(
+                user.userId,
+                user.organization?.organizationId
+            );
+
+            try {
+                // Optional: Call logout endpoint if you have one
+                // await api.post('/auth/logout');
+
+                // Log successful logout
+                LogoutActivityLogger.logLogoutSuccess(
+                    user.userId,
+                    user.organization?.organizationId,
+                    user.username
+                );
+
+                // Clear auth token
+                setAuthToken();
+
+                // Log navigation after logout
+                LogoutActivityLogger.logNavigationAfterLogout(
+                    location.pathname,
+                    '/login'
+                );
+
+                // Redirect to login
+                navigate('/login', { 
+                    state: { message: 'You have been successfully logged out.' }
+                });
+            } catch (error) {
+                // Log logout failure
+                LogoutActivityLogger.logLogoutFailure(
+                    user.userId,
+                    user.organization?.organizationId,
+                    error
+                );
+
+                console.error('Logout failed:', error);
+                setError('Failed to logout properly');
+                
+                // Still clear token and redirect even if logging fails
+                setAuthToken();
+                navigate('/login');
+            }
+        } else {
+            // If no user data, just redirect
+            setAuthToken();
+            navigate('/login');
+        }
     };
 
     const toggleSidebar = () => {
@@ -98,7 +149,10 @@ const Layout = () => {
                                         </Link>
                                     </li>
                                     <li>
-                                        <a href="/login" onClick={handleLogout}>
+                                        <a href="/login" onClick={(e) => {
+                                                                e.preventDefault();
+                                                                handleLogout();
+                                                            }}>
                                             <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
                                             <span className="list">Log Out</span>
                                         </a>
