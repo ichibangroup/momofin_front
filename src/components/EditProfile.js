@@ -69,6 +69,7 @@ const EditProfile = () => {
   const updateUserProfile = async () => {
     try {
       setApiError(null);
+
       const sanitizedPayload = {
         username: sanitizePlainText(user.username),
         email: sanitizePlainText(user.email),
@@ -92,8 +93,12 @@ const EditProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Sanitize the input value as it changes
     const sanitizedValue = sanitizePlainText(value);
     setUser(prevUser => ({ ...prevUser, [name]: sanitizedValue }));
+    // Clear error for the field being changed
+
     if (errors[name]) {
       setErrors(prevErrors => ({ ...prevErrors, [name]: undefined }));
     }

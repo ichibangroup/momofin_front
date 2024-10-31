@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faUser,
-    faStar,
-    faUniversity,
-    faPencilAlt,
-    faTrash,
-    faUserPlus,
-    faSort,
-    faSortUp,
-    faSortDown
+import { 
+  faUser, 
+  faStar,
+  faUniversity,
+  faPencilAlt,
+  faTrash,
+  faUserPlus,
+  faSort,
+  faSortUp,
+  faSortDown
 } from '@fortawesome/free-solid-svg-icons';
 import DeleteUserModal from './DeleteUserModal';
 import '../ViewOrgUsers.css';
@@ -260,5 +260,6 @@ const UserManagement = () => {
         </div>
     );
 };
+
 
 export default UserManagement;
