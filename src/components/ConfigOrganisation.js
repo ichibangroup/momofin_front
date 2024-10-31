@@ -3,6 +3,7 @@ import './ConfigOrganisation.css';
 
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api'; // Your axios instance
+import { sanitizePlainText, sanitizeFormData } from '../utils/sanitizer'; // Import sanitizers
 
 const ConfigOrganisation = () => {
   const { id } = useParams(); // Get the id from URL
@@ -43,8 +44,9 @@ const ConfigOrganisation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/api/organizations/${id}`, organization);
-      // Show success message or redirect
+      // Sanitize all form data before submitting
+      const sanitizedData = sanitizeFormData(organization);
+      await api.put(`/api/organizations/${id}`, sanitizedData);
       navigate(-1); // Adjust this path as needed
     } catch (err) {
       setError('Failed to update organization');
@@ -54,9 +56,11 @@ const ConfigOrganisation = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Sanitize input as it comes in
+    const sanitizedValue = sanitizePlainText(value);
     setOrganization(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
   };
 
