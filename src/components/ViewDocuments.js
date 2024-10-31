@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import '../ViewDocuments.css';
 import { Eye, Link, Check } from 'lucide-react'; // Added Link, Check, and Copy icons
+import log from '../utils/logger';
 
 function Page() {
   const [documents, setDocuments] = useState([]);
@@ -20,7 +21,7 @@ function Page() {
       const response = await api.get('/doc/view');
       setDocuments(response.data.documents);
     } catch (error) {
-      console.error('Failed to fetch documents:', error);
+      log.error('Failed to fetch documents', error);
     }
   };
 
@@ -31,7 +32,7 @@ function Page() {
       const url = response.data.url;
       window.open(url, '_blank');
     } catch (error) {
-      console.error('Failed to get document URL:', error);
+      log.error('Failed to get document URL', error);
       const errorMsg = error.response?.data?.message || 'An unknown error occurred';
       setErrorMessage(`Failed to load document: ${errorMsg}`);
       setShowModal(true);
@@ -50,7 +51,7 @@ function Page() {
         setCopiedId(null);
       }, 2000);
     } catch (error) {
-      console.error('Failed to copy link:', error);
+      log.error('Failed to copy link', error);
       setErrorMessage('Failed to copy link to clipboard');
       setShowModal(true);
     }
