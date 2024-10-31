@@ -33,3 +33,26 @@ test('fetches and displays audit trails successfully', async () => {
         expect(screen.getByText('FAILED')).toBeInTheDocument();
     });
 });
+
+test('filters audit trails by action and user', async () => {
+    // Mock API response
+    const auditTrails = [{ id: 1, action: 'CREATE', user: 'user1' }];
+    axios.get.mockResolvedValueOnce({ data: { content: auditTrails } });
+  
+    render(<AuditTrailTable />);
+  
+    // Simulate filtering inputs
+    fireEvent.change(screen.getByPlaceholderText('Filter by action'), { target: { value: 'CREATE' } });
+    fireEvent.change(screen.getByPlaceholderText('Filter by user'), { target: { value: 'user1' } });
+  
+    // Trigger search
+    fireEvent.click(screen.getByText('Apply Filters'));
+  
+    // Verify API call with filter parameters
+    expect(axios.get).toHaveBeenCalledWith('/api/audit-trails', expect.objectContaining({
+      params: expect.objectContaining({
+        action: 'CREATE',
+        user: 'user1'
+      }),
+    }));
+  });
