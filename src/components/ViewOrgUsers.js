@@ -32,6 +32,10 @@ function UserManagement(orgId) {
             navigate('/login');
         }
     }, [id, navigate]);
+
+    const handleEditClick = (userId) => {
+        navigate(`/app/editUserOrgProfile/${userId}`);
+    };
     
     return (
         <div className="user-management" data-testid="viewUsers-1">
@@ -55,7 +59,7 @@ function UserManagement(orgId) {
                         <td>{user.position}</td>
                         <td>{user.email}</td>
                         <td className="actions">
-                            <button className="edit-btn">✏️</button>
+                            <button className="edit-btn" onClick={() => handleEditClick(user.userId)}>✏️</button>
                             <button className="delete-btn">❌</button>
                         </td>
                     </tr>
