@@ -12,8 +12,10 @@ import {
   faSortUp,
   faSortDown
 } from '@fortawesome/free-solid-svg-icons';
+import DeleteUserModal from './DeleteUserModal';
 import '../ViewOrgUsers.css';
 import api from '../utils/api';
+import StatusNotification from './StatusNotification';
 
 const UserManagement = () => {
   const { id } = useParams();
@@ -21,8 +23,10 @@ const UserManagement = () => {
   const [error, setError] = useState(null);
   const [users, setUsers] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, user: null });
   const navigate = useNavigate();
-
+  const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
+  
   useEffect(() => {
     const fetchOrganizationUsers = async () => {
       try {
@@ -112,11 +116,80 @@ const UserManagement = () => {
     setUsers(sortedUsers);
   };
 
+  const handleDeleteClick = (user) => {
+    setDeleteModal({ isOpen: true, user });
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteModal({ isOpen: false, user: null });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const userToDelete = deleteModal.user;
+    
+    try {
+      setLoading(true);
+      // First close the modal
+      handleDeleteClose();
+      
+      // Immediately update the UI
+      setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
+      
+      // Make the API call
+      await api.delete(`/api/organizations/${id}/users/${userToDelete.userId}`);
+      
+      // Clear any existing timeout to prevent multiple messages
+      if (window.statusMessageTimeout) {
+        clearTimeout(window.statusMessageTimeout);
+      }
+      
+      // Show success message
+      setStatusMessage({
+        text: `${userToDelete.username} has been successfully removed from the organization.`,
+        type: 'success'
+      });
+      
+      // Clear the message after 5 seconds and store the timeout ID
+      window.statusMessageTimeout = setTimeout(() => {
+        setStatusMessage({ text: '', type: '' });
+      }, 5000);  // Changed to 5000ms (5 seconds)
+      
+    } catch (err) {
+      // Revert the deletion in UI
+      setUsers(prevUsers => [...prevUsers, userToDelete]);
+      
+      const errorMessage = err.response?.data?.message || 'Failed to delete user';
+      
+      // Clear any existing timeout for error messages too
+      if (window.statusMessageTimeout) {
+        clearTimeout(window.statusMessageTimeout);
+      }
+      
+      setStatusMessage({
+        text: errorMessage,
+        type: 'error'
+      });
+      
+      // Clear error message after 5 seconds
+      window.statusMessageTimeout = setTimeout(() => {
+        setStatusMessage({ text: '', type: '' });
+      }, 5000);  // Changed to 5000ms (5 seconds)
+      
+      console.error('Error deleting user:', err);
+    } finally {
+      setLoading(false);
+    }
+};
+
   if (loading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
 
   return (
     <div className="user-management" data-testid="viewUsers-1">
+      <StatusNotification 
+        message={statusMessage.text} 
+        type={statusMessage.type}
+      />
       <h1>View Organisation Users</h1>
       <table>
         <thead>
@@ -151,7 +224,11 @@ const UserManagement = () => {
                     <button className="edit-btn mr-2" title="Edit User">
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </button>
-                    <button className="delete-btn" title="Remove User">
+                    <button 
+                      className="delete-btn" 
+                      title="Remove User"
+                      onClick={() => handleDeleteClick(user)}
+                    >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </>
@@ -161,6 +238,14 @@ const UserManagement = () => {
           ))}
         </tbody>
       </table>
+
+      <DeleteUserModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteClose}
+        onConfirm={handleDeleteConfirm}
+        userName={deleteModal.user?.name || ''}
+      />
+
       <Link 
         to={`/app/configOrganisation/${id}/addUserOrgAdmin`}
         className="custom-add-btn"
