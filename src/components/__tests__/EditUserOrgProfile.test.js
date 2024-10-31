@@ -4,13 +4,11 @@ import { BrowserRouter as Router, useParams } from 'react-router-dom';
 import EditUserOrgProfile from '../EditUserOrgProfile';
 import api from '../../utils/api';
 
-// Mock API calls
 jest.mock('../../utils/api', () => ({
   get: jest.fn(),
   put: jest.fn(),
 }));
 
-// Mock useParams to simulate route parameters
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: jest.fn(),
@@ -26,7 +24,7 @@ describe('EditUserOrgProfile', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useParams.mockReturnValue({ userId: 'testuser' }); // Mock userId as testuser
+    useParams.mockReturnValue({ userId: 'testuser' });
   });
 
   test('renders all form fields and submit button', async () => {
@@ -69,6 +67,20 @@ describe('EditUserOrgProfile', () => {
     });
   });
 
+  test('displays error message on fetching user data failure', async () => {
+    api.get.mockRejectedValueOnce(new Error('Fetch failed'));
+
+    render(
+        <Router>
+          <EditUserOrgProfile />
+        </Router>
+    );
+
+    await waitFor(() => expect(screen.getByText(/loading/i)).toBeInTheDocument());
+
+    expect(await screen.findByText(/failed to fetch user data/i)).toBeInTheDocument();
+  });
+
   test('displays error message on submission failure', async () => {
     api.get.mockResolvedValueOnce({ data: mockUserData });
     api.put.mockRejectedValueOnce({ response: { data: { message: 'Update failed' } } });
@@ -83,7 +95,6 @@ describe('EditUserOrgProfile', () => {
       fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
     });
 
-    // Check for error message display
     expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
   });
 
@@ -97,7 +108,6 @@ describe('EditUserOrgProfile', () => {
         </Router>
     );
 
-    // Change form fields
     await waitFor(() => {
       for (const [field, value] of Object.entries(mockUserData)) {
         const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
@@ -107,7 +117,6 @@ describe('EditUserOrgProfile', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
-    // Ensure API call is made with updated data
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/api/user/profile/testuser', {
         username: 'newtestuser',
@@ -115,6 +124,30 @@ describe('EditUserOrgProfile', () => {
         name: 'newTest User',
         position: 'newDeveloper',
       });
+    });
+  });
+
+  test('error message can be retried', async () => {
+    api.get.mockResolvedValueOnce({ data: mockUserData });
+    api.put.mockRejectedValueOnce({ response: { data: { message: 'Update failed' } } });
+
+    render(
+        <Router>
+          <EditUserOrgProfile />
+        </Router>
+    );
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    });
+
+    expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
+
+    api.put.mockResolvedValueOnce({});
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalled();
     });
   });
 });
