@@ -69,13 +69,13 @@ const EditUserOrgProfile = () => {
     <div className="edit-user-org-profile">
       <h1>Edit User Organisation Profile</h1>
       <form onSubmit={handleSubmit}>
-        {['username', 'email', 'oldPassword', 'newPassword', 'name', 'position'].map((field) => (
+        {['username', 'email', 'name', 'position'].map((field) => (
           <div key={field}>
             <label htmlFor={field}>{field.replace(/([A-Z])/g, ' $1')}: </label>
             <input
               id={field}
               name={field}
-              type={field.includes('Password') ? 'password' : 'text'}
+              type="text"
               value={formData[field]}
               onChange={handleChange}
             />
