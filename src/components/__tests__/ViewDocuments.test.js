@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import Page from '../ViewDocuments';
 import api from '../../utils/api';
 import userEvent from "@testing-library/user-event";
+import log from '../../utils/logger';
 
 jest.mock('../../utils/api');  // Mock the API
 
@@ -22,7 +23,7 @@ Object.defineProperty(window, 'navigator', {
 describe('Page component tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});  // Mock console.error
+    jest.spyOn(log, 'error').mockImplementation(() => {});  // Mock console.error
   });
 
   afterEach(() => {
@@ -52,7 +53,7 @@ describe('Page component tests', () => {
     await waitFor(() => {
       expect(screen.queryByText('Document1')).not.toBeInTheDocument();
       expect(screen.queryByText('Document2')).not.toBeInTheDocument();
-      expect(console.error).toHaveBeenCalledWith('Failed to fetch documents:', expect.any(Error));
+      expect(log.error).toHaveBeenCalledWith('Failed to fetch documents', expect.any(Error));
     });
   });
 
