@@ -110,6 +110,7 @@ describe('EditProfile', () => {
     });
   });
 
+
   // New tests for updateUserProfile
   test('sanitizes input before sending to API', async () => {
     sanitizePlainText.mockImplementation((input) => `sanitized-${input}`);
@@ -152,3 +153,4 @@ describe('EditProfile', () => {
     });
   });
 });
+

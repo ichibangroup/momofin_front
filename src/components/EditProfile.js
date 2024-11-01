@@ -21,20 +21,39 @@ const FormField = ({ label, id, name, type = 'text', value, onChange, error }) =
 const EditProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState({ username: '', email: '', oldPassword: '', newPassword: '' });
+  const [user, setUser] = useState({
+    username: '',
+    email: '',
+    oldPassword: '',
+    newPassword: '',
+    name: '',
+    position: '',
+  });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const checkIfAdmin = (userData) => {
+    return userData.momofinAdmin || 
+           userData.organizationAdmin || 
+           userData.roles?.includes('ROLE_MOMOFIN_ADMIN') || 
+           userData.roles?.includes('ROLE_ORG_ADMIN');
+  };
 
   const fetchUserData = useCallback(async () => {
     try {
       setIsLoading(true);
       setApiError(null);
       const response = await api.get(`/api/user/profile/${userId}`);
+      const userData = response.data;
+      setIsAdmin(checkIfAdmin(userData));
       setUser(prevUser => ({
         ...prevUser,
-        username: response.data.username,
-        email: response.data.email
+        username: userData.username,
+        email: userData.email,
+        name: userData.name || '',
+        position: userData.position || '',
       }));
     } catch (error) {
       setApiError('Failed to fetch user data. Please try again.');
@@ -50,10 +69,14 @@ const EditProfile = () => {
   const updateUserProfile = async () => {
     try {
       setApiError(null);
-      // Sanitize the payload before sending
+
       const sanitizedPayload = {
         username: sanitizePlainText(user.username),
         email: sanitizePlainText(user.email),
+        ...(isAdmin && {
+          name: sanitizePlainText(user.name),
+          position: sanitizePlainText(user.position),
+        }),
       };
 
       await api.put(`/api/user/profile/${userId}`, sanitizedPayload, {
@@ -70,10 +93,12 @@ const EditProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     // Sanitize the input value as it changes
     const sanitizedValue = sanitizePlainText(value);
     setUser(prevUser => ({ ...prevUser, [name]: sanitizedValue }));
     // Clear error for the field being changed
+
     if (errors[name]) {
       setErrors(prevErrors => ({ ...prevErrors, [name]: undefined }));
     }
@@ -107,6 +132,26 @@ const EditProfile = () => {
       <div className="edit-profile">
         <h1>Edit Profile</h1>
         <form onSubmit={handleSubmit}>
+          {isAdmin && (
+            <>
+              <FormField
+                label="Name:"
+                id="name"
+                name="name"
+                value={user.name}
+                onChange={handleInputChange}
+                error={errors.name}
+              />
+              <FormField
+                label="Position:"
+                id="position"
+                name="position"
+                value={user.position}
+                onChange={handleInputChange}
+                error={errors.position}
+              />
+            </>
+          )}
           <FormField
               label="Username:"
               id="username"
