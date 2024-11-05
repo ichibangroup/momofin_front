@@ -137,6 +137,35 @@ describe('EditProfile Component', () => {
         expect(screen.getByText('Update failed')).toBeInTheDocument();
       });
     });
+
+    it('should clear field-specific error when input changes', async () => {
+      // Set up initial error state
+      validateUserProfile.mockReturnValue({ username: 'Username is required' });
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+
+      // Trigger form submission to get error state
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      // Verify error is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Username is required')).toBeInTheDocument();
+      });
+
+      // Change input to trigger error clearing
+      const usernameInput = screen.getByLabelText('Username');
+      fireEvent.change(usernameInput, { 
+        target: { name: 'username', value: 'newusername' } 
+      });
+
+      // Verify error is cleared
+      await waitFor(() => {
+        expect(screen.queryByText('Username is required')).not.toBeInTheDocument();
+      });
+    });
+
+    
   });
 
   describe('Password Fields', () => {
