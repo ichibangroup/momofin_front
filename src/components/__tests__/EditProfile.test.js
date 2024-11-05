@@ -139,29 +139,29 @@ describe('EditProfile Component', () => {
     });
   });
 
-describe('Password Fields', () => {
-  it('should handle password changes', async () => {
-    // Mock successful API call for fetching user data
-    api.get.mockResolvedValue({ data: mockUserData });
-
-    renderComponent();
-
-    // Wait for the Old Password input to appear after successful data fetching
-    await waitFor(() => {
-      expect(screen.getByLabelText('Old Password')).toBeInTheDocument();
+  describe('Password Fields', () => {
+    it('should handle password changes', async () => {
+      // Mock successful API call for fetching user data
+      api.get.mockResolvedValue({ data: mockUserData });
+  
+      renderComponent();
+  
+      // Wait for the Old Password input to appear after successful data fetching
+      await waitFor(() => {
+        expect(screen.getByLabelText('Old Password')).toBeInTheDocument();
+      });
+  
+      const oldPasswordInput = screen.getByLabelText('Old Password');
+      const newPasswordInput = screen.getByLabelText('New Password');
+  
+      fireEvent.change(oldPasswordInput, { target: { value: 'oldPassword123' } });
+      fireEvent.change(newPasswordInput, { target: { value: 'newPassword123' } });
+  
+      expect(oldPasswordInput.value).toBe('oldPassword123');
+      expect(newPasswordInput.value).toBe('newPassword123');
     });
-
-    const oldPasswordInput = screen.getByLabelText('Old Password');
-    const newPasswordInput = screen.getByLabelText('New Password');
-
-    fireEvent.change(oldPasswordInput, { target: { value: 'oldPassword123' } });
-    fireEvent.change(newPasswordInput, { target: { value: 'newPassword123' } });
-
-    expect(oldPasswordInput.value).toBe('oldPassword123');
-    expect(newPasswordInput.value).toBe('newPassword123');
   });
-});
-
+  
 
   describe('Navigation', () => {
     const mockNavigate = jest.fn();
