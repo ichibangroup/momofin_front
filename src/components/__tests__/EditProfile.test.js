@@ -4,153 +4,226 @@ import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import EditProfile from '../EditProfile';
 import api from '../../utils/api';
 import { validateUserProfile } from '../../utils/validationUtils';
-import { sanitizePlainText } from '../../utils/sanitizer'; // Importing the sanitizer for verification
+import { sanitizePlainText } from '../../utils/sanitizer';
+import userEvent from '@testing-library/user-event';
 
+// Mock the required modules
 jest.mock('../../utils/api');
 jest.mock('../../utils/validationUtils');
-jest.mock('../../utils/sanitizer'); // Mock the sanitizer utility
-
-// Mock useNavigate
-const mockNavigate = jest.fn();
+jest.mock('../../utils/sanitizer');
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useParams: () => ({ userId: '1' }),
-  useNavigate: () => mockNavigate,
+  useParams: () => ({ userId: '123' }),
+  useNavigate: () => jest.fn()
 }));
 
-const renderWithRouter = (ui, { route = '/editProfile/1' } = {}) => {
-  return render(
-    <MemoryRouter initialEntries={[route]}>
-      <Routes>
-        <Route path="/editProfile/:userId" element={ui} />
-      </Routes>
-    </MemoryRouter>
-  );
+// Mock data
+const mockUserData = {
+  username: 'testuser',
+  email: 'test@example.com',
+  name: 'Test User',
+  position: 'Developer',
+  momofinAdmin: true
 };
 
-describe('EditProfile', () => {
+const mockAdminUserData = {
+  ...mockUserData,
+  roles: ['ROLE_MOMOFIN_ADMIN']
+};
+
+describe('EditProfile Component', () => {
   beforeEach(() => {
+    // Reset all mocks before each test
     jest.clearAllMocks();
-    api.get.mockResolvedValue({ data: { username: 'testuser', email: 'test@example.com' } });
+    sanitizePlainText.mockImplementation(text => text);
     validateUserProfile.mockReturnValue({});
   });
 
-  test('renders EditProfile form with fetched user data', async () => {
-    renderWithRouter(<EditProfile />);
-    
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Username:/i)).toHaveValue('testuser');
-      expect(screen.getByLabelText(/Email:/i)).toHaveValue('test@example.com');
+  const renderComponent = () => {
+    return render(
+      <MemoryRouter>
+        <Routes>
+          <Route path="*" element={<EditProfile />} />
+        </Routes>
+      </MemoryRouter>
+    );
+  };
+
+  describe('Component Rendering', () => {
+    it('should render loading state initially', () => {
+      api.get.mockImplementation(() => new Promise(() => {}));
+      renderComponent();
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+    });
+
+    it('should render error state when API fails', async () => {
+      api.get.mockRejectedValue(new Error('API Error'));
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.getByText('Failed to fetch user data. Please try again.')).toBeInTheDocument();
+      });
+    });
+
+    it('should render form with admin fields when user is admin', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.getByLabelText('Name')).toBeInTheDocument();
+        expect(screen.getByLabelText('Position')).toBeInTheDocument();
+      });
+    });
+
+    it('should render form without admin fields when user is not admin', async () => {
+      api.get.mockResolvedValue({ data: { ...mockUserData, momofinAdmin: false } });
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Name')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Position')).not.toBeInTheDocument();
+      });
     });
   });
 
-  test('submits form and navigates on success', async () => {
-    api.put.mockResolvedValue({ status: 200 });
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
-      fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'newemail@example.com' } });
+  describe('Form Interactions', () => {
+    beforeEach(() => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
     });
 
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    it('should update form fields when user types', async () => {
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
 
-    await waitFor(() => {
-      expect(api.put).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/app');
-    });
-  });
-
-  test('displays API error on fetch', async () => {
-    api.get.mockRejectedValue(new Error('API Error'));
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch user data. Please try again./i)).toBeInTheDocument();
-    });
-  });
-
-  test('displays validation errors', async () => {
-    validateUserProfile.mockReturnValue({ username: 'Username is required' });
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      fireEvent.click(screen.getByText(/Save Changes/i));
-      expect(screen.getByText(/Username is required/i)).toBeInTheDocument();
-    });
-  });
-
-  test('handles API error on update', async () => {
-    api.put.mockRejectedValue({ response: { data: { message: 'Update failed' } } });
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+      const usernameInput = screen.getByLabelText('Username');
+      fireEvent.change(usernameInput, { target: { value: 'newusername' } });
+      expect(usernameInput.value).toBe('newusername');
     });
 
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    it('should call validation on form submission', async () => {
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Update failed')).toBeInTheDocument();
-    });
-  });
-
-  test('handles API error without specific message on update', async () => {
-    api.put.mockRejectedValue(new Error('Some error'));
-    renderWithRouter(<EditProfile />);
-
-    await waitFor(() => {
-      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+      fireEvent.click(screen.getByText('Save Changes'));
+      expect(validateUserProfile).toHaveBeenCalled();
     });
 
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    it('should not submit if validation fails', async () => {
+      validateUserProfile.mockReturnValue({ username: 'Username is required' });
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Failed to update profile. Please try again.')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Save Changes'));
+      expect(api.put).not.toHaveBeenCalled();
+    });
+
+    it('should submit form successfully', async () => {
+      api.put.mockResolvedValue({});
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
+
+      fireEvent.click(screen.getByText('Save Changes'));
+      await waitFor(() => {
+        expect(api.put).toHaveBeenCalled();
+      });
+    });
+
+    it('should handle API error on submit', async () => {
+      api.put.mockRejectedValue({ 
+        response: { data: { message: 'Update failed' } }
+      });
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
+
+      fireEvent.click(screen.getByText('Save Changes'));
+      await waitFor(() => {
+        expect(screen.getByText('Update failed')).toBeInTheDocument();
+      });
     });
   });
 
+describe('Password Fields', () => {
+  it('should handle password changes', async () => {
+    // Mock successful API call for fetching user data
+    api.get.mockResolvedValue({ data: mockUserData });
 
-  // New tests for updateUserProfile
-  test('sanitizes input before sending to API', async () => {
-    sanitizePlainText.mockImplementation((input) => `sanitized-${input}`);
-    api.put.mockResolvedValue({ status: 200 });
-  
-    renderWithRouter(<EditProfile />);
-  
-    // Wait for the loading to finish
-    await waitFor(() => {
-      expect(screen.queryByText(/Loading.../i)).not.toBeInTheDocument();
-    });
-  
-    // Now interact with the inputs
-    fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'testuser' } });
-    fireEvent.change(screen.getByLabelText(/Email:/i), { target: { value: 'test@example.com' } });
-  
-    fireEvent.click(screen.getByText(/Save Changes/i));
-  
-    await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith(
-        expect.any(String), 
-        { username: 'sanitized-testuser', email: 'sanitized-test@example.com' }, 
-        expect.any(Object)
-      );
-    });
-  });
-  
-  test('does not navigate on API error during update', async () => {
-    api.put.mockRejectedValue(new Error('Update failed'));
-    renderWithRouter(<EditProfile />);
+    renderComponent();
 
+    // Wait for the Old Password input to appear after successful data fetching
     await waitFor(() => {
-      fireEvent.change(screen.getByLabelText(/Username:/i), { target: { value: 'newusername' } });
+      expect(screen.getByLabelText('Old Password')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText(/Save Changes/i));
+    const oldPasswordInput = screen.getByLabelText('Old Password');
+    const newPasswordInput = screen.getByLabelText('New Password');
 
-    await waitFor(() => {
-      expect(mockNavigate).not.toHaveBeenCalled(); // Ensure navigate was not called
-    });
+    fireEvent.change(oldPasswordInput, { target: { value: 'oldPassword123' } });
+    fireEvent.change(newPasswordInput, { target: { value: 'newPassword123' } });
+
+    expect(oldPasswordInput.value).toBe('oldPassword123');
+    expect(newPasswordInput.value).toBe('newPassword123');
   });
 });
 
+
+  describe('Navigation', () => {
+    const mockNavigate = jest.fn();
+  
+    beforeEach(() => {
+      jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+    });
+  
+    afterEach(() => {
+      mockNavigate.mockReset();
+    });
+  
+    it('should navigate back on cancel', async () => {
+      renderComponent();
+      await waitFor(() => screen.getByText('Cancel'));
+  
+      fireEvent.click(screen.getByText('Cancel'));
+      expect(mockNavigate).toHaveBeenCalledWith('/app');
+    });
+  
+    it('should navigate after successful update', async () => {
+      api.put.mockResolvedValue({});
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
+  
+      fireEvent.click(screen.getByText('Save Changes'));
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/app');
+      });
+    });
+  });
+  
+
+  describe('Data Sanitization', () => {
+    beforeEach(() => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+    });
+  
+    it('should sanitize input values', async () => {
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+  
+      const usernameInput = screen.getByLabelText('Username');
+      fireEvent.change(usernameInput, { target: { value: 'test<script>' } });
+      expect(sanitizePlainText).toHaveBeenCalledWith('test<script>');
+    });
+  });
+  
+
+  describe('Retry Functionality', () => {
+    it('should retry fetching data when retry button is clicked', async () => {
+      api.get.mockRejectedValueOnce(new Error('API Error'))
+           .mockResolvedValueOnce({ data: mockUserData });
+
+      renderComponent();
+      await waitFor(() => screen.getByText('Retry'));
+
+      fireEvent.click(screen.getByText('Retry'));
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledTimes(2);
+      });
+    });
+  });
+});

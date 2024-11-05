@@ -1,12 +1,28 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import './EditUserOrgProfile.css';
+
+const FormField = ({ label, id, name, type = 'text', value, onChange }) => (
+  <div className="form-field">
+    <label className="form-label" htmlFor={id}>
+      {label}
+    </label>
+    <input
+      className="form-input"
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+    />
+  </div>
+);
 
 const EditUserOrgProfile = () => {
-  const  { userId } = useParams();
+  const { userId } = useParams();
   const navigate = useNavigate();
 
-  // RAHHHHHHHHH
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -20,7 +36,7 @@ const EditUserOrgProfile = () => {
     const fetchUserData = async () => {
       try {
         const response = await api.get(`/api/user/profile/${userId}`);
-        console.log(response.data)
+        console.log(response.data);
         setFormData({
           username: response.data.username,
           email: response.data.email,
@@ -37,8 +53,8 @@ const EditUserOrgProfile = () => {
   }, [userId]);
 
   const handleChange = (e) => {
-    const {name, value} = e.target;
-    setFormData((prev) => ({...prev, [name]: value}));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -52,38 +68,73 @@ const EditUserOrgProfile = () => {
   };
 
   if (isLoading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading-container">Loading...</div>;
   }
 
   if (apiError) {
     return (
-        <div className="error-container">
-          <div className="error">{apiError}</div>
-          <button onClick={() => setApiError(null)} className="retry-button">
-            Retry
-          </button>
-        </div>
+      <div className="error-container">
+        <div className="error-message">{apiError}</div>
+        <button onClick={() => setApiError(null)} className="button button-retry">
+          Retry
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="edit-user-org-profile">
-      <h1>Edit User Organisation Profile</h1>
-      <form onSubmit={handleSubmit}>
-        {['username', 'email', 'name', 'position'].map((field) => (
-          <div key={field}>
-            <label htmlFor={field}>{field.replace(/([A-Z])/g, ' $1')}: </label>
-            <input
-              id={field}
-              name={field}
-              type="text"
-              value={formData[field]}
+    <div className="edit-profile-container">
+      <div className="decorative-lines"></div>
+      <div className="edit-profile-content">
+        <h1 className="page-title">Edit User Organisation Profile</h1>
+        <form onSubmit={handleSubmit} className="profile-form">
+          <div className="form-row">
+            <FormField
+              label="Name"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Username"
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
             />
           </div>
-        ))}
-        <button type="submit">Save Changes</button>
-      </form>
+          <div className="form-row">
+            <FormField
+              label="Position"
+              id="position"
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+            />
+            <FormField
+              label="Email"
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="button-container">
+            <button
+              type="button"
+              onClick={() => navigate('/app')}
+              className="button button-secondary"
+            >
+              Cancel
+            </button>
+            <button type="submit" className="button button-primary">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
