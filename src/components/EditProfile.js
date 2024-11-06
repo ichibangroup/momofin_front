@@ -5,6 +5,38 @@ import { validateUserProfile } from '../utils/validationUtils';
 import { sanitizePlainText } from '../utils/sanitizer';
 import './EditProfile.css';
 
+const FormFieldWithTooltip = ({ 
+  label, 
+  id, 
+  name, 
+  type = 'text', 
+  value, 
+  onChange, 
+  error,
+  tooltipText 
+}) => (
+  <div className="form-field">
+    <label className="form-label" htmlFor={id}>{label}</label>
+    <div className="input-tooltip-container">
+      <input
+        className="form-input"
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+      />
+      {tooltipText && (
+        <div className="tooltip">
+          <div className="tooltip-content">
+            {tooltipText}
+          </div>
+        </div>
+      )}
+    </div>
+    {error && <span className="form-error">{error}</span>}
+  </div>
+);
 
 const FormField = ({ label, id, name, type = 'text', value, onChange, error }) => (
   <div className="form-field">
@@ -32,10 +64,12 @@ const EditProfile = () => {
     name: '',
     position: '',
   });
+  const [originalUsername, setOriginalUsername] = useState('');
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showReauthAlert, setShowReauthAlert] = useState(false);
 
   const checkIfAdmin = (userData) => {
     return userData.momofinAdmin || 
@@ -51,6 +85,7 @@ const EditProfile = () => {
       const response = await api.get(`/api/user/profile/${userId}`);
       const userData = response.data;
       setIsAdmin(checkIfAdmin(userData));
+      setOriginalUsername(userData.username);
       setUser(prevUser => ({
         ...prevUser,
         username: userData.username,
@@ -72,6 +107,13 @@ const EditProfile = () => {
   const updateUserProfile = async () => {
     try {
       setApiError(null);
+      
+      const isUsernameChanged = user.username !== originalUsername;
+      
+      if (isUsernameChanged) {
+        setShowReauthAlert(true);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
 
       const sanitizedPayload = {
         username: sanitizePlainText(user.username),
@@ -88,9 +130,20 @@ const EditProfile = () => {
           newPassword: user.newPassword,
         },
       });
-      navigate('/app');
+
+      if (isUsernameChanged) {
+        navigate('/login', { 
+          state: { 
+            message: 'Your username has been updated. Please login again with your new username.',
+            username: user.username
+          } 
+        });
+      } else {
+        navigate('/app');
+      }
     } catch (error) {
       setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
+      setShowReauthAlert(false);
     }
   };
 
@@ -129,6 +182,11 @@ const EditProfile = () => {
 
   return (
     <div className="edit-profile-container">
+      {showReauthAlert && (
+        <div className="alert alert-info">
+          Changing your username will require you to login again.
+        </div>
+      )}
       <div className="decorative-lines"></div>
       <div className="edit-profile-content">
         <h1 className="page-title">Edit Profile</h1>
@@ -144,13 +202,14 @@ const EditProfile = () => {
                 error={errors.name}
               />
             )}
-            <FormField
+            <FormFieldWithTooltip
               label="Username"
               id="username"
               name="username"
               value={user.username}
               onChange={handleInputChange}
               error={errors.username}
+              tooltipText="Changing your username will require you to login again"
             />
           </div>
           <div className="form-row">

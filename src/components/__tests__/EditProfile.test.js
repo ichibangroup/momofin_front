@@ -88,7 +88,6 @@ describe('EditProfile Component', () => {
       api.get.mockResolvedValue({ data: mockAdminUserData });
     });
 
-//RAHHHHHH
     it('should update form fields when user types', async () => {
       renderComponent();
       await waitFor(() => screen.getByLabelText('Username'));
@@ -164,6 +163,130 @@ describe('EditProfile Component', () => {
       await waitFor(() => {
         expect(screen.queryByText('Username is required')).not.toBeInTheDocument();
       });
+    });
+
+    it('should show reauth alert and navigate to login when username is changed', async () => {
+      // Mock successful API update
+      api.put.mockResolvedValue({});
+      const mockNavigate = jest.fn();
+      jest.spyOn(require('react-router-dom'), 'useNavigate')
+          .mockReturnValue(mockNavigate);
+  
+      // Render component
+      renderComponent();
+      
+      // Wait for component to load
+      await waitFor(() => screen.getByLabelText('Username'));
+  
+      // Change username
+      const usernameInput = screen.getByLabelText('Username');
+      fireEvent.change(usernameInput, { 
+        target: { name: 'username', value: 'newusername' } 
+      });
+  
+      // Submit form
+      fireEvent.click(screen.getByText('Save Changes'));
+  
+      // Verify reauth alert appears
+      await waitFor(() => {
+        expect(screen.getByText('Changing your username will require you to login again.')).toBeInTheDocument();
+      });
+  
+      // Wait for the setTimeout
+      await new Promise(resolve => setTimeout(resolve, 100));
+  
+      // Verify API call
+      await waitFor(() => {
+        expect(api.put).toHaveBeenCalled();
+      });
+  
+      // Verify navigation to login with correct state
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/login', {
+          state: {
+            message: 'Your username has been updated. Please login again with your new username.',
+            username: 'newusername'
+          }
+        });
+      });
+    });
+
+    it('should not show reauth alert or navigate to login when username is unchanged', async () => {
+      // Mock successful API update
+      api.put.mockResolvedValue({});
+      const mockNavigate = jest.fn();
+      jest.spyOn(require('react-router-dom'), 'useNavigate')
+          .mockReturnValue(mockNavigate);
+  
+      // Render component
+      renderComponent();
+      
+      // Wait for component to load
+      await waitFor(() => screen.getByLabelText('Username'));
+  
+      // Change email (but not username)
+      const emailInput = screen.getByLabelText('Email');
+      fireEvent.change(emailInput, { 
+        target: { name: 'email', value: 'newemail@example.com' } 
+      });
+  
+      // Submit form
+      fireEvent.click(screen.getByText('Save Changes'));
+  
+      // Verify reauth alert does not appear
+      await waitFor(() => {
+        expect(screen.queryByText('Changing your username will require you to login again.')).not.toBeInTheDocument();
+      });
+  
+      // Verify API call
+      await waitFor(() => {
+        expect(api.put).toHaveBeenCalled();
+      });
+  
+      // Verify navigation to app instead of login
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/app');
+      });
+    });
+
+    it('should hide reauth alert and clear error when API call fails', async () => {
+      // Mock failed API update
+      api.put.mockRejectedValue({ 
+        response: { data: { message: 'Update failed' } }
+      });
+      
+      const mockNavigate = jest.fn();
+      jest.spyOn(require('react-router-dom'), 'useNavigate')
+          .mockReturnValue(mockNavigate);
+  
+      // Render component
+      renderComponent();
+      
+      // Wait for component to load
+      await waitFor(() => screen.getByLabelText('Username'));
+  
+      // Change username
+      const usernameInput = screen.getByLabelText('Username');
+      fireEvent.change(usernameInput, { 
+        target: { name: 'username', value: 'newusername' } 
+      });
+  
+      // Submit form
+      fireEvent.click(screen.getByText('Save Changes'));
+  
+      // Verify reauth alert appears initially
+      await waitFor(() => {
+        expect(screen.getByText('Changing your username will require you to login again.')).toBeInTheDocument();
+      });
+  
+      // Verify error message appears and reauth alert is hidden after API failure
+      await waitFor(() => {
+        expect(screen.getByText('Update failed')).toBeInTheDocument();
+        expect(screen.queryByText('Changing your username will require you to login again.')).not.toBeInTheDocument();
+      });
+  
+      // Verify we didn't navigate
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     
