@@ -49,6 +49,65 @@ describe('EditProfile Component', () => {
     );
   };
 
+  describe('FormField Component', () => {
+    it('should render error message when error prop is provided', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      
+      // Mock validateUserProfile to return an error
+      validateUserProfile.mockReturnValue({ username: 'Username is invalid' });
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+
+      // Submit form to trigger error
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      // Check if error message is displayed
+      expect(screen.getByText('Username is invalid')).toBeInTheDocument();
+    });
+  });
+
+  describe('User Data Handling', () => {
+    it('should handle missing name and position in user data', async () => {
+      // Mock user data without name and position
+      const userDataWithoutOptionals = {
+        ...mockAdminUserData,
+        name: undefined,
+        position: undefined
+      };
+      
+      api.get.mockResolvedValue({ data: userDataWithoutOptionals });
+      
+      renderComponent();
+      
+      await waitFor(() => screen.getByLabelText('Name'));
+      
+      // Check if the name and position fields are empty strings
+      expect(screen.getByLabelText('Name')).toHaveValue('');
+      expect(screen.getByLabelText('Position')).toHaveValue('');
+    });
+
+    it('should handle API error without response data message', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      
+      // Mock API error without response.data.message
+      api.put.mockRejectedValue({ 
+        response: {} // No data.message property
+      });
+      
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
+      
+      // Submit form to trigger error
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      // Check if default error message is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Failed to update profile. Please try again.')).toBeInTheDocument();
+      });
+    });
+  });
+  
   describe('Component Rendering', () => {
     it('should render loading state initially', () => {
       api.get.mockImplementation(() => new Promise(() => {}));
