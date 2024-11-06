@@ -7,6 +7,7 @@ import { validateUserProfile } from '../../utils/validationUtils';
 import { sanitizePlainText } from '../../utils/sanitizer';
 import userEvent from '@testing-library/user-event';
 
+
 // Mock the required modules
 jest.mock('../../utils/api');
 jest.mock('../../utils/validationUtils');
@@ -52,19 +53,91 @@ describe('EditProfile Component', () => {
   describe('FormField Component', () => {
     it('should render error message when error prop is provided', async () => {
       api.get.mockResolvedValue({ data: mockAdminUserData });
-      
-      // Mock validateUserProfile to return an error
       validateUserProfile.mockReturnValue({ username: 'Username is invalid' });
       
       renderComponent();
       await waitFor(() => screen.getByLabelText('Username'));
 
-      // Submit form to trigger error
       fireEvent.click(screen.getByText('Save Changes'));
       
-      // Check if error message is displayed
       expect(screen.getByText('Username is invalid')).toBeInTheDocument();
     });
+
+    it('should not render error message when error prop is null', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+      
+      const usernameField = screen.getByLabelText('Username').closest('.form-field');
+      expect(usernameField.querySelector('.form-error')).toBeNull();
+    });
+
+    it('should not render error message when error prop is undefined', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      validateUserProfile.mockReturnValue({ email: 'Email is invalid' }); // Error on different field
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+      
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      const usernameField = screen.getByLabelText('Username').closest('.form-field');
+      expect(usernameField.querySelector('.form-error')).toBeNull();
+    });
+
+    it('should not render error message when error prop is empty string', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      validateUserProfile.mockReturnValue({ username: '' });
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+      
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      const usernameField = screen.getByLabelText('Username').closest('.form-field');
+      expect(usernameField.querySelector('.form-error')).toBeNull();
+    });
+
+    it('should handle multiple error messages on different fields', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      validateUserProfile.mockReturnValue({
+        username: 'Username is invalid',
+        email: 'Email is invalid'
+      });
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+      
+      fireEvent.click(screen.getByText('Save Changes'));
+      
+      expect(screen.getByText('Username is invalid')).toBeInTheDocument();
+      expect(screen.getByText('Email is invalid')).toBeInTheDocument();
+    });
+
+    it('should clear error message when input changes', async () => {
+      api.get.mockResolvedValue({ data: mockAdminUserData });
+      validateUserProfile
+        .mockReturnValueOnce({ username: 'Username is invalid' })
+        .mockReturnValueOnce({});
+      
+      renderComponent();
+      await waitFor(() => screen.getByLabelText('Username'));
+      
+      // Trigger error
+      fireEvent.click(screen.getByText('Save Changes'));
+      expect(screen.getByText('Username is invalid')).toBeInTheDocument();
+      
+      // Change input
+      fireEvent.change(screen.getByLabelText('Username'), {
+        target: { name: 'username', value: 'newvalue' }
+      });
+      
+      // Error should be cleared
+      expect(screen.queryByText('Username is invalid')).not.toBeInTheDocument();
+    });
+
+
   });
 
   describe('User Data Handling', () => {
@@ -107,7 +180,7 @@ describe('EditProfile Component', () => {
       });
     });
   });
-  
+
   describe('Component Rendering', () => {
     it('should render loading state initially', () => {
       api.get.mockImplementation(() => new Promise(() => {}));
