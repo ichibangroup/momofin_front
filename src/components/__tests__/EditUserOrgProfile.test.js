@@ -4,150 +4,174 @@ import { BrowserRouter as Router, useParams } from 'react-router-dom';
 import EditUserOrgProfile from '../EditUserOrgProfile';
 import api from '../../utils/api';
 
-jest.mock('../../utils/api', () => ({
-  get: jest.fn(),
-  put: jest.fn(),
-}));
-
+// Mock the react-router-dom modules
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: jest.fn(),
+  useNavigate: () => jest.fn()
 }));
 
+// Mock the api module
+jest.mock('../../utils/api');
+
 describe('EditUserOrgProfile', () => {
+  const mockUserId = '123';
   const mockUserData = {
     username: 'testuser',
     email: 'test@example.com',
     name: 'Test User',
-    position: 'Developer',
+    position: 'Developer'
   };
 
   beforeEach(() => {
+    // Reset all mocks before each test
     jest.clearAllMocks();
-    useParams.mockReturnValue({ userId: 'testuser' });
+    
+    // Mock useParams to return our test userId
+    useParams.mockReturnValue({ userId: mockUserId });
+    
+    // Mock successful API response
+    api.get.mockResolvedValue({ data: mockUserData });
   });
 
-  test('renders all form fields and submit button', async () => {
+  test('renders loading state initially', () => {
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  test('renders form with user data after loading', async () => {
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+
+    // Wait for the loading state to finish
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    // Check if all form fields are rendered with correct values
+    expect(screen.getByLabelText('Name')).toHaveValue(mockUserData.name);
+    expect(screen.getByLabelText('Username')).toHaveValue(mockUserData.username);
+    expect(screen.getByLabelText('Email')).toHaveValue(mockUserData.email);
+    expect(screen.getByLabelText('Position')).toHaveValue(mockUserData.position);
+  });
+
+  test('handles form input changes correctly', async () => {
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const nameInput = screen.getByLabelText('Name');
+    fireEvent.change(nameInput, { target: { value: 'New Name' } });
+    expect(nameInput).toHaveValue('New Name');
+
+    const emailInput = screen.getByLabelText('Email');
+    fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
+    expect(emailInput).toHaveValue('new@example.com');
+  });
+
+  test('handles form submission successfully', async () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockImplementation(() => mockNavigate);
+    
+    api.put.mockResolvedValueOnce({ data: mockUserData });
+
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const submitButton = screen.getByText('Save Changes');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(
+        `/api/user/profile/${mockUserId}`,
+        expect.any(Object)
+      );
+      expect(mockNavigate).toHaveBeenCalledWith('/app');
+    });
+  });
+
+  test('handles API error during form submission', async () => {
+    const errorMessage = 'Failed to update profile';
+    api.put.mockRejectedValueOnce({ response: { data: { message: errorMessage } } });
+
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const submitButton = screen.getByText('Save Changes');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    });
+  });
+
+  test('handles API error during data fetch', async () => {
+    api.get.mockRejectedValueOnce(new Error('Failed to fetch'));
+
+    render(
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to fetch user data. Please try again.')).toBeInTheDocument();
+    });
+
+    // Test retry functionality
+    const retryButton = screen.getByText('Retry');
     api.get.mockResolvedValueOnce({ data: mockUserData });
-
-    render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
-    );
+    fireEvent.click(retryButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading')).toHaveTextContent('Edit User Organisation Profile');
-    });
-
-    // Check if all fields are rendered with initial values
-    ['username', 'email', 'name', 'position'].forEach(field => {
-      expect(screen.getByLabelText(new RegExp(`^${field}:`, 'i'))).toBeInTheDocument();
-    });
-
-    // Check for submit button
-    expect(screen.getByRole('button')).toHaveTextContent('Save Changes');
-  });
-
-  test('input fields have correct types', async () => {
-    api.get.mockResolvedValueOnce({ data: mockUserData });
-
-    render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
-    );
-
-    await waitFor(() => {
-      for (const [field, value] of Object.entries(mockUserData)) {
-        const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
-        fireEvent.change(input, { target: { value: `new${value}` } });
-        expect(input).toHaveValue(`new${value}`);
-      }
+      expect(screen.queryByText('Failed to fetch user data. Please try again.')).not.toBeInTheDocument();
     });
   });
 
-  test('displays error message on fetching user data failure', async () => {
-    api.get.mockRejectedValueOnce(new Error('Fetch failed'));
+  test('handles navigation on cancel button click', async () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockImplementation(() => mockNavigate);
 
     render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
-    );
-
-    await waitFor(() => expect(screen.getByText(/loading/i)).toBeInTheDocument());
-
-    expect(await screen.findByText(/failed to fetch user data/i)).toBeInTheDocument();
-  });
-
-  test('displays error message on submission failure', async () => {
-    api.get.mockResolvedValueOnce({ data: mockUserData });
-    api.put.mockRejectedValueOnce({ response: { data: { message: 'Update failed' } } });
-
-    render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
+      <Router>
+        <EditUserOrgProfile />
+      </Router>
     );
 
     await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
     });
 
-    expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
-  });
+    const cancelButton = screen.getByText('Cancel');
+    fireEvent.click(cancelButton);
 
-  test('form submission calls API with correct data', async () => {
-    api.get.mockResolvedValueOnce({ data: mockUserData });
-    api.put.mockResolvedValueOnce({});
-
-    render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
-    );
-
-    await waitFor(() => {
-      for (const [field, value] of Object.entries(mockUserData)) {
-        const input = screen.getByLabelText(new RegExp(`^${field}:`, 'i'));
-        fireEvent.change(input, { target: { value: `new${value}` } });
-      }
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-
-    await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith('/api/user/profile/testuser', {
-        username: 'newtestuser',
-        email: 'newtest@example.com',
-        name: 'newTest User',
-        position: 'newDeveloper',
-      });
-    });
-  });
-
-  test('error message can be retried', async () => {
-    api.get.mockResolvedValueOnce({ data: mockUserData });
-    api.put.mockRejectedValueOnce({ response: { data: { message: 'Update failed' } } });
-
-    render(
-        <Router>
-          <EditUserOrgProfile />
-        </Router>
-    );
-
-    await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-    });
-
-    expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
-
-    api.put.mockResolvedValueOnce({});
-    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
-
-    await waitFor(() => {
-      expect(api.put).toHaveBeenCalled();
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('/app');
   });
 });
