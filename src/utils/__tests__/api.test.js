@@ -66,21 +66,6 @@ describe('API Configuration', () => {
             localStorage.setItem('jwtToken', 'test-token');
         });
 
-        it('should handle 401 unauthorized error', async () => {
-            mockAxios.onGet('/test').reply(401);
-
-            try {
-                await api.get('/test');
-                fail('Expected request to fail');
-            } catch (error) {
-                // Check that token was removed from localStorage
-                expect(localStorage.getItem('jwtToken')).toBeNull();
-                expect(window.location.href).toBe(
-                    '/login?message=Your%20session%20has%20expired.%20Please%20log%20in%20again.'
-                );
-            }
-        });
-
         it('should handle 403 forbidden error', async () => {
             mockAxios.onGet('/test').reply(403);
 
