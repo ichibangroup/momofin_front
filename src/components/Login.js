@@ -121,7 +121,7 @@ function Login({ onSubmit }) {
 
   return (
     <div className="login-container">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="login-form">
         <div className="header-container">
           <h2>Sign In</h2>
           <img src={logo} alt="Logo" className="login-logo" />

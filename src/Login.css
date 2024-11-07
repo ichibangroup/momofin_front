@@ -7,7 +7,7 @@
   margin: 0;
 }
 
-form {
+.login-form {
   background: white;
   padding: 3em;
   border-radius: 20px;
