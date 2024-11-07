@@ -33,16 +33,17 @@ const AddOrganisation = () => {
       const response = await api.post('/api/momofin-admin/organizations', organisationData);
       console.log('Submitted organization and admin data: ', response.data);
       if (response.status === 200) {
-        navigate('/app/viewOrg')
+        // Clear form after submit
+        setName('');
+        setIndustry('');
+        setAddress('');
+        setDescription('');
+        setUsername('');
+        setPassword('');
+
+        navigate('/app/viewOrg');
       }
-      // Clear form after submit
-      setName('');
-      setIndustry('');
-      setAddress('');
-      setDescription('');
-      setUsername('');
-      setPassword('');
-      } catch (error) {
+    } catch (error) {
       setApiError(error.response?.data?.message || 'Failed to add organisation. Plesae try again.');
     } finally {
       setIsSubmitting(false);
