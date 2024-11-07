@@ -66,9 +66,7 @@ const ConfigOrganisation = () => {
   return (
       <div className="config-organisation" data-testid="config-organisation">
         <header className="header">
-          <button className="menu-button">☰</button>
           <h1 className="title">Configure Organisation</h1>
-          <div className="logo">🔹</div>
         </header>
 
         <main className="main-content">
