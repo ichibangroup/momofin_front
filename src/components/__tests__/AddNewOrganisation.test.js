@@ -137,32 +137,22 @@ test('does not allow form submission with missing required fields', async () => 
   expect(screen.getByLabelText('Password:').value).toBe('');
 });
 
-test('navigates and clears any previous error messages on successful submission', async () => {
-  useNavigate.mockReturnValue(mockNavigate);
-
-  api.post.mockRejectedValueOnce({response: {data: {message: 'Error creating organization'}}});
-  api.post.mockResolvedValueOnce({status: 200});
+test('does not navigate on non-200 successful response', async () => {
+  api.post.mockResolvedValueOnce({ status: 201 });
 
   renderWithRouter(<AddOrganisation />);
 
-  fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
-  fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
-  fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
-  fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
-  fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
-  fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
+  fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
+  fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
+  fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
+  fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
+  fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
 
-  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
-  expect(await screen.findByText('Error creating organization')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
 
-  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
-
-  await waitFor(() => {
-    expect(api.post).toHaveBeenCalledTimes(2);
-    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
-  });
-
-  // Assert the error message clears after success
-  expect(screen.queryByText('Error creating organization')).not.toBeInTheDocument();
+  await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+  expect(mockNavigate).not.toHaveBeenCalled();
 });
+
 
