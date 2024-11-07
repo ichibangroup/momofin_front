@@ -52,7 +52,7 @@ test('inputs accept values and handle changes', () => {
 // Test form submission and clearing inputs
 test('submits form and clears inputs', async () => {
   const mockNavigate = jest.fn();
-  jest.mocked(useNavigate).mockReturnValue(mockNavigate);[]
+  jest.mocked(useNavigate).mockReturnValue(mockNavigate);
 
   api.post.mockResolvedValueOnce({ status: 200 });
 
@@ -155,3 +155,20 @@ test('submits form and clears inputs', async () => {
     expect(screen.getByLabelText('Username:').value).toBe('');
     expect(screen.getByLabelText('Password:').value).toBe('');
   });
+
+// Test form submission and error handling
+test('handles API error', async () => {
+  api.post.mockRejectedValueOnce({ response: { data: { message: 'Error creating organization' } } });
+
+  renderWithRouter(<AddOrganisation />);
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
+  fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
+  fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
+  fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
+  fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
+  fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
+
+  fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+
+  expect(await screen.findByText('Error creating organization')).toBeInTheDocument();
+});
