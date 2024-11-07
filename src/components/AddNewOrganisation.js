@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import api from '../utils/api';
 import './AddNewOrganisation.css';
 
 const AddOrganisation = () => {
@@ -8,25 +10,43 @@ const AddOrganisation = () => {
   const [description, setDescription] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [apiError, setApiError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Implement logic to submit organization and admin user data
-    console.log('Submitted organization and admin data:', {
+    setIsSubmitting(true);
+    setApiError(null);
+
+    const organisationData = {
       name,
       industry,
-      address,
+      location: address,
       description,
-      username,
-      password,
-    });
-    // Clear form after submit
-    setName('');
-    setIndustry('');
-    setAddress('');
-    setDescription('');
-    setUsername('');
-    setPassword('');
+      adminUsername: username,
+      adminPassword: password,
+    };
+
+    // Implement logic to submit organization and admin user data
+    try {
+      const response = await api.post('/api/momofin-admin/organizations', organisationData);
+      console.log('Submitted organization and admin data: ', response.data);
+      if (response.status === 200) {
+        navigate('/app/viewOrg')
+      }
+      // Clear form after submit
+      setName('');
+      setIndustry('');
+      setAddress('');
+      setDescription('');
+      setUsername('');
+      setPassword('');
+      } catch (error) {
+      setApiError(error.response?.data?.message || 'Failed to add organisation. Plesae try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,8 +121,9 @@ const AddOrganisation = () => {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              Add Organisation
+            {apiError && <div className="error-message">{apiError}</div>}
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Add Organisation'}
             </button>
           </form>
         </div>
