@@ -4,8 +4,13 @@ import '@testing-library/jest-dom/extend-expect';
 import {MemoryRouter} from 'react-router-dom';
 import AddOrganisation from '../AddNewOrganisation';
 import api from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 jest.mock('../../utils/api');
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn(),
+}));
 
 const renderWithRouter = (ui) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -46,7 +51,10 @@ test('inputs accept values and handle changes', () => {
 
 // Test form submission and clearing inputs
 test('submits form and clears inputs', async () => {
-  api.post.mockResolvedValueOnce({status: 200});
+  const mockNavigate = jest.fn();
+  jest.mocked(useNavigate).mockReturnValue(mockNavigate);[]
+
+  api.post.mockResolvedValueOnce({ status: 200 });
 
   renderWithRouter(<AddOrganisation/>);
   fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
@@ -68,6 +76,8 @@ test('submits form and clears inputs', async () => {
     expect(screen.getByLabelText('Username:').value).toBe('');
     expect(screen.getByLabelText('Password:').value).toBe('');
   });
+
+  expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
 });
 
 // Test error message display on API error
