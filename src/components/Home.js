@@ -1,27 +1,33 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import '../Home.css';  
+import { useNavigate } from 'react-router-dom';
+
 
 function Home() {
+  const navigate = useNavigate();
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      // Handle navigation or other actions as needed
+    }
+  };
+
   return (
     <div className="home-container">
       <div className="branding">
         <h1>MOMOFIN</h1>
         <p>A safer place to store your documents.</p>
       </div>
+      
       <div className="action-boxes-container">
-        <div className="action-box view-box">
-          <h3>View</h3>
-          <Link to="/viewDocuments" className="learn-more-link">Learn More</Link>
+        <div className="action-box view-box" onClick={() => navigate('viewDocuments')} role="button" onKeyDown={handleKeyDown}style={{ cursor: 'pointer' }}>
+          <h3>View Documents</h3>
         </div>
-        <div className="action-box upload-box">
-          <h3>Upload</h3>
-          <Link to="/uploadDocuments" className="learn-more-link">Learn More</Link>
+
+        <div className="action-box verify-box" onClick={() => navigate('verify')}  role="button" onKeyDown={handleKeyDown} style={{ cursor: 'pointer' }}>
+          <h3>Upload and Verify Documents</h3>
         </div>
-        <div className="action-box verify-box">
-          <h3>Verify</h3>
-          <Link to="/verifyDocuments" className="learn-more-link">Learn More</Link>
-        </div>
+
       </div>
     </div>
   );
