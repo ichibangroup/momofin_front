@@ -1,11 +1,26 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
+import {MemoryRouter} from 'react-router-dom';
 import AddOrganisation from '../AddNewOrganisation';
+import api from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
+
+jest.mock('../../utils/api');
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn(),
+}));
+
+const mockNavigate = jest.fn();
+
+function renderWithRouter(ui) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 // Test that the component renders correctly
 test('renders Add Organisation form', () => {
-  render(<AddOrganisation />);
+  renderWithRouter(<AddOrganisation />);
   expect(screen.getByRole('heading', { name: 'Add Organisation' })).toBeInTheDocument();
   expect(screen.getByLabelText('Organisation Name:')).toBeInTheDocument();
   expect(screen.getByLabelText('Industry:')).toBeInTheDocument();
@@ -17,43 +32,103 @@ test('renders Add Organisation form', () => {
   expect(screen.getByRole('button', { name: 'Add Organisation' })).toBeInTheDocument();
 });
 
-// Test that form inputs can change values
-test('inputs accept values and handle changes', () => {
-  render(<AddOrganisation />);
+// Test form submission and clearing inputs
+test('submits form and clears inputs', async () => {
+  useNavigate.mockReturnValue(mockNavigate);
 
-  // Simulate input for each field
-  fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-  fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-  fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-  fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
-  fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
-  fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
+  api.post.mockResolvedValueOnce({status: 200});
 
-  // Check if the values have changed
-  expect(screen.getByLabelText('Organisation Name:').value).toBe('TestOrg');
-  expect(screen.getByLabelText('Industry:').value).toBe('Technology');
-  expect(screen.getByLabelText('Address:').value).toBe('123 Main St');
-  expect(screen.getByLabelText('Description:').value).toBe('An example organisation');
-  expect(screen.getByLabelText('Username:').value).toBe('adminUser');
-  expect(screen.getByLabelText('Password:').value).toBe('adminPass');
+  renderWithRouter(<AddOrganisation />);
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+  fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+  fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+  fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+  fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+  fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+
+  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
+
+  await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Organisation Name:').value).toBe('');
+    expect(screen.getByLabelText('Industry:').value).toBe('');
+    expect(screen.getByLabelText('Address:').value).toBe('');
+    expect(screen.getByLabelText('Description:').value).toBe('');
+    expect(screen.getByLabelText('Username:').value).toBe('');
+    expect(screen.getByLabelText('Password:').value).toBe('');
+  });
+
+  expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
 });
 
-// Test form submission and clearing inputs
-test('submits form and clears inputs', () => {
-  render(<AddOrganisation />);
+test('displays error message on API error', async () => {
+  api.post.mockRejectedValueOnce({response: {data: {message: 'Error creating organization'}}});
 
-  // Fill in the form
-  fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-  fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-  fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-  fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
-  fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
-  fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
+  renderWithRouter(<AddOrganisation />);
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+  fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+  fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+  fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+  fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+  fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
 
-  // Submit the form
-  fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
 
-  // Check that the form inputs are cleared after submission
+  expect(await screen.findByText('Error creating organization')).toBeInTheDocument();
+});
+
+test('disables the submit button while submitting', async () => {
+  api.post.mockResolvedValueOnce({status: 200});
+
+  renderWithRouter(<AddOrganisation />);
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+  fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+  fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+  fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+  fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+  fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+
+  const submitButton = screen.getByRole('button');
+  fireEvent.click(submitButton);
+
+  expect(submitButton).toBeDisabled();
+
+  await waitFor(() => expect(submitButton).toHaveTextContent('Submitting...'));
+
+  await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+});
+
+test('clears error messages after submission', async () => {
+  api.post = jest.fn().mockResolvedValue({status: 200});
+
+  renderWithRouter(<AddOrganisation />);
+  fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+  fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+  fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+  fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+  fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+  fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+
+  api.post.mockRejectedValueOnce({response: {data: {message: 'Error creating organization'}}});
+
+  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
+
+  expect(await screen.findByText('Error creating organization')).toBeInTheDocument();
+
+  api.post.mockResolvedValueOnce({status: 200});
+  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
+
+  expect(screen.queryByText('Error creating organization')).not.toBeInTheDocument();
+});
+
+test('does not allow form submission with missing required fields', async () => {
+  renderWithRouter(<AddOrganisation />);
+
+  // Click submit with no input values
+  fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
+
+  // Ensure all required fields are empty
   expect(screen.getByLabelText('Organisation Name:').value).toBe('');
   expect(screen.getByLabelText('Industry:').value).toBe('');
   expect(screen.getByLabelText('Address:').value).toBe('');
@@ -62,13 +137,11 @@ test('submits form and clears inputs', () => {
   expect(screen.getByLabelText('Password:').value).toBe('');
 });
 
-// Test form submission logic
-test('logs submitted data correctly', () => {
-  console.log = jest.fn(); // Mock console.log
+test('does not navigate on non-200 successful response', async () => {
+  api.post.mockResolvedValueOnce({ status: 201 });
 
-  render(<AddOrganisation />);
+  renderWithRouter(<AddOrganisation />);
 
-  // Fill in the form
   fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
   fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
   fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
@@ -76,16 +149,10 @@ test('logs submitted data correctly', () => {
   fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
   fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
 
-  // Submit the form
   fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
 
-  // Check if the data was logged correctly
-  expect(console.log).toHaveBeenCalledWith('Submitted organization and admin data:', { // Note the word "organization"
-    name: 'TestOrg',
-    industry: 'Technology',
-    address: '123 Main St',
-    description: 'An example organisation',
-    username: 'adminUser',
-    password: 'adminPass',
-  });
+  await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+  expect(mockNavigate).not.toHaveBeenCalled();
 });
+
+
