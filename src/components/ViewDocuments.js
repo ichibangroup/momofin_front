@@ -102,8 +102,9 @@ function Page() {
       setShowModal(true);
       return response.data;
     } catch (error) {
+      closeModal();
       console.error("Error requesting edit:", error);
-      setErrorMessage(error.response?.data?.message || "Failed to submit edit request. Please try again.");
+      setErrorMessage(error.response?.data?.errorMessage || "Failed to submit edit request. Please try again.");
       setShowModal(true);
     }
   };

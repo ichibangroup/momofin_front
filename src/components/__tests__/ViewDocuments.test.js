@@ -477,7 +477,7 @@ describe('Page Component - Link Copying Tests', () => {
       api.post.mockRejectedValueOnce({
         response: {
           data: {
-            message: errorMessage
+            errorMessage: errorMessage
           }
         }
       });
