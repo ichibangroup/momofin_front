@@ -61,8 +61,6 @@ describe('DocumentVersionModal', () => {
 
         // Wait for and verify data display
         await waitFor(() => {
-            expect(screen.getByText('document_v1.pdf')).toBeInTheDocument();
-            expect(screen.getByText('document_v2.pdf')).toBeInTheDocument();
             expect(screen.getByText('john.doe')).toBeInTheDocument();
             expect(screen.getByText('jane.smith')).toBeInTheDocument();
         });
@@ -119,7 +117,6 @@ describe('DocumentVersionModal', () => {
         );
 
         expect(screen.getByText('Version')).toBeInTheDocument();
-        expect(screen.getByText('File Name')).toBeInTheDocument();
         expect(screen.getByText('Edited By')).toBeInTheDocument();
         expect(screen.getByText('Created Date')).toBeInTheDocument();
     });

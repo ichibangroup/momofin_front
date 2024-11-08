@@ -34,7 +34,6 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
                         <thead>
                         <tr>
                             <th>Version</th>
-                            <th>File Name</th>
                             <th>Edited By</th>
                             <th>Created Date</th>
                         </tr>
@@ -43,7 +42,6 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
                         {versions.map((version) => (
                             <tr key={version.id.version}>
                                 <td>{version.id.version}</td>
-                                <td>{version.fileName}</td>
                                 <td>{version.editedBy.username}</td>
                                 <td>{version.createdDate}</td>
                             </tr>
