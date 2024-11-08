@@ -28,7 +28,6 @@ describe('AddUserForm', () => {
 
     expect(screen.getByText(mockTitle)).toBeInTheDocument();
 
-    // Check all form inputs are present
     expect(screen.getByLabelText('Name:', { exact: true })).toBeInTheDocument();
     expect(screen.getByLabelText(/username:/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password:/i)).toBeInTheDocument();
