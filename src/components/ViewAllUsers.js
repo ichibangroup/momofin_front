@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
+import Button from './Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
@@ -141,48 +142,51 @@ function ViewUsers() {
 
     return (
         <div className="user-management" data-testid="viewUsers-1">
-            <h1>View All Users</h1>
-            <table>
-                <thead>
-                    <tr className="headers">
-                        <th className="sort-header" onClick={() => sortData('name')}>Name {getSortIcon('name')}</th>
-                        <th className="sort-header" onClick={() => sortData('username')}>Username {getSortIcon('username')}</th>
-                        <th className="sort-header" onClick={() => sortData('organization')}>Organisation {getSortIcon('organization')}</th>
-                        <th className="sort-header" onClick={() => sortData('email')}>Email {getSortIcon('email')}</th>
-                        <th className="sort-header">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map(user => (
-                        <tr key={user.id} className="user-row">
-                            <td>{user.name}</td>
-                            <td>{user.username}</td>
-                            <td>{user.organization}</td>
-                            <td>{user.email}</td>
-                            <td className="actions">
-                                    <button className="edit-btn mr-2" title="Edit User" onClick={() => handleEditClick(user.id)}>
-                                        <FontAwesomeIcon icon={faPencilAlt} />
-                                    </button>
-                                    <button
-                                        className="delete-btn"
-                                        title="Remove User"
-                                        onClick={() => handleDeleteClick(user)}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <DeleteUserModal
-                isOpen={deleteModal.isOpen}
-                onClose={handleDeleteClose}
-                onConfirm={handleDeleteConfirm}
-                userName={deleteModal.user?.name || ''}
-            />
-            <button className="add-btn">ADD USER</button>
-        </div>
+    <h1>View All Users</h1>
+    <table>
+        <thead>
+            <tr className="headers">
+                <th className="sort-header" onClick={() => sortData('name')}>Name {getSortIcon('name')}</th>
+                <th className="sort-header" onClick={() => sortData('username')}>Username {getSortIcon('username')}</th>
+                <th className="sort-header" onClick={() => sortData('organization')}>Organisation {getSortIcon('organization')}</th>
+                <th className="sort-header" onClick={() => sortData('email')}>Email {getSortIcon('email')}</th>
+                <th className="sort-header">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {users.map(user => (
+                <tr key={user.id} className="user-row">
+                    <td>{user.name}</td>
+                    <td>{user.username}</td>
+                    <td>{user.organization}</td>
+                    <td>{user.email}</td>
+                    <td className="actions">
+                        <Button
+                            onClick={() => handleEditClick(user.id)}
+                            className="edit-btn mr-2"
+                            title="Edit User"
+                            icon={faPencilAlt}
+                        />
+                        <Button
+                            onClick={() => handleDeleteClick(user)}
+                            className="delete-btn"
+                            title="Remove User"
+                            icon={faTrash}
+                        />
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+    <DeleteUserModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteClose}
+        onConfirm={handleDeleteConfirm}
+        userName={deleteModal.user?.name || ''}
+    />
+    <Button className="add-btn" onClick={() => {/* Add user logic here */}}>ADD USER</Button>
+</div>
+
     );
 }
 

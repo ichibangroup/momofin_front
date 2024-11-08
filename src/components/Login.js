@@ -5,7 +5,7 @@ import '../Login.css';
 import api from '../utils/api';
 import { LoginActivityLogger } from '../utils/loginLogger';
 import { setAuthToken } from '../utils/auth';
-import logo from '../assets/logo.png';
+import logoAvento from '../assets/logo-avento.png';
 import { Building, User, Lock } from 'lucide-react';
 import { sanitizePlainText, sanitizeFormData } from '../utils/sanitizer'; // Add this import
 
@@ -124,7 +124,7 @@ function Login({ onSubmit }) {
       <form onSubmit={handleSubmit} className="login-form">
         <div className="header-container">
           <h2>Sign In</h2>
-          <img src={logo} alt="Logo" className="login-logo" />
+          <img src={logoAvento} alt="Logo Avento" style={{ width: '100px', height: 'auto' }} className="login-logo" />
         </div>
         <div className="input-group">
           <Building className="input-icon"/>
