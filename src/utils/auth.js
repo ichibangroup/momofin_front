@@ -9,3 +9,5 @@ export const setAuthToken = (token) => {
 export const getAuthToken = () => {
     return localStorage.getItem('jwtToken');
 };
+
+//TEST RAHHHHHHHH
