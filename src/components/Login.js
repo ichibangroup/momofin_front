@@ -3,6 +3,7 @@ import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom'
 import { validateLogin } from './LoginValidation';
 import '../Login.css';
 import api from '../utils/api';
+import { LoginActivityLogger } from '../utils/loginLogger';
 import { setAuthToken } from '../utils/auth';
 import logo from '../assets/logo.png';
 import { Building, User, Lock } from 'lucide-react';
@@ -49,6 +50,8 @@ function Login({ onSubmit }) {
     // Sanitize the payload
     const sanitizedPayload = sanitizeFormData(payload);
 
+    LoginActivityLogger.logLoginAttempt(sanitizedPayload.username, sanitizedPayload.organizationName);
+
     // Perform validation with sanitized data
     const validationErrors = validateLogin({
       username: sanitizedPayload.username,
@@ -57,6 +60,11 @@ function Login({ onSubmit }) {
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      LoginActivityLogger.logLoginFailure(
+        sanitizedPayload.username, 
+        sanitizedPayload.organizationName, 
+        new Error('Validation failed')
+      );
       return;
     }
 
@@ -67,17 +75,38 @@ function Login({ onSubmit }) {
       setAuthToken(jwt);
 
       if (response.status >= 200 && response.status < 300) {
+        // Log successful login
+        LoginActivityLogger.logLoginSuccess(
+          sanitizedPayload.username, 
+          sanitizedPayload.organizationName
+        );
+
         console.log('Login successful:', response.data);
         if (onSubmit) {
           onSubmit(response.data);
         }
         const redirectTo = location.state?.from || '/app';
+        
+        // Log navigation redirect
+        LoginActivityLogger.logNavigationRedirect(
+          location.pathname,
+          redirectTo
+        );
+
         navigate(redirectTo);
       } else {
         throw new Error('Login failed');
       }
     } catch (error) {
       console.error('Error:', error);
+      
+      // Log login failure
+      LoginActivityLogger.logLoginFailure(
+        sanitizedPayload.username, 
+        sanitizedPayload.organizationName, 
+        error
+      );
+
       if (error.response?.data?.errorMessage) {
         setErrors({ 
           server: sanitizePlainText(error.response.data.errorMessage) 
