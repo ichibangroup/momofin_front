@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
 import '../ViewDocuments.css';
 
 const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
     const [versions, setVersions] = useState([]);
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchVersions();
-        }
-    }, [isOpen, documentId]);
-
-    const fetchVersions = async () => {
+    const fetchVersions = useCallback(async () => {
         try {
             const response = await api.get(`/doc/${documentId}/versions`);
             setVersions(response.data);
         } catch (error) {
             console.error('Error fetching document versions:', error);
         }
-    };
+    }, [documentId]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchVersions();
+        }
+    }, [isOpen, fetchVersions]);
 
     return (
         <div className={`modal-backdrop ${isOpen ? 'show' : ''}`}>
