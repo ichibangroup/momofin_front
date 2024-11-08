@@ -7,8 +7,8 @@ import userEvent from "@testing-library/user-event";
 jest.mock('../../utils/api');  // Mock the API
 
 const mockDocuments = [
-  { id: 1, name: 'Document1' },
-  { id: 2, name: 'Document2' }
+  { id: 1, name: 'Document 1' },
+  { id: 2, name: 'Document 2' }
 ];
 
 const mockClipboard = {
@@ -37,8 +37,8 @@ describe('Page component tests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Document1')).toBeInTheDocument();
-      expect(screen.getByText('Document2')).toBeInTheDocument();
+      expect(screen.getByText('Document 1')).toBeInTheDocument();
+      expect(screen.getByText('Document 2')).toBeInTheDocument();
     });
   });
 
@@ -50,8 +50,8 @@ describe('Page component tests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText('Document1')).not.toBeInTheDocument();
-      expect(screen.queryByText('Document2')).not.toBeInTheDocument();
+      expect(screen.queryByText('Document 1')).not.toBeInTheDocument();
+      expect(screen.queryByText('Document 2')).not.toBeInTheDocument();
       expect(console.error).toHaveBeenCalledWith('Failed to fetch documents:', expect.any(Error));
     });
   });
@@ -64,11 +64,11 @@ describe('Page component tests', () => {
     });
 
     const searchInput = screen.getByPlaceholderText('Search File Name');
-    fireEvent.change(searchInput, { target: { value: 'Document1' } });
+    fireEvent.change(searchInput, { target: { value: 'Document 1' } });
 
     await waitFor(() => {
-      expect(screen.getByText('Document1')).toBeInTheDocument();
-      expect(screen.queryByText('Document2')).not.toBeInTheDocument();
+      expect(screen.getByText('Document 1')).toBeInTheDocument();
+      expect(screen.queryByText('Document 2')).not.toBeInTheDocument();
     });
   });
 
@@ -83,8 +83,8 @@ describe('Page component tests', () => {
     fireEvent.change(searchInput, { target: { value: 'Nonexistent' } });
 
     await waitFor(() => {
-      expect(screen.queryByText('Document1')).not.toBeInTheDocument();
-      expect(screen.queryByText('Document2')).not.toBeInTheDocument();
+      expect(screen.queryByText('Document 1')).not.toBeInTheDocument();
+      expect(screen.queryByText('Document 2')).not.toBeInTheDocument();
     });
   });
 
@@ -178,6 +178,10 @@ describe('Page Component - Link Copying Tests', () => {
         return Promise.resolve({ data: { documents: mockDocuments } });
       }
       return Promise.resolve({ data: { url: 'http://example.com' } });
+    });
+
+    api.post.mockImplementation((url) =>{
+      return Promise.resolve({data: { editRequest: 'Fine'}});
     });
   });
 
@@ -329,5 +333,210 @@ describe('Page Component - Link Copying Tests', () => {
     expect(mockClipboard.writeText).toHaveBeenCalledWith(
         'http://localhost:3000/app/verify/1'
     );
+  });
+
+  describe('Document Version Modal', () => {
+    it('should open document version modal when version history button is clicked', async () => {
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Click the Version History button
+      const versionHistoryButtons = screen.getAllByText('Version History');
+      expect(versionHistoryButtons).toHaveLength(2);
+      fireEvent.click(versionHistoryButtons[0]);
+
+      // Check if the modal is opened
+      expect(screen.getByText('Document Versions')).toBeInTheDocument();
+    });
+
+    it('should close document version modal when close button is clicked', async () => {
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const versionHistoryButtons = screen.getAllByText('Version History');
+      expect(versionHistoryButtons).toHaveLength(2);
+      fireEvent.click(versionHistoryButtons[0]);
+
+      // Click the close button
+      const closeButton = screen.getByRole('button', { name: /×/i });
+      fireEvent.click(closeButton);
+
+      // Check if the modal is closed
+      expect(screen.queryByText('Document Versions')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Edit Request Modal', () => {
+    it('should open edit request modal when request edit button is clicked', async () => {
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Click the Request Edit button
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Check if the modal is opened
+      expect(screen.getByText('Enter Username')).toBeInTheDocument();
+    });
+
+    it('should close edit request modal when cancel button is clicked', async () => {
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Click the cancel button
+      const cancelButton = screen.getByText('Cancel');
+      fireEvent.click(cancelButton);
+
+      // Check if the modal is closed
+      await waitFor(() => expect(screen.queryByText('Enter Username')).not.toBeInTheDocument())
+    });
+
+    it('should show error when submitting edit request without username', async () => {
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Submit without entering username
+      const submitButton = screen.getByText('Submit Request');
+      fireEvent.click(submitButton);
+
+      // Check if error message is shown
+      expect(screen.getByText('Please enter a username.')).toBeInTheDocument();
+    });
+
+    it('should submit edit request successfully with username', async () => {
+      // Mock the successful edit request
+      api.post.mockResolvedValueOnce({ data: { success: true } });
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Enter username
+      const usernameInput = screen.getByPlaceholderText('Enter username');
+      await userEvent.type(usernameInput, 'testuser');
+
+      // Submit the form
+      const submitButton = screen.getByText('Submit Request');
+      fireEvent.click(submitButton);
+
+      // Check if the API was called with correct parameters
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith(
+            `/doc/${mockDocuments[0].documentId}/request-edit`,
+            { username: 'testuser' }
+        );
+      });
+
+      // Check if the modal is closed after successful submission
+      await waitFor(() => expect(screen.queryByText('Enter Username')).not.toBeInTheDocument())
+    });
+
+    it('should handle edit request submission error', async () => {
+      // Mock the failed edit request
+      const errorMessage = 'Failed to submit edit request';
+      api.post.mockRejectedValueOnce({
+        response: {
+          data: {
+            errorMessage: errorMessage
+          }
+        }
+      });
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Enter username
+      const usernameInput = screen.getByPlaceholderText('Enter username');
+      await userEvent.type(usernameInput, 'testuser');
+
+      // Submit the form
+      const submitButton = screen.getByText('Submit Request');
+      fireEvent.click(submitButton);
+
+      // Check if error message is displayed
+      await waitFor(() => {
+        expect(screen.getByText(errorMessage)).toBeInTheDocument();
+      });
+    });
+
+    it('should handle edit request submission error default text', async () => {
+      api.post.mockRejectedValueOnce(
+        new Error('Not Good Request')
+      );
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const requestEditButtons = screen.getAllByText('Request Edit');
+      expect(requestEditButtons).toHaveLength(2);
+      fireEvent.click(requestEditButtons[0]);
+
+      // Enter username
+      const usernameInput = screen.getByPlaceholderText('Enter username');
+      await userEvent.type(usernameInput, 'testuser');
+
+      // Submit the form
+      const submitButton = screen.getByText('Submit Request');
+      fireEvent.click(submitButton);
+
+      // Check if error message is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Failed to submit edit request. Please try again.')).toBeInTheDocument();
+      });
+    });
   });
 });

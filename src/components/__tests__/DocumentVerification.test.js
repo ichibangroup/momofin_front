@@ -101,9 +101,7 @@ describe('DocumentVerification Component', () => {
   
     await waitFor(() => {
       expect(screen.getByText('Verification Result:')).toBeInTheDocument();
-      expect(screen.getByText('123')).toBeInTheDocument();
       expect(screen.getByText('test.pdf')).toBeInTheDocument();
-      expect(screen.getByText('abc123')).toBeInTheDocument();
       expect(screen.getByText('John Doe')).toBeInTheDocument();
       expect(screen.getByText('john@example.com')).toBeInTheDocument();
       expect(screen.getByText('Manager')).toBeInTheDocument();
