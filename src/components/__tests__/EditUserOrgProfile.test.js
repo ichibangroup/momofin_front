@@ -204,4 +204,19 @@ describe('EditUserOrgProfile', () => {
 
     expect(screen.queryByText('<img src=x onerror=alert("XSS")>')).not.toBeInTheDocument();
   });
+
+  test('renders form with empty fields when data is empty or null', async () => {
+    api.get.mockResolvedValueOnce({ data: { name: '', position: '' } });
+
+    render(
+        <Router>
+          <EditUserOrgProfile />
+        </Router>
+    );
+
+    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+
+    expect(screen.getByLabelText('Name')).toHaveValue('');
+    expect(screen.getByLabelText('Position')).toHaveValue('');
+  });
 });
