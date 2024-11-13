@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { sanitizeFormData } from '../utils/sanitizer';
 import './EditUserOrgProfile.css';
 
 const FormField = ({ label, id, name, type = 'text', value, onChange }) => (
@@ -37,11 +38,12 @@ const EditUserOrgProfile = () => {
       try {
         const response = await api.get(`/api/user/profile/${userId}`);
         console.log(response.data);
+        const sanitizedData = sanitizeFormData(response.data);
         setFormData({
-          username: response.data.username,
-          email: response.data.email,
-          name: response.data.name || '',
-          position: response.data.position || '',
+          username: sanitizedData.username,
+          email: sanitizedData.email,
+          name: sanitizedData.name || '',
+          position: sanitizedData.position || '',
         });
       } catch (error) {
         setApiError('Failed to fetch user data. Please try again.');
@@ -59,8 +61,11 @@ const EditUserOrgProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const sanitizedData = sanitizeFormData(formData);
+
     try {
-      await api.put(`/api/user/profile/${userId}`, formData);
+      await api.put(`/api/user/profile/${userId}`, sanitizedData);
       navigate('/app');
     } catch (error) {
       setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
