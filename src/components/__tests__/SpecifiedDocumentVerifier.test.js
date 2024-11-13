@@ -36,7 +36,6 @@ describe('SpecifiedDocumentVerifier', () => {
 
         await waitFor(() => {
             expect(screen.getByText(`Name: ${mockDocument.name}`)).toBeInTheDocument();
-            expect(screen.getByText(`Hash: ${mockDocument.hashString}`)).toBeInTheDocument();
         });
 
         expect(api.get).toHaveBeenCalledWith('/doc/verify/123');

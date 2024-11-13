@@ -111,9 +111,6 @@ const SpecifiedDocumentVerifier = () => {
                         <p className="text-sm font-medium">Document Details:</p>
                         <div className="bg-gray-50 p-3 rounded-md">
                             <p className="text-sm">Name: {document.name}</p>
-                            <p className="text-sm text-gray-500 break-all">
-                                Hash: {document.hashString}
-                            </p>
                         </div>
                     </div>
                 )}

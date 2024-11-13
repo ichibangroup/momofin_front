@@ -158,16 +158,8 @@ const DocumentVerification = () => {
               <table className="table table-bordered">
                 <tbody>
                   <tr>
-                    <th>Document ID</th>
-                    <td>{verificationResult.documentId}</td>
-                  </tr>
-                  <tr>
                     <th>File Name</th>
                     <td>{verificationResult.name}</td>
-                  </tr>
-                  <tr>
-                    <th>Hash</th>
-                    <td>{verificationResult.hashString}</td>
                   </tr>
                 </tbody>
               </table>
