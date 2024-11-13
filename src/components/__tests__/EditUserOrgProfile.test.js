@@ -51,9 +51,8 @@ describe('EditUserOrgProfile', () => {
     );
 
     // Wait for the loading state to finish
-    await waitFor(() => {
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('Failed to fetch user data. Please try again.')).not.toBeInTheDocument())
 
     // Check if all form fields are rendered with correct values
     expect(screen.getByLabelText('Name')).toHaveValue(mockUserData.name);
