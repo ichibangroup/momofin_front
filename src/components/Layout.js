@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    faCogs, faUpload, faHome, faBorderAll, faAddressBook, 
-    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut 
+import {
+    faCogs, faUpload, faHome, faBorderAll, faAddressBook,
+    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
@@ -15,7 +15,17 @@ const Layout = () => {
     const [error, setError] = useState(null);
     const [isActive, setIsActive] = useState(false);
     const navigate = useNavigate();
-    const location = useLocation(); 
+    const location = useLocation();
+    const [editRequestsCount, setEditRequestsCount] = useState(0);
+    const fetchEditRequestsCount = async () => {
+        try {
+            const response = await api.get('/doc/edit-request');
+            // Assuming the response includes an array of edit requests
+            setEditRequestsCount(response.data.length);
+        } catch (err) {
+            console.error('Failed to fetch edit requests count:', err);
+        }
+    };
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -29,6 +39,7 @@ const Layout = () => {
                 }
                 setUser(response.data);
                 setError(null);
+                fetchEditRequestsCount();
             } catch (err) {
                 setError('Failed to fetch user information');
                 setAuthToken(); // Set the auth token (clear if needed)
@@ -154,16 +165,27 @@ const Layout = () => {
                                 <>
                                     <li>
                                         <Link to={`editProfile/${user.userId}`}>
-                                            <span className="icon"><FontAwesomeIcon icon={faAddressCard} /></span>
+                                            <span className="icon"><FontAwesomeIcon icon={faAddressCard}/></span>
                                             <span className="list">Edit Profile</span>
                                         </Link>
                                     </li>
                                     <li>
+                                        <Link to={`viewEditRequests`}>
+                                            <span className="icon"><FontAwesomeIcon icon={faFileSignature}/></span>
+                                            <span className="list">
+                                                View Edit Requests
+                                                {editRequestsCount > 0 && (
+                                                    <span className="badge">{editRequestsCount}</span>
+                                                )}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                    <li>
                                         <a href="/login" onClick={(e) => {
-                                                                e.preventDefault();
-                                                                handleLogout();
-                                                            }}>
-                                            <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
+                                            e.preventDefault();
+                                            handleLogout();
+                                        }}>
+                                            <span className="icon"><FontAwesomeIcon icon={faSignOut}/></span>
                                             <span className="list">Log Out</span>
                                         </a>
                                     </li>
@@ -171,7 +193,7 @@ const Layout = () => {
                             )}
                         </ul>
 
-                        <button 
+                        <button
                             className="hamburger"
                             onClick={toggleSidebar}
                             data-testid="hamburger"
@@ -180,7 +202,7 @@ const Layout = () => {
                         >
                             <div className="inner_hamburger">
                                 <span className="arrow">
-                                    <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left" />
+                                    <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left"/>
                                     <FontAwesomeIcon icon={faLongArrowAltRight} className="fa-long-arrow-alt-right" />
                                 </span>
                             </div>
