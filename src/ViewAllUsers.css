@@ -133,3 +133,16 @@ td, th {
 .tooltip-container:hover .tooltip {
     visibility: visible;
 }
+
+.actions .promote-btn {
+    color: #ede08c; /* Green color to signify promotion */
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.promote-btn:hover {
+    transform: scale(1.2);
+    color: #f5f529; /* Darker green on hover */
+}

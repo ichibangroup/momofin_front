@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
-import Button from './Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
@@ -69,6 +68,7 @@ function ViewUsers() {
     };
 
     const handleDeleteClick = (user) => {
+        console.log('Delete user:', user);
         setDeleteModal({ isOpen: true, user });
     };
 
@@ -77,11 +77,55 @@ function ViewUsers() {
     };
 
     const handleEditClick = (userId) => {
-        // navigate(`/app/editUserOrgProfile/${userId}`);
+        navigate(`/app/editProfile/${userId}`);
     };
+
+    const handlePromoteToAdmin = async (orgId, userId) => {
+        try {
+            setLoading(true);
+    
+            // API call to promote the user to organization admin
+            await api.put(`/api/momofin-admin/organizations/name/${orgId}/users/${userId}/set-admin`);
+    
+            // Update the UI or show a success message
+            setStatusMessage({
+                text: 'User has been successfully promoted to organization admin.',
+                type: 'success'
+            });
+    
+            // Clear success message after 5 seconds
+            if (window.statusMessageTimeout) {
+                clearTimeout(window.statusMessageTimeout);
+            }
+            window.statusMessageTimeout = setTimeout(() => {
+                setStatusMessage({ text: '', type: '' });
+            }, 5000);
+            
+        } catch (error) {
+            // Handle errors and display an appropriate message
+            const errorMessage = error.response?.data?.message || 'Failed to promote user to admin';
+            console.error('Error promoting user:', error);
+    
+            setStatusMessage({
+                text: errorMessage,
+                type: 'error'
+            });
+    
+            // Clear error message after 5 seconds
+            if (window.statusMessageTimeout) {
+                clearTimeout(window.statusMessageTimeout);
+            }
+            window.statusMessageTimeout = setTimeout(() => {
+                setStatusMessage({ text: '', type: '' });
+            }, 5000);
+        } finally {
+            setLoading(false);
+        }
+    };    
 
     const handleDeleteConfirm = async () => {
         const userToDelete = deleteModal.user;
+        console.log('Deleting user:', userToDelete);
 
         try {
             setLoading(true);
@@ -91,8 +135,7 @@ function ViewUsers() {
             // Immediately update the UI
             setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
 
-            // Make the API call
-            // await api.delete(`/api/organizations/${id}/users/${userToDelete.userId}`);
+            await api.delete(`/api/momofin-admin/users/${userToDelete.userId}`);
 
             // Clear any existing timeout to prevent multiple messages
             if (window.statusMessageTimeout) {
@@ -155,24 +198,31 @@ function ViewUsers() {
         </thead>
         <tbody>
             {users.map(user => (
-                <tr key={user.id} className="user-row">
+                <tr key={user.userId} className="user-row">
                     <td>{user.name}</td>
                     <td>{user.username}</td>
                     <td>{user.organization}</td>
                     <td>{user.email}</td>
                     <td className="actions">
-                        <Button
-                            onClick={() => handleEditClick(user.id)}
-                            className="edit-btn mr-2"
-                            title="Edit User"
-                            icon={faPencilAlt}
-                        />
-                        <Button
-                            onClick={() => handleDeleteClick(user)}
-                            className="delete-btn"
-                            title="Remove User"
-                            icon={faTrash}
-                        />
+                    <>
+                                    <button className="edit-btn mr-2" title="Edit User" onClick={() => handleEditClick(user.userId)}>
+                                        <FontAwesomeIcon icon={faPencilAlt} />
+                                    </button>
+                                    <button
+                                        className="delete-btn"
+                                        title="Remove User"
+                                        onClick={() => handleDeleteClick(user)}
+                                    >
+                                        <FontAwesomeIcon icon={faTrash} />
+                                    </button>
+                                    <button
+                                        className="promote-btn"
+                                        title="Promote to Admin"
+                                        onClick={() => handlePromoteToAdmin(user.organization, user.userId)}
+                                    >
+                                        <FontAwesomeIcon icon={faStar} />
+                                    </button>
+                                </>
                     </td>
                 </tr>
             ))}
@@ -184,7 +234,13 @@ function ViewUsers() {
         onConfirm={handleDeleteConfirm}
         userName={deleteModal.user?.name || ''}
     />
-    <Button className="add-btn" onClick={() => {/* Add user logic here */}}>ADD USER</Button>
+     <Link
+    to="/app/configOrganisation/addUserOrgAdmin" 
+    className="custom-add-btn"
+>
+    <FontAwesomeIcon icon={faUserPlus} />
+    ADD USER
+</Link>
 </div>
 
     );

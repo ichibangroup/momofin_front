@@ -184,7 +184,7 @@ function Login({ onSubmit }) {
             {sanitizePlainText(authMessage)}
           </div>
         )}
-        <button type="submit" className="btn-signin">Sign In</button>
+        <button className="signin-button" type="submit">Sign In</button>
         <Link to="/forgot-password" className="forgot-password">
           Forgot Password?
         </Link>
