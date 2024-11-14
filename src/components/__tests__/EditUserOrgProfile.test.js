@@ -51,9 +51,8 @@ describe('EditUserOrgProfile', () => {
     );
 
     // Wait for the loading state to finish
-    await waitFor(() => {
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-    });
+    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText('Failed to fetch user data. Please try again.')).not.toBeInTheDocument())
 
     // Check if all form fields are rendered with correct values
     expect(screen.getByLabelText('Name')).toHaveValue(mockUserData.name);
@@ -173,5 +172,51 @@ describe('EditUserOrgProfile', () => {
     fireEvent.click(cancelButton);
 
     expect(mockNavigate).toHaveBeenCalledWith('/app');
+  });
+
+  test('sanitizes potentially harmful input to prevent XSS', async () => {
+    render(
+        <Router>
+          <EditUserOrgProfile />
+        </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+    });
+
+    const nameInput = screen.getByLabelText('Name');
+
+    const xssInput = '<img src=x onerror=alert("XSS")>';
+    fireEvent.change(nameInput, { target: { value: xssInput } });
+
+    const submitButton = screen.getByText('Save Changes');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(
+          `/api/user/profile/${mockUserId}`,
+          expect.objectContaining({
+            name: expect.not.stringContaining('<img src=x onerror=alert("XSS)>')
+          })
+      );
+    });
+
+    expect(screen.queryByText('<img src=x onerror=alert("XSS")>')).not.toBeInTheDocument();
+  });
+
+  test('renders form with empty fields when data is empty or null', async () => {
+    api.get.mockResolvedValueOnce({ data: { name: '', position: '' } });
+
+    render(
+        <Router>
+          <EditUserOrgProfile />
+        </Router>
+    );
+
+    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+
+    expect(screen.getByLabelText('Name')).toHaveValue('');
+    expect(screen.getByLabelText('Position')).toHaveValue('');
   });
 });
