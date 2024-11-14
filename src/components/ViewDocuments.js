@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
+import '../index.css';
 import '../ViewDocuments.css';
 import { Eye, Link, Check } from 'lucide-react';
 import DocumentVersionModal from './DocumentVersionModal';
@@ -134,7 +135,7 @@ function Page() {
           <thead>
           <tr>
             <th>File Names</th>
-            <th>Actions</th>
+            <th className="text-center">Actions</th>
           </tr>
           </thead>
           <tbody>
@@ -168,7 +169,21 @@ function Page() {
                             </>
                         )}
                       </button>
-                      <button onClick={() => openEditRequestModal(document.documentId)}>Request Edit</button>
+                      {document.beingRequested ? (
+                          <button
+                              disabled
+                              className="px-3 py-2 text-sm rounded-md bg-gray-500 text-gray-200 cursor-not-allowed"
+                          >
+                            Edit request in progress
+                          </button>
+                      ) : (
+                          <button
+                              onClick={() => openEditRequestModal(document.documentId)}
+                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-yellow-500 text-white hover:bg-yellow-600"
+                          >
+                            Request Edit
+                          </button>
+                      )}
                       <button onClick={() => openDocumentVersionsModal(document.documentId)}>Version History</button>
                     </td>
                   </tr>
