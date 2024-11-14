@@ -44,19 +44,23 @@ function ViewUsers() {
     }, []);
 
     const getSortIcon = (key) => {
+        //duplication
         if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
+        //duplication
         return sortConfig.direction === 'asc' ?
             <FontAwesomeIcon icon={faSortUp} className="ml-1 text-blue-500" /> :
             <FontAwesomeIcon icon={faSortDown} className="ml-1 text-blue-500" />;
     };
 
-    const sortData = (key) => {
+    const sortThisData = (key) => {
         const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         setSortConfig({ key, direction });
         const sortedUsers = [...users].sort((a, b) => {
+            // duplication
             const valueA = a[key]?.toString().toLowerCase() || '';
             const valueB = b[key]?.toString().toLowerCase() || '';
 
+            // duplication
             if (valueA < valueB) return direction === 'asc' ? -1 : 1;
             if (valueA > valueB) return direction === 'asc' ? 1 : -1;
             return 0;
@@ -105,25 +109,25 @@ function ViewUsers() {
         }
     };    
     const handleDeleteConfirm = async () => {
-        const userToDelete = deleteModal.user;
-        console.log('Deleting user:', userToDelete);
+        const userDelete = deleteModal.user;
+        console.log('Deleting user:', userDelete);
         try {
             setLoading(true);
             handleDeleteClose();
-            setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
-            await api.delete(`/api/momofin-admin/users/${userToDelete.userId}`);
+            setUsers(prevUsers => prevUsers.filter(user => user.userId !== userDelete.userId));
+            await api.delete(`/api/momofin-admin/users/${userDelete.userId}`);
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
             setStatusMessage({
-                text: `${userToDelete.username} has been successfully removed from the organization.`,
+                text: `${userDelete.username} has been successfully removed from the organization.`,
                 type: 'success'
             });
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
             }, 5000);  
         } catch (err) {
-            setUsers(prevUsers => [...prevUsers, userToDelete]);
+            setUsers(prevUsers => [...prevUsers, userDelete]);
             const errorMessage = err.response?.data?.message || 'Failed to delete user';
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
@@ -148,10 +152,10 @@ function ViewUsers() {
     <table>
         <thead>
             <tr className="headers">
-                <th className="sort-header" onClick={() => sortData('name')}>Name {getSortIcon('name')}</th>
-                <th className="sort-header" onClick={() => sortData('username')}>Username {getSortIcon('username')}</th>
-                <th className="sort-header" onClick={() => sortData('organization')}>Organisation {getSortIcon('organization')}</th>
-                <th className="sort-header" onClick={() => sortData('email')}>Email {getSortIcon('email')}</th>
+                <th className="sort-header" onClick={() => sortThisData('name')}>Name {getSortIcon('name')}</th>
+                <th className="sort-header" onClick={() => sortThisData('username')}>Username {getSortIcon('username')}</th>
+                <th className="sort-header" onClick={() => sortThisData('organization')}>Organisation {getSortIcon('organization')}</th>
+                <th className="sort-header" onClick={() => sortThisData('email')}>Email {getSortIcon('email')}</th>
                 <th className="sort-header">Actions</th>
             </tr>
         </thead>
