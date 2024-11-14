@@ -55,17 +55,17 @@ function ViewUsers() {
     const sortThisData = (key) => {
         const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         setSortConfig({ key, direction });
-        const sortedUsers = [...users].sort((a, b) => {
+        const sortUsers = [...users].sort((a, b) => {
             // duplication
-            const valueA = a[key]?.toString().toLowerCase() || '';
-            const valueB = b[key]?.toString().toLowerCase() || '';
+            const valuesA = a[key]?.toString().toLowerCase() || '';
+            const valuesB = b[key]?.toString().toLowerCase() || '';
 
             // duplication
-            if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-            if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+            if (valuesA < valuesB) return direction === 'asc' ? -1 : 1;
+            if (valuesA > valuesB) return direction === 'asc' ? 1 : -1;
             return 0;
         });
-        setUsers(sortedUsers);
+        setUsers(sortUsers);
     };
     const handleDeleteClick = (user) => {
         console.log('Delete user:', user);
@@ -92,11 +92,10 @@ function ViewUsers() {
                 setStatusMessage({ text: '', type: '' });
             }, 5000);
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Failed to promote user to admin';
+            const err = error.response?.data?.message || 'Failed to promote user to admin';
             console.error('Error promoting user:', error);
             setStatusMessage({
-                text: errorMessage,
-                type: 'error'
+                text: err, type: 'error'
             });
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
@@ -120,21 +119,19 @@ function ViewUsers() {
                 clearTimeout(window.statusMessageTimeout);
             }
             setStatusMessage({
-                text: `${userDelete.username} has been successfully removed from the organization.`,
-                type: 'success'
+                text: `${userDelete.username} has been successfully removed from the organization.`, type: 'success'
             });
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
             }, 5000);  
         } catch (err) {
             setUsers(prevUsers => [...prevUsers, userDelete]);
-            const errorMessage = err.response?.data?.message || 'Failed to delete user';
+            const error = err.response?.data?.message || 'Failed to delete user';
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
             setStatusMessage({
-                text: errorMessage,
-                type: 'error'
+                text: error, type: 'error'
             });
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
