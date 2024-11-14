@@ -40,7 +40,6 @@ function ViewUsers() {
                 setLoading(false);
             }
         };
-
         fetchUsers();
     }, []);
 
@@ -54,7 +53,6 @@ function ViewUsers() {
     const sortData = (key) => {
         const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         setSortConfig({ key, direction });
-
         const sortedUsers = [...users].sort((a, b) => {
             const valueA = a[key]?.toString().toLowerCase() || '';
             const valueB = b[key]?.toString().toLowerCase() || '';
@@ -63,55 +61,39 @@ function ViewUsers() {
             if (valueA > valueB) return direction === 'asc' ? 1 : -1;
             return 0;
         });
-
         setUsers(sortedUsers);
     };
-
     const handleDeleteClick = (user) => {
         console.log('Delete user:', user);
         setDeleteModal({ isOpen: true, user });
     };
-
     const handleDeleteClose = () => {
         setDeleteModal({ isOpen: false, user: null });
     };
-
     const handleEditClick = (userId) => {
         navigate(`/app/editProfile/${userId}`);
     };
-
     const handlePromoteToAdmin = async (orgId, userId) => {
         try {
             setLoading(true);
-    
-            // API call to promote the user to organization admin
             await api.put(`/api/momofin-admin/organizations/name/${orgId}/users/${userId}/set-admin`);
-    
-            // Update the UI or show a success message
             setStatusMessage({
                 text: 'User has been successfully promoted to organization admin.',
                 type: 'success'
             });
-    
-            // Clear success message after 5 seconds
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
             }, 5000);
-            
         } catch (error) {
-            // Handle errors and display an appropriate message
             const errorMessage = error.response?.data?.message || 'Failed to promote user to admin';
             console.error('Error promoting user:', error);
-    
             setStatusMessage({
                 text: errorMessage,
                 type: 'error'
             });
-    
-            // Clear error message after 5 seconds
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
@@ -122,67 +104,44 @@ function ViewUsers() {
             setLoading(false);
         }
     };    
-
     const handleDeleteConfirm = async () => {
         const userToDelete = deleteModal.user;
         console.log('Deleting user:', userToDelete);
-
         try {
             setLoading(true);
-            // First close the modal
             handleDeleteClose();
-
-            // Immediately update the UI
             setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
-
             await api.delete(`/api/momofin-admin/users/${userToDelete.userId}`);
-
-            // Clear any existing timeout to prevent multiple messages
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
-
-            // Show success message
             setStatusMessage({
                 text: `${userToDelete.username} has been successfully removed from the organization.`,
                 type: 'success'
             });
-
-            // Clear the message after 5 seconds and store the timeout ID
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
-            }, 5000);  // Changed to 5000ms (5 seconds)
-
+            }, 5000);  
         } catch (err) {
-            // Revert the deletion in UI
             setUsers(prevUsers => [...prevUsers, userToDelete]);
-
             const errorMessage = err.response?.data?.message || 'Failed to delete user';
-
-            // Clear any existing timeout for error messages too
             if (window.statusMessageTimeout) {
                 clearTimeout(window.statusMessageTimeout);
             }
-
             setStatusMessage({
                 text: errorMessage,
                 type: 'error'
             });
-
-            // Clear error message after 5 seconds
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
-            }, 5000);  // Changed to 5000ms (5 seconds)
-
+            }, 5000); 
             console.error('Error deleting user:', err);
         } finally {
             setLoading(false);
         }
     };
-
     if (loading) return <div className="text-center p-4">Loading...</div>;
     if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
-
     return (
         <div className="user-management" data-testid="viewUsers-1">
     <h1>View All Users</h1>

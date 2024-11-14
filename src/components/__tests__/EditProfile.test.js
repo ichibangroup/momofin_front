@@ -6,6 +6,7 @@ import api from '../../utils/api';
 import { validateUserProfile } from '../../utils/validationUtils';
 import { sanitizePlainText } from '../../utils/sanitizer';
 import userEvent from '@testing-library/user-event';
+import { setAuthToken } from '../../utils/auth';
 
 
 // Mock the required modules
@@ -16,6 +17,10 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: () => ({ userId: '123' }),
   useNavigate: () => jest.fn()
+}));
+
+jest.mock('../../utils/auth', () => ({
+  setAuthToken: jest.fn(),
 }));
 
 // Mock data
@@ -32,6 +37,10 @@ const mockAdminUserData = {
   ...mockUserData,
   roles: ['ROLE_MOMOFIN_ADMIN']
 };
+
+const mockLoggedInUser = {
+  userId : '124'
+}
 
 describe('EditProfile Component', () => {
   beforeEach(() => {
@@ -512,5 +521,110 @@ describe('EditProfile Component', () => {
         expect(api.get).toHaveBeenCalledTimes(3);
       });
     });
+  });
+
+  describe('Edit User', () => {
+    const mockNavigate = jest.fn();
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+    
+      // Mock for /api/user/profile/:userId endpoint
+      api.get.mockImplementation(url => {
+        if (url.includes('/api/user/profile/')) {
+          return Promise.resolve({ data: mockAdminUserData });
+        } else if (url === '/auth/info') {
+          return Promise.resolve({ data:  mockLoggedInUser });
+        }
+        return Promise.reject(new Error('not found'));
+      });
+    
+      // Reset other mocks if needed
+      api.put.mockResolvedValue({});
+      api.post.mockResolvedValue({});
+      api.delete.mockResolvedValue({});
+    });
+
+    afterEach(() => {
+      mockNavigate.mockReset();
+    });
+
+    it('should submit form successfully', async () => {
+      api.put.mockResolvedValue({});
+      renderComponent();
+      await waitFor(() => screen.getByText('Save Changes'));
+
+      fireEvent.click(screen.getByText('Save Changes'));
+      await waitFor(() => {
+        expect(api.put).toHaveBeenCalled();
+        expect(mockNavigate).toHaveBeenCalledWith('/app/viewAllUsers');
+      });
+    });
+  });
+  describe('Auth Failed', () => {
+    const mockNavigate = jest.fn();
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+    
+      // Mock for /api/user/profile/:userId endpoint
+      api.get.mockImplementation(url => {
+        if (url === '/auth/info') {
+          return Promise.reject(new Error('API error'));
+        }
+        return Promise.reject(new Error('not found'));
+      });
+    
+      // Reset other mocks if needed
+      api.put.mockResolvedValue({});
+      api.post.mockResolvedValue({});
+      api.delete.mockResolvedValue({});
+    });
+
+    afterEach(() => {
+      mockNavigate.mockReset();
+    });
+
+    it('should redirect to login', async () => {
+      renderComponent();
+      await waitFor(() => {
+        // These checks ensure that setAuthToken and navigate are called after API rejection
+        expect(setAuthToken).toHaveBeenCalled();  // Check if setAuthToken was called to clear tokens
+        expect(mockNavigate).toHaveBeenCalledWith('/login');  // Check if navigation to login occurred
+      });
+    });  
+  });
+  describe('Auth Failed Null', () => {
+    const mockNavigate = jest.fn();
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
+    
+      // Mock for /api/user/profile/:userId endpoint
+      api.get.mockImplementation(url => {
+        if (url === '/auth/info') {
+          return Promise.resolve({data: null});
+        }
+        return Promise.reject(new Error('not found'));
+      });
+    
+      // Reset other mocks if needed
+      api.put.mockResolvedValue({});
+      api.post.mockResolvedValue({});
+      api.delete.mockResolvedValue({});
+    });
+
+    afterEach(() => {
+      mockNavigate.mockReset();
+    });
+
+    it('should clear auth token and navigate to login if no user data is returned', async () => {
+      renderComponent();
+      await waitFor(() => {
+        // These checks ensure that setAuthToken and navigate are called after API rejection
+        expect(setAuthToken).toHaveBeenCalled();  // Check if setAuthToken was called to clear tokens
+        expect(mockNavigate).toHaveBeenCalledWith('/login');  // Check if navigation to login occurred
+      });
+    });  
   });
 });

@@ -25,6 +25,13 @@ describe('ViewUsers Component Tests', () => {
       username: 'Sirered',
       organization: 'ICHIBAN GROUP',
       email: 'emailme@example.com',
+    },
+    {
+      userId: 2,
+      name: 'Ayu Lestari',
+      username: 'ayulestari',
+      organization: 'A-CORP',
+      email: 'ayu@example.com',
     }
   ];
   const mockNavigate = jest.fn();
@@ -162,4 +169,103 @@ describe('ViewUsers Component Tests', () => {
     // Checks that the error message is cleared
     expect(screen.queryByText('Failed to delete user')).not.toBeInTheDocument();
   });
+  test('sorts users by name ascending and descending', async () => {
+    renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('Ayu Lestari')).toBeInTheDocument();
+      expect(screen.getByText('Galih Ibrahim Kurniawan')).toBeInTheDocument();
+    });
+  
+    // Click to sort by name ascending
+    const nameHeader = screen.getByText('Name').closest('th');
+    fireEvent.click(nameHeader);
+    await waitFor(() => {
+      const sortedNames = screen.getAllByText(/Ayu Lestari|Galih Ibrahim Kurniawan/);
+      expect(sortedNames[0]).toHaveTextContent('Ayu Lestari');
+      expect(sortedNames[1]).toHaveTextContent('Galih Ibrahim Kurniawan');
+    });
+  
+    // Click again to sort by name descending
+    fireEvent.click(nameHeader);
+    await waitFor(() => {
+      const sortedNames = screen.getAllByText(/Ayu Lestari|Galih Ibrahim Kurniawan/);
+      expect(sortedNames[0]).toHaveTextContent('Galih Ibrahim Kurniawan');
+      expect(sortedNames[1]).toHaveTextContent('Ayu Lestari');
+    });
+  });
+  test('sorts users by username ascending and descending', async () => {
+    renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('Sirered')).toBeInTheDocument();
+      expect(screen.getByText('ayulestari')).toBeInTheDocument();
+    });
+  
+    // Click to sort by username ascending
+    const usernameHeader = screen.getByText('Username').closest('th');
+    fireEvent.click(usernameHeader);
+    await waitFor(() => {
+      const sortedUsernames = screen.getAllByText(/Sirered|ayulestari/);
+      expect(sortedUsernames[0]).toHaveTextContent('ayulestari'); 
+      expect(sortedUsernames[1]).toHaveTextContent('Sirered');
+    });
+  
+    // Click again to sort by username descending
+    fireEvent.click(usernameHeader);
+    await waitFor(() => {
+      const sortedUsernames = screen.getAllByText(/Sirered|ayulestari/);
+      expect(sortedUsernames[0]).toHaveTextContent('Sirered');
+      expect(sortedUsernames[1]).toHaveTextContent('ayulestari');
+    });
+  });  
+
+  test('sorts users by organization ascending and descending', async () => {
+    renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('ICHIBAN GROUP')).toBeInTheDocument();
+      expect(screen.getByText('A-CORP')).toBeInTheDocument();
+    });
+  
+    // Click to sort by organization ascending
+    const organizationHeader = screen.getByText('Organisation').closest('th');
+    fireEvent.click(organizationHeader);
+    await waitFor(() => {
+      const sortedOrganizations = screen.getAllByText(/ICHIBAN GROUP|A-CORP/);
+      expect(sortedOrganizations[0]).toHaveTextContent('A-CORP'); // Adjust based on actual order expected
+      expect(sortedOrganizations[1]).toHaveTextContent('ICHIBAN GROUP');
+    });
+  
+    // Click again to sort by organization descending
+    fireEvent.click(organizationHeader);
+    await waitFor(() => {
+      const sortedOrganizations = screen.getAllByText(/ICHIBAN GROUP|A-CORP/);
+      expect(sortedOrganizations[0]).toHaveTextContent('ICHIBAN GROUP');
+      expect(sortedOrganizations[1]).toHaveTextContent('A-CORP');
+    });
+  });
+
+  test('sorts users by email ascending and descending', async () => {
+    renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('emailme@example.com')).toBeInTheDocument();
+      expect(screen.getByText('ayu@example.com')).toBeInTheDocument();
+    });
+  
+    // Click to sort by email ascending
+    const emailHeader = screen.getByText('Email').closest('th');
+    fireEvent.click(emailHeader);
+    await waitFor(() => {
+      const sortedEmails = screen.getAllByText(/emailme@example.com|ayu@example.com/);
+      expect(sortedEmails[0]).toHaveTextContent('ayu@example.com'); // Adjust based on actual order expected
+      expect(sortedEmails[1]).toHaveTextContent('emailme@example.com');
+    });
+  
+    // Click again to sort by email descending
+    fireEvent.click(emailHeader);
+    await waitFor(() => {
+      const sortedEmails = screen.getAllByText(/emailme@example.com|ayu@example.com/);
+      expect(sortedEmails[0]).toHaveTextContent('emailme@example.com');
+      expect(sortedEmails[1]).toHaveTextContent('ayu@example.com');
+    });
+  });
+  
 });
