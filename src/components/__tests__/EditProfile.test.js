@@ -20,6 +20,7 @@ jest.mock('react-router-dom', () => ({
 
 // Mock data
 const mockUserData = {
+  userId: '123',
   username: 'testuser',
   email: 'test@example.com',
   name: 'Test User',
@@ -499,7 +500,8 @@ describe('EditProfile Component', () => {
 
   describe('Retry Functionality', () => {
     it('should retry fetching data when retry button is clicked', async () => {
-      api.get.mockRejectedValueOnce(new Error('API Error'))
+      api.get.mockResolvedValueOnce({data: mockUserData})
+           .mockRejectedValueOnce(new Error('API Error'))
            .mockResolvedValueOnce({ data: mockUserData });
 
       renderComponent();
@@ -507,7 +509,7 @@ describe('EditProfile Component', () => {
 
       fireEvent.click(screen.getByText('Retry'));
       await waitFor(() => {
-        expect(api.get).toHaveBeenCalledTimes(2);
+        expect(api.get).toHaveBeenCalledTimes(3);
       });
     });
   });
