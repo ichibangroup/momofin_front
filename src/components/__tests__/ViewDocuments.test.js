@@ -393,6 +393,20 @@ describe('Page Component - Link Copying Tests', () => {
       expect(screen.getByText('Enter Username')).toBeInTheDocument();
     });
 
+    it('should have the edit button disabled if beingRequested is true', async () => {
+      const mockDocuments = {data: {documents: [
+        { documentId: '1', name: 'Document 1' , beingRequested: true},
+        { documentId: '2', name: 'Document 2' , beingRequested: true},
+      ]}};
+      api.get.mockResolvedValueOnce(mockDocuments);
+      render(<Page />);
+      await waitFor(() => {
+        expect(screen.getByText('Document 1')).toBeInTheDocument();
+        const requestEditButtons = screen.getAllByText('Edit request in progress');
+        expect(requestEditButtons).toHaveLength(2);
+      });
+    });
+
     it('should close edit request modal when cancel button is clicked', async () => {
       render(<Page />);
 
