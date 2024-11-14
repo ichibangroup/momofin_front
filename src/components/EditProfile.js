@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { validateUserProfile } from '../utils/validationUtils';
 import { sanitizePlainText } from '../utils/sanitizer';
 import './EditProfile.css';
+import { setAuthToken } from "../utils/auth";
 
 const FormFieldWithTooltip = ({ 
   label, 
@@ -70,6 +72,31 @@ const EditProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showReauthAlert, setShowReauthAlert] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  const [isNotLoggedUser, setIsNotLoggedUser] = useState(false);
+
+  useEffect(() => {
+    const fetchLoggedInUserInfo = async () => {
+        try {
+            const response = await api.get('/auth/info');
+            if (!response.data) {
+                // Handle case where no user data is returned
+                setAuthToken(); // Set the auth token (clear if needed)
+                navigate('/login');
+                return;
+            }
+            setLoggedInUser(response.data);
+            if (userId !== response.data.userId) {
+              setIsNotLoggedUser(true);
+            }
+        } catch (err) {
+            setAuthToken(); // Set the auth token (clear if needed)
+            navigate('/login');
+        }
+    };
+
+    fetchLoggedInUserInfo();
+}, [navigate]);
 
   const checkIfAdmin = (userData) => {
     return userData.momofinAdmin || 
@@ -109,6 +136,8 @@ const EditProfile = () => {
       setApiError(null);
       
       const isUsernameChanged = user.username !== originalUsername;
+      console.log('isNotLoggedUser', isNotLoggedUser);
+      console.log(loggedInUser.userId, userId);
       
       if (isUsernameChanged) {
         setShowReauthAlert(true);
@@ -123,23 +152,32 @@ const EditProfile = () => {
           position: sanitizePlainText(user.position),
         }),
       };
-
-      await api.put(`/api/user/profile/${userId}`, sanitizedPayload, {
-        params: {
-          oldPassword: user.oldPassword,
-          newPassword: user.newPassword,
-        },
-      });
-
-      if (isUsernameChanged) {
-        navigate('/login', { 
-          state: { 
-            message: 'Your username has been updated. Please login again with your new username.',
-            username: user.username
-          } 
+      if (isNotLoggedUser) {
+        await api.put(`/api/user/profile/${userId}`, sanitizedPayload, {
+          params: {
+            oldPassword: user.oldPassword,
+            newPassword: user.newPassword,
+          },
         });
-      } else {
-        navigate('/app');
+        navigate('/app/viewAllUsers');
+      }else{
+        await api.put(`/api/user/profile/${userId}`, sanitizedPayload, {
+          params: {
+            oldPassword: user.oldPassword,
+            newPassword: user.newPassword,
+          },
+        });
+  
+        if (isUsernameChanged) {
+          navigate('/login', { 
+            state: { 
+              message: 'Your username has been updated. Please login again with your new username.',
+              username: user.username
+            } 
+          });
+        } else {
+          navigate('/app');
+        }
       }
     } catch (error) {
       setApiError(error.response?.data?.message || 'Failed to update profile. Please try again.');
@@ -182,14 +220,18 @@ const EditProfile = () => {
 
   return (
     <div className="edit-profile-container">
-      {showReauthAlert && (
+      {showReauthAlert && !isNotLoggedUser && (
         <div className="alert alert-info">
           Changing your username will require you to login again.
         </div>
       )}
       <div className="decorative-lines"></div>
       <div className="edit-profile-content">
-        <h1 className="page-title">Edit Profile</h1>
+        {isNotLoggedUser &&
+          <h1 className="page-title">Edit User</h1>
+        } { !isNotLoggedUser &&
+          <h1 className="page-title">Edit Profile</h1>
+        }
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-row">
             {isAdmin && (
@@ -254,9 +296,16 @@ const EditProfile = () => {
             />
           </div>
           <div className="button-container">
-            <button type="button" onClick={() => navigate('/app')} className="button button-secondary">
-              Cancel
-            </button>
+            {isNotLoggedUser && (
+              <button type="button" onClick={() => navigate('/app/viewAllUsers')} className="button button-secondary">
+                Cancel
+              </button>
+            )}
+            {!isNotLoggedUser && (
+              <button type="button" onClick={() => navigate('/app')} className="button button-secondary">
+                Cancel
+              </button>
+            )}
             <button type="submit" className="button button-primary">
               Save Changes
             </button>
