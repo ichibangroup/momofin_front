@@ -10,8 +10,7 @@ function Home() {
 
   return (
     <DashboardSection
-      title="MOMOFIN"
-      subtitle="A safer place to store your documents."
+      title="AVENTO"
       actionBoxes={actionBoxes}
       backgroundLines={true}
     />

@@ -10,8 +10,7 @@ function MomofinDashboard() {
 
   return (
     <DashboardSection
-      title="MOMOFIN"
-      subtitle="A safer place to manage your organization and users."
+      title="AVENTO"
       actionBoxes={actionBoxes}
       backgroundLines={true}
     />

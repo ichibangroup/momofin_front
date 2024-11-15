@@ -2,8 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './DashboardSection.css';
 import { useNavigate } from 'react-router-dom';
+import logoAvento from '../assets/logo-avento.png';  // Import the logo image
 
-function DashboardSection({ title, subtitle, actionBoxes, backgroundLines }) {
+function DashboardSection({ title, actionBoxes, backgroundLines }) {
   const navigate = useNavigate();
 
   return (
@@ -13,8 +14,8 @@ function DashboardSection({ title, subtitle, actionBoxes, backgroundLines }) {
 
       {/* Branding Section */}
       <div className="branding">
-        <h1>{title}</h1>
-        <p>{subtitle}</p>
+        {/* Replace h1 with the logo */}
+        <img src={logoAvento} alt="Avento Logo" className="logo" />
       </div>
 
       {/* Action Buttons in a Radial Layout */}
@@ -40,7 +41,6 @@ function DashboardSection({ title, subtitle, actionBoxes, backgroundLines }) {
 
 DashboardSection.propTypes = {
   title: PropTypes.string.isRequired,
-  subtitle: PropTypes.string.isRequired,
   actionBoxes: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,
