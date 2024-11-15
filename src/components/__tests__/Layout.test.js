@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { act } from 'react';
 import Layout from '../Layout';
@@ -148,4 +148,87 @@ describe('Layout Component', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
+  describe('Edit Requests Count', () => {
+    const mockUser = {
+      userId: '123',
+      username: 'testuser',
+      roles: ['ROLE_USER'],
+      organization: {
+        organizationId: 'org123'
+      }
+    };
+    const mockEditRequests = [
+      { id: 1, status: 'pending' },
+      { id: 2, status: 'pending' }
+    ];
+
+    beforeEach(() => {
+      api.get.mockImplementation((url) => {
+        if (url === '/auth/info') {
+          return Promise.resolve({ data: mockUser });
+        }
+        if (url === '/doc/edit-request') {
+          return Promise.resolve({ data: mockEditRequests });
+        }
+        return Promise.reject(new Error('Not found'));
+      });
+    });
+
+    it('should fetch and display edit requests count', async () => {
+      await act(async () => {
+        renderLayout();
+      });
+
+      // Wait for the badge to appear
+      const badge = await screen.findByText('2');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('badge');
+    });
+
+    it('should not display badge when there are no edit requests', async () => {
+      api.get.mockImplementation((url) => {
+        if (url === '/auth/info') {
+          return Promise.resolve({ data: mockUser });
+        }
+        if (url === '/doc/edit-request') {
+          return Promise.resolve({ data: [] });
+        }
+        return Promise.reject(new Error('Not found'));
+      });
+
+      await act(async () => {
+        renderLayout();
+      });
+
+      // Wait for any potential badge to appear
+      await waitFor(() => {
+        const badge = screen.queryByText('0');
+        expect(badge).not.toBeInTheDocument();
+      });
+    });
+
+    it('should handle edit requests fetch error gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      api.get.mockImplementation((url) => {
+        if (url === '/auth/info') {
+          return Promise.resolve({ data: mockUser });
+        }
+        if (url === '/doc/edit-request') {
+          return Promise.reject(new Error('Failed to fetch'));
+        }
+        return Promise.reject(new Error('Not found'));
+      });
+
+      await act(async () => {
+        renderLayout();
+      });
+
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
+
+
 });
+
