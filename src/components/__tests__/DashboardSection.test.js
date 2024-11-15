@@ -24,8 +24,51 @@ describe('DashboardSection', () => {
     },
   ];
 
+  let mockNavigate;
+
   beforeEach(() => {
-    useNavigate.mockReturnValue(jest.fn());
+    mockNavigate = jest.fn();
+    useNavigate.mockReturnValue(mockNavigate);
+  });
+
+  it('does not call the navigate function when an unrelated key is pressed', () => {
+    render(
+      <Router>
+        <DashboardSection
+          title="Dashboard"
+          actionBoxes={mockActionBoxes}
+          backgroundLines={true}
+        />
+      </Router>
+    );
+
+    const box1 = screen.getByText(mockActionBoxes[0].label);
+    fireEvent.keyDown(box1, { key: 'a' });
+    
+    // Assert that navigate was NOT called
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('calls the navigate function when an action box is clicked with the keyboard', () => {
+    render(
+      <Router>
+        <DashboardSection
+          title="Dashboard"
+          actionBoxes={mockActionBoxes}
+          backgroundLines={true}
+        />
+      </Router>
+    );
+
+    const box1 = screen.getByText(mockActionBoxes[0].label);
+    
+    // Fire "Enter" keydown event
+    fireEvent.keyDown(box1, { key: 'Enter' });
+    expect(mockNavigate).toHaveBeenCalledWith(mockActionBoxes[0].path);
+
+    // Fire "Space" keydown event
+    fireEvent.keyDown(box1, { key: ' ' });
+    expect(mockNavigate).toHaveBeenCalledWith(mockActionBoxes[0].path);
   });
 
   it('renders the branding section with the logo', () => {
@@ -73,7 +116,7 @@ describe('DashboardSection', () => {
     );
 
     fireEvent.click(screen.getByText(mockActionBoxes[0].label));
-    expect(useNavigate()).toHaveBeenCalledWith(mockActionBoxes[0].path);
+    expect(mockNavigate).toHaveBeenCalledWith(mockActionBoxes[0].path);
   });
 
   it('renders the background lines when backgroundLines is true', () => {
