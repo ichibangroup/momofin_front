@@ -1,0 +1,55 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import './DashboardSection.css';
+import { useNavigate } from 'react-router-dom';
+
+function DashboardSection({ title, subtitle, actionBoxes, backgroundLines }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="dashboard-container">
+      {/* Background Lines */}
+      {backgroundLines && <div className="background-lines" aria-hidden="true"></div>}
+
+      {/* Branding Section */}
+      <div className="branding">
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
+
+      {/* Action Buttons in a Radial Layout */}
+      <div className="action-radial-container">
+        {actionBoxes.map((box, index) => (
+          <div
+            key={index}
+            className={`action-box ${box.className}`}
+            onClick={() => navigate(box.path)}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="action-box-content">
+              <h3>{box.label}</h3>
+              {box.icon && <box.icon className="action-icon" />}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+DashboardSection.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string.isRequired,
+  actionBoxes: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      className: PropTypes.string.isRequired,
+      icon: PropTypes.elementType, // Optional icon
+    })
+  ).isRequired,
+  backgroundLines: PropTypes.bool, // Toggle for background decorative lines
+};
+
+export default DashboardSection;

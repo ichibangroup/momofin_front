@@ -1,0 +1,152 @@
+/* General Container */
+.dashboard-container {
+  font-family: 'Space Grotesk', sans-serif;
+  color: #0D3B66; /* Dark Blue */
+  position: relative;
+  overflow: hidden; /* Prevent scrolling */
+  padding: 0; /* Removed padding to avoid overflow */
+  background-color: transparent;
+  height: 100vh; /* Full height of the viewport */
+  width: 100vw; /* Full width of the viewport */
+  box-sizing: border-box; /* Prevents padding from affecting total size */
+  
+  display: flex; /* Use flexbox for centering */
+  justify-content: center;  /* Centers content horizontally */
+  align-items: center;  /* Centers content vertically */
+  flex-direction: column;  /* Aligns content in a column */
+  text-align: center; /* Ensure all text is centered */
+}
+
+/* Background Lines */
+.background-lines {
+  position: absolute;
+  top: -50px;
+  left: -100px;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(13,59,102,0.05) 20%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Branding Section */
+.branding {
+  text-align: center;
+  margin-bottom: 5vh; /* Adjust this value for vertical space below branding */
+  margin-top: 5vh; /* Adjust this value for vertical space above branding */
+  z-index: 1;
+  position: relative;
+}
+
+.branding h1 {
+  font-size: 48px;
+  font-weight: bold;
+  color: #0D3B66; /* Dark Blue text */
+}
+
+.branding p {
+  font-size: 18px;
+  color: #8D99AE; /* Cool Gray text */
+}
+
+.action-radial-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  z-index: 1;
+  position: relative;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top: -50vh; /* Adjust for vertical position of the action box */
+}
+
+
+/* Action Buttons */
+.action-box {
+  width: 220px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #87CEEB; /* Sky Blue */
+  color: #F5F5F5; /* Soft White text */
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+.action-box.verify-box {
+  background-color: #FFD700; /* Light Gold */
+}
+
+/* Hover Effect */
+.action-box:hover {
+  transform: scale(1.1);
+  background-color: #0D3B66; /* Dark Blue */
+}
+
+.action-box:hover .action-icon {
+  color: rgba(245, 245, 245, 0.5); /* Dimmed Soft White */
+}
+
+.action-box:hover h3 {
+  color: #FFD700; /* Light Gold */
+}
+
+/* Action Box Content */
+.action-box-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action-icon {
+  font-size: 48px; /* Matches the text size */
+  transition: color 0.3s ease;
+}
+
+.action-box h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #F5F5F5; /* Soft White text */
+  transition: color 0.3s ease;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .action-radial-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .action-box {
+    width: 180px;
+    height: 180px;
+  }
+
+  .action-icon {
+    font-size: 36px;
+  }
+
+  .action-box h3 {
+    font-size: 18px;
+  }
+}
+
+/* Ensure no body scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensures the body and html elements are also 100% of the viewport height */
+  overflow: hidden; /* Prevent scrolling on the body */
+}
