@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 import ViewEditRequests from '../ViewEditRequests';
 import api from '../../utils/api';
 
@@ -8,6 +9,8 @@ import api from '../../utils/api';
 jest.mock('../../utils/api');
 
 // Mock data for testing
+const mockWindowOpen = jest.fn();
+window.open = mockWindowOpen;
 const mockRequests = [
     {
         documentId: '1',
@@ -132,5 +135,179 @@ describe('ViewEditRequests Component', () => {
     test('data-testid is correctly set', () => {
         renderWithRouter(<ViewEditRequests />);
         expect(screen.getByTestId('viewUsers-1')).toBeInTheDocument();
+    });
+
+    describe('handleViewDocument', () => {
+        it('should open document in new tab when view button is clicked', async () => {
+            // Mock successful document URL fetch
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/1')) {
+                    return Promise.resolve({ data: { url: 'https://example.com/doc' } });
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for requests to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify API call
+            expect(api.get).toHaveBeenCalledWith('/doc/edit-request/1', {
+                params: {
+                    organizationName: 'Test Org'
+                }
+            });
+
+            // Verify window.open call
+            await waitFor(() => {
+                expect(mockWindowOpen).toHaveBeenCalledWith('https://example.com/doc', '_blank');
+            });
+        });
+
+        it('should handle view document error with specific error message', async () => {
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+            // Mock failed document URL fetch
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/doc123')) {
+                    return Promise.reject({
+                        response: {
+                            data: {
+                                message: 'Document not found'
+                            }
+                        }
+                    });
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for requests to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify error handling
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(mockWindowOpen).not.toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+        });
+
+        it('should handle view document error with unknown error', async () => {
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+            // Mock failed document URL fetch with generic error
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/doc123')) {
+                    return Promise.reject(new Error());
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for requests to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify error handling
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(mockWindowOpen).not.toHaveBeenCalled();
+
+            consoleSpy.mockRestore();
+        });
+
+        it('should disable view button while loading', async () => {
+            // Mock slow document URL fetch
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/doc123')) {
+                    return new Promise(resolve =>
+                        setTimeout(() =>
+                            resolve({ data: { url: 'https://example.com/doc' } }), 100
+                        )
+                    );
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for requests to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify button is disabled during loading
+            expect(viewButtons[0]).toBeDisabled();
+
+            // Wait for loading to complete
+            await waitFor(() => {
+                expect(viewButtons[0]).not.toBeDisabled();
+            });
+        });
+    });
+
+    describe('View Button Accessibility', () => {
+        it('should have accessible elements for view button', async () => {
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/doc123')) {
+                    return Promise.reject({
+                        response: {
+                            data: {
+                                message: 'Document not found'
+                            }
+                        }
+                    });
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            renderWithRouter(<ViewEditRequests />);
+
+            await waitFor(() => {
+                const viewButtons = screen.getAllByText('View');
+                viewButtons.forEach(button => {
+                    expect(button).toHaveClass('px-3', 'py-2', 'text-sm', 'rounded-md');
+                    expect(button).toBeEnabled();
+                });
+            });
+        });
     });
 });

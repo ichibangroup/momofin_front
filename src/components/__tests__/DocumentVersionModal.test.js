@@ -8,28 +8,41 @@ import api from '../../utils/api';
 jest.mock('../../utils/api');
 
 // Mock data for testing
-const mockVersions = [
-    {
-        id: { version: 1 },
-        fileName: 'document_v1.pdf',
-        editedBy: { username: 'john.doe' },
-        createdDate: '2024-01-01'
-    },
-    {
-        id: { version: 2 },
-        fileName: 'document_v2.pdf',
-        editedBy: { username: 'jane.smith' },
-        createdDate: '2024-01-02'
-    }
-];
+const mockWindowOpen = jest.fn();
+window.open = mockWindowOpen;
 
 describe('DocumentVersionModal', () => {
     const mockDocumentId = '123';
     const mockOnClose = jest.fn();
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+    const mockVersions = [
+        {
+            id: {
+                documentId: 'doc123',
+                version: 1
+            },
+            editedBy: {
+                username: 'user1'
+            },
+            createdDate: '2024-03-15'
+        },
+        {
+            id: {
+                documentId: 'doc123',
+                version: 2
+            },
+            editedBy: {
+                username: 'user2'
+            },
+            createdDate: '2024-03-16'
+        }
+    ];
+
+    const defaultProps = {
+        documentId: 'doc123',
+        isOpen: true,
+        onClose: jest.fn()
+    };
 
     test('renders modal when isOpen is true', () => {
         render(
@@ -61,8 +74,8 @@ describe('DocumentVersionModal', () => {
 
         // Wait for and verify data display
         await waitFor(() => {
-            expect(screen.getByText('john.doe')).toBeInTheDocument();
-            expect(screen.getByText('jane.smith')).toBeInTheDocument();
+            expect(screen.getByText('user1')).toBeInTheDocument();
+            expect(screen.getByText('user2')).toBeInTheDocument();
         });
     });
 
@@ -188,5 +201,102 @@ describe('DocumentVersionModal', () => {
 
         expect(container.firstChild).toHaveClass('modal-backdrop');
         expect(container.firstChild).not.toHaveClass('show');
+    });
+
+    describe('handleViewDocument Functionality', () => {
+        it('should open document in new tab when view button is clicked', async () => {
+            // Mock successful document URL fetch
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/doc123/versions') {
+                    return Promise.resolve({ data: mockVersions });
+                }
+                if (url === '/doc/view/doc123/1') {
+                    return Promise.resolve({ data: { url: 'https://example.com/doc' } });
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            render(<DocumentVersionModal {...defaultProps} />);
+
+            // Wait for versions to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify API call and window.open
+            expect(api.get).toHaveBeenCalledWith('/doc/view/doc123/1');
+            expect(mockWindowOpen).toHaveBeenCalledWith('https://example.com/doc', '_blank');
+        });
+
+        it('should handle view document error correctly', async () => {
+            // Mock failed document URL fetch
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/doc123/versions') {
+                    return Promise.resolve({ data: mockVersions });
+                }
+                if (url === '/doc/view/doc123/1') {
+                    return Promise.reject({
+                        response: {
+                            data: {
+                                message: 'Document not found'
+                            }
+                        }
+                    });
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            render(<DocumentVersionModal {...defaultProps} />);
+
+            // Wait for versions to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify error message
+            await waitFor(() => {
+                expect(screen.getByText('Failed to load document: Document not found')).toBeInTheDocument();
+            });
+
+            // Verify window.open was not called
+            expect(mockWindowOpen).not.toHaveBeenCalled();
+        });
+
+        it('should handle view document error with unknown error message', async () => {
+            // Mock failed document URL fetch with no specific error message
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/doc123/versions') {
+                    return Promise.resolve({ data: mockVersions });
+                }
+                if (url === '/doc/view/doc123/1') {
+                    return Promise.reject(new Error());
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+
+            render(<DocumentVersionModal {...defaultProps} />);
+
+            // Wait for versions to load
+            await waitFor(() => {
+                expect(screen.getAllByText('View')).toHaveLength(2);
+            });
+
+            // Click the first view button
+            const viewButtons = screen.getAllByText('View');
+            await userEvent.click(viewButtons[0]);
+
+            // Verify error message
+            await waitFor(() => {
+                expect(screen.getByText('Failed to load document: An unknown error occurred')).toBeInTheDocument();
+            });
+        });
     });
 });

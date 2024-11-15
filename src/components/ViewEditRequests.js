@@ -2,13 +2,36 @@ import React, { useState, useEffect } from 'react';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
 import {Link} from 'react-router-dom';
+import {Eye} from "lucide-react";
 
 function ViewEditRequests() {
-    const [, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [, setError] = useState(null);
     const [requests, setRequests] = useState([
 
     ]);
+
+    const handleViewDocument = async (documentId, organizationName) => {
+        try {
+            setLoading(true);
+            // Using the new endpoint path and including organizationName as a query parameter
+            const response = await api.get(`/doc/edit-request/${documentId}`, {
+                params: {
+                    organizationName: organizationName
+                }
+            });
+
+            // Assuming the response structure matches DocumentViewUrlResponse
+            const url = response.data.url;
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error('Failed to get document URL:', error);
+            const errorMsg = error.response?.data?.message || 'An unknown error occurred';
+            setError(`Failed to load document: ${errorMsg}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchRequests = async () => {
         try {
@@ -48,7 +71,16 @@ function ViewEditRequests() {
                         <div>{request.email}</div>
                         <div>{request.documentName}</div>
                         <div className="actions">
-                            <button className="edit-btn"><Link to={`/app/editDocument/${request.documentId}`} className="btn btn-primary btn-sm">✏️</Link></button>
+                            <button
+                                onClick={() => handleViewDocument(request.documentId, request.organizationName)}
+                                disabled={loading}
+                                className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                            >
+                                <Eye size={16}/>
+                                View
+                            </button>
+                            <button className="edit-btn"><Link to={`/app/editDocument/${request.documentId}`}
+                                                               className="btn btn-primary btn-sm">✏️</Link></button>
                             <button className="btn btn-danger btn-sm">❌</button>
                         </div>
                     </div>

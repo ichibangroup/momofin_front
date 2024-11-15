@@ -3,7 +3,14 @@ import DOMPurify from 'dompurify';
 
 // For plain text fields like names, emails, etc.
 export const sanitizePlainText = (content) => {
-  return DOMPurify.sanitize(content, {
+  const encodedContent = content
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  return DOMPurify.sanitize(encodedContent, {
     ALLOWED_TAGS: [], // No HTML tags allowed
     ALLOWED_ATTR: [] // No attributes allowed
   });

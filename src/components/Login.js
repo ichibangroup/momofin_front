@@ -5,7 +5,7 @@ import '../Login.css';
 import api from '../utils/api';
 import { LoginActivityLogger } from '../utils/loginLogger';
 import { setAuthToken } from '../utils/auth';
-import logo from '../assets/logo.png';
+import logoAvento from '../assets/logo-avento.png';
 import { Building, User, Lock } from 'lucide-react';
 import { sanitizePlainText, sanitizeFormData } from '../utils/sanitizer'; // Add this import
 
@@ -121,10 +121,10 @@ function Login({ onSubmit }) {
 
   return (
     <div className="login-container">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="login-form">
         <div className="header-container">
           <h2>Sign In</h2>
-          <img src={logo} alt="Logo" className="login-logo" />
+          <img src={logoAvento} alt="Logo Avento" style={{ width: '100px', height: 'auto' }} className="login-logo" />
         </div>
         <div className="input-group">
           <Building className="input-icon"/>
@@ -184,7 +184,7 @@ function Login({ onSubmit }) {
             {sanitizePlainText(authMessage)}
           </div>
         )}
-        <button type="submit" className="btn-signin">Sign In</button>
+        <button className="signin-button" type="submit">Sign In</button>
         <Link to="/forgot-password" className="forgot-password">
           Forgot Password?
         </Link>
