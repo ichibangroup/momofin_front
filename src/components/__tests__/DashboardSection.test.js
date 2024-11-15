@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter as Router, useNavigate } from 'react-router-dom';
-import DashboardSection from './DashboardSection';
+import DashboardSection from '../DashboardSection';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -87,7 +87,7 @@ describe('DashboardSection', () => {
       </Router>
     );
 
-    expect(screen.getByRole('region', { name: 'background-lines' })).toBeInTheDocument();
+    expect(screen.getByTestId('background-lines')).toBeInTheDocument();
   });
 
   it('does not render the background lines when backgroundLines is false', () => {
@@ -101,6 +101,6 @@ describe('DashboardSection', () => {
       </Router>
     );
 
-    expect(screen.queryByRole('region', { name: 'background-lines' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('background-lines')).not.toBeInTheDocument();
   });
 });

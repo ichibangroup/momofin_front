@@ -10,7 +10,7 @@ function DashboardSection({ title, actionBoxes, backgroundLines }) {
   return (
     <div className="dashboard-container">
       {/* Background Lines */}
-      {backgroundLines && <div className="background-lines" aria-hidden="true"></div>}
+      {backgroundLines && <div data-testid="background-lines" className="background-lines" aria-hidden="true"></div>}
 
       {/* Branding Section */}
       <div className="branding">
@@ -30,7 +30,11 @@ function DashboardSection({ title, actionBoxes, backgroundLines }) {
           >
             <div className="action-box-content">
               <h3>{box.label}</h3>
-              {box.icon && <box.icon className="action-icon" />}
+              {box.icon && (
+                <div data-testid={`${box.label}-icon`}>
+                  <box.icon className="action-icon" />
+                </div>
+              )}
             </div>
           </div>
         ))}
