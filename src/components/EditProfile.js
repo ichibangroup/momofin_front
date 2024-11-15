@@ -96,7 +96,7 @@ const EditProfile = () => {
     };
 
     fetchLoggedInUserInfo();
-}, [navigate]);
+}, [navigate, userId]);
 
   const checkIfAdmin = (userData) => {
     return userData.momofinAdmin || 

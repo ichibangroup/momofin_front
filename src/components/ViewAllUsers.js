@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faUser, 
+import {
   faStar,
-  faUniversity,
   faPencilAlt,
   faTrash,
   faUserPlus,
@@ -23,7 +21,7 @@ function ViewUsers() {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, user: null });
     const navigate = useNavigate();
-    const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
+    const [, setStatusMessage] = useState({ text: '', type: '' });
 
     useEffect(() => {
         const fetchUsers = async () => {
