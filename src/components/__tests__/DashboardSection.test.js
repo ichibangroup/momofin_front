@@ -147,5 +147,3 @@ describe('DashboardSection', () => {
     expect(screen.queryByTestId('background-lines')).not.toBeInTheDocument();
   });
 });
-
-//RAHHHHHH
