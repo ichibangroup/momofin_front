@@ -99,6 +99,7 @@ const ConfigOrganisation = () => {
                     name="name"
                     value={organization.name}
                     onChange={handleChange}
+                    disabled={true}
                 />
               </div>
               <div className="form-group">
