@@ -110,7 +110,6 @@ describe('AddOrganisation Component', () => {
     fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
-    // Submit admin details
     fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
     fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
 
