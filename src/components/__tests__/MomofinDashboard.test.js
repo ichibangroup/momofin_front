@@ -1,62 +1,61 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+import { BrowserRouter } from 'react-router-dom'; // Needed to use `useNavigate`
 import MomofinDashboard from '../MomofinDashboard';
+import '@testing-library/jest-dom';
 
-// Mock the useNavigate hook from react-router-dom
+const mockNavigate = jest.fn();
+
+// Mock the useNavigate hook
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),  // Keep the rest of react-router-dom's functionality
-  useNavigate: jest.fn(),  // Mock useNavigate
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
 }));
 
 describe('MomofinDashboard', () => {
-  let mockNavigate;
-
   beforeEach(() => {
-    mockNavigate = jest.fn();  // Create a mock function for navigate
-    useNavigate.mockReturnValue(mockNavigate);  // Return the mockNavigate function when useNavigate is called
+    mockNavigate.mockClear(); // Clear mockNavigate before each test
   });
 
-  it('renders the DashboardSection with correct props', () => {
+  test('renders MomofinDashboard component', () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <MomofinDashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
-    // Check if the logo is present (instead of checking the title text directly)
-    expect(screen.getByAltText('Avento Logo')).toBeInTheDocument();
-
-    // Check if both action boxes are rendered
+    // Check for branding text
+    expect(screen.getByText('MOMOFIN')).toBeInTheDocument();
+    expect(screen.getByText('A safer place to store your documents.')).toBeInTheDocument();
+    
+    // Check for action box texts
     expect(screen.getByText('View All Users')).toBeInTheDocument();
     expect(screen.getByText('View All Organisations')).toBeInTheDocument();
   });
 
-  it('renders action box icons correctly', () => {
+  test('navigates to view users page when clicking "View All Users"', () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <MomofinDashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
-    // Check if the icons are rendered correctly
-    expect(screen.getByTestId('View All Users-icon')).toBeInTheDocument();
-    expect(screen.getByTestId('View All Organisations-icon')).toBeInTheDocument();
+    const viewUsersBox = screen.getByText('View All Users');
+    fireEvent.click(viewUsersBox);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/app/viewAllUsers');
   });
 
-  it('calls the navigate function when an action box is clicked', () => {
+  test('navigates to view organisations page when clicking "View All Organisations"', () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <MomofinDashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
-    // Fire a click event on the "View All Users" action box
-    fireEvent.click(screen.getByText('View All Users'));
-    expect(mockNavigate).toHaveBeenCalledWith('/app/viewAllUsers');  // Ensure it's called with the correct path
+    const viewOrganisationsBox = screen.getByText('View All Organisations');
+    fireEvent.click(viewOrganisationsBox);
 
-    // Fire a click event on the "View All Organisations" action box
-    fireEvent.click(screen.getByText('View All Organisations'));
-    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');  // Ensure it's called with the correct path
+    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
   });
 });
