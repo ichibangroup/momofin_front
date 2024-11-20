@@ -1,70 +1,188 @@
-.container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 20px;
+body {
+  overflow: hidden;
+}
+
+/* General Container */
+.add-organisation-container {
+  max-width: 100%;
+  width: 100%;
+  padding: 24px 32px;
+  box-sizing: border-box;
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh; /* Keeps the container to fill the screen height */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Vertically centers the content */
+  align-items: center; /* Horizontally centers the content */
+  margin: 0; /* Remove any top margin */
+}
+
+
+/* Card Style */
+.add-organisation-container .add-organisation-card {
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 100%;
+  max-width: 500px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  align-items: center; /* Center all items horizontally within the card */
+  justify-content: flex-start;
+}
+
+/* Title Styles */
+.add-organisation-text-3xl {
+  font-size: 2.25rem; /* Large font size */
+  font-weight: 700; /* Bold */
+  color: #0D3B66; /* Dark blue color */
+  text-align: center;
+  margin-bottom: 24px; /* Space below title */
+}
+
+/* Form */
+.add-organisation-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 0 auto;
+}
+
+.add-organisation-form-control {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 1px solid #8D99AE;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  background: transparent;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.add-organisation-form-control:focus {
+  outline: none;
+  border-bottom-color: #0D3B66;
+  border-bottom-width: 2px;
+}
+
+.add-organisation-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.add-organisation-form-group > .add-organisation-form-control {
+  margin-bottom: 16px;
+}
+
+/* Wrapper for the buttons */
+.add-organisation-buttons {
+  display: flex;
+  justify-content: flex-start; /* This will space the buttons apart */
+  gap: 16px; /* Optional: Adds spacing between the buttons */
+  margin-top: 20px; /* Optional: Adds space above the buttons */
+  width: 100%; /* Ensure the container takes up the full width */
+}
+
+/* Back button styles */
+.add-organisation-back-btn {
+  background: transparent;
+  border: 2px solid #8D99AE;
+  color: #8D99AE;
+  padding: 12px 16px; /* Increased padding to match Add button height */
+  font-size: 16px;
+  font-weight: normal;
+  text-transform: uppercase;
+  border-radius: 8px; /* Same border-radius as the Add button */
+  cursor: pointer;
+  width: 25%; /* Ensures buttons are the same width */
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.add-organisation-back-btn:hover {
+  background: #8D99AE;
+  color: #fff;
+}
+
+/* Add Organisation button styles */
+.add-organisation-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  background: #FFD700;
+  border: none;
+  color: #000000;
+  padding: 12px 16px; /* Same padding as the Back button */
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 8px; /* Same border-radius as the Back button */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 48%; /* Ensures buttons are the same width */
+}
+
+.add-organisation-btn:hover {
+  background: #E0C442;
+}
+
+.add-organisation-btn:active {
+  transform: scale(0.98);
+}
+
+.add-organisation-btn:disabled {
+  background: #8D99AE;
+  cursor: not-allowed;
+  color: #fff;
+}
+
+.add-organisation-cancel-btn {
+  background: transparent;
+  border: 2px solid #8D99AE;
+  color: #8D99AE;
+  padding: 12px 16px; /* Increased padding to match Add button height */
+  font-size: 16px;
+  font-weight: normal;
+  text-transform: uppercase;
+  border-radius: 8px; /* Same border-radius as the Add button */
+  cursor: pointer;
+  width: 25%; /* Ensures buttons are the same width */
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.add-organisation-cancel-btn:hover {
+  background: #8D99AE;
+  color: #fff;
+}
+
+/* Error Message */
+.add-organisation-error-message {
+  color: #D32F2F;
+  background: #FFEBEE;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #FFCDD2;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .add-organisation-container {
+    width: 95%;
+    margin: 16px auto;
   }
-  
-  .card {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .add-organisation-form {
+    gap: 16px;
   }
-  
-  .card-body {
-    padding: 20px;
-  }
-  
-  .text-3xl {
-    font-size: 1.875rem; /* Adjust font size if needed */
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-  
-  .form-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  .form-control {
-    display: block;
+
+  .add-organisation-btn,
+  .add-organisation-back-btn {
     width: 100%;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 1.5;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    margin-bottom: 15px;
   }
-  
-  .form-control:focus {
-    border-color: #8fceff;
-    outline: 0;
-    box-shadow: 0 0 0 3px rgba(83, 190, 255, 0.5);
-  }
-  
-  .textarea {
-    min-height: 100px;
-  }
-  
-  .mt-4 {
-    margin-top: 1.5rem;
-  }
-  
-  .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: #fff;
-    padding: 10px 16px;
-    font-size: 1em;
-    line-height: 1.5;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .btn-primary:hover {
-    background-color: #0069d9;
-    border-color: #0062cc;
-  }
+}
