@@ -5,21 +5,22 @@ import api from "../utils/api";
 
 const ViewOrganisations = () => {
   const navigate = useNavigate();
-  const [, setLoading] = useState(true);
-  const [, setError] = useState(null);
-  const [organizations, setOrganizations] = useState([
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [organizations, setOrganizations] = useState([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingOrg, setEditingOrg] = useState(null);
+  const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
 
-  // Replace this with a function to fetch organization data from your backend
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
       const response = await api.get('/api/momofin-admin/organizations');
       setOrganizations(response.data);
-      setError(null);
     } catch (error) {
       console.error('Error fetching organizations:', error);
-      setError('Failed to fetch organizations. Please try again later.');
+      showStatusMessage('Failed to fetch organizations. Please try again later.', 'error');
     } finally {
       setLoading(false);
     }
@@ -29,33 +30,47 @@ const ViewOrganisations = () => {
     fetchOrganizations();
   }, []);
 
-    return (
-        <div className="view-organisations">
-            <h1>View All Organisations</h1>
-            <div className="headers">
-                <div>Name</div>
-                <div>Industry</div>
-                <div>Address</div>
-                <div>Description</div>
-                <div>Actions</div>
-            </div>
-            <div className="organisation-rows-container">
-                {organizations.map((org) => (
-                    <div key={org.id} className="organisation-row">
-                        <div>{org.name}</div>
-                        <div>{org.industry}</div>
-                        <div>{org.location}</div>
-                        <div>{org.description}</div>
-                        <div className="actions">
-                            <button data-testid="edit-btn" className="edit-btn">✏️</button>
-                            <button data-testid="delete-btn" className="delete-btn">❌</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-            <button className="add-btn" onClick={() => navigate('/app/momofinDashboard/addNewOrganisation')}>ADD ORGANISATION</button>
-        </div>
-    );
-}
+  const showStatusMessage = (text, type) => {
+    if (window.statusMessageTimeout) {
+      clearTimeout(window.statusMessageTimeout);
+    }
+    setStatusMessage({ text, type });
+    window.statusMessageTimeout = setTimeout(() => {
+      setStatusMessage({ text: '', type: '' });
+    }, 5000);
+  };
+
+  const handleEdit = (org) => {
+    if (isEditing) {
+      showStatusMessage('Another edit operation is in progress. Please wait.', 'warning');
+      return;
+    }
+
+    setIsEditing(true);
+    setEditingOrg({
+      ...org,
+      newIndustry: org.industry,
+      newLocation: org.location,
+      newDescription: org.description
+    });
+  };
+
+  const handleUpdate = async () => {
+    const orgToUpdate = editingOrg;
+    const originalOrg = organizations.find(org => org.organizationId === orgToUpdate.organizationId);
+    
+    try {
+      // Optimistically update the UI
+      setOrganizations(prevOrgs => 
+        prevOrgs.map(org => org.organizationId === orgToUpdate.organizationId ? {
+          ...org,
+          industry: orgToUpdate.newIndustry,
+          location: orgToUpdate.newLocation,
+          description: orgToUpdate.newDescription
+        } : org)
+      );
+
+      // Reset editing state
+      
 
 export default ViewOrganisations;
