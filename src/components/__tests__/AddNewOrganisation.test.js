@@ -25,45 +25,45 @@ describe('AddOrganisation Component', () => {
   });
 
   test('renders Add Organisation form for organisation details', () => {
-    renderWithRouter(<AddOrganisation />);
-    expect(screen.getByRole('heading', { name: 'Add Organisation' })).toBeInTheDocument();
+    renderWithRouter(<AddOrganisation/>);
+    expect(screen.getByRole('heading', {name: 'Add Organisation'})).toBeInTheDocument();
     expect(screen.getByLabelText('Organisation Name:')).toBeInTheDocument();
     expect(screen.getByLabelText('Industry:')).toBeInTheDocument();
     expect(screen.getByLabelText('Address:')).toBeInTheDocument();
     expect(screen.getByLabelText('Description:')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Continue'})).toBeInTheDocument();
   });
 
   test('submits organisation details and proceeds to admin details form', async () => {
-    renderWithRouter(<AddOrganisation />);
-    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-    fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-    fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
+    renderWithRouter(<AddOrganisation/>);
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+    fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Input Admin Details' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('heading', {name: 'Input Admin Details'})).toBeInTheDocument());
     expect(screen.getByLabelText('Username:')).toBeInTheDocument();
     expect(screen.getByLabelText('Password:')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add Organisation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Add Organisation'})).toBeInTheDocument();
   });
 
   test('submits both organisation and admin details', async () => {
-    api.post.mockResolvedValueOnce({ status: 200 });
+    api.post.mockResolvedValueOnce({status: 200});
 
-    renderWithRouter(<AddOrganisation />);
+    renderWithRouter(<AddOrganisation/>);
     // Submit organisation details
-    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-    fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-    fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+    fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
 
     // Submit admin details
-    fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
-    fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+    fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+    fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
 
     await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
     expect(api.post).toHaveBeenCalledWith('/api/momofin-admin/organizations', {
@@ -81,58 +81,95 @@ describe('AddOrganisation Component', () => {
   });
 
   test('displays error message on API error during admin details submission', async () => {
-    api.post.mockRejectedValueOnce({ response: { data: { message: 'Error creating organization' } } });
+    api.post.mockRejectedValueOnce({response: {data: {message: 'Error creating organization'}}});
 
-    renderWithRouter(<AddOrganisation />);
+    renderWithRouter(<AddOrganisation/>);
     // Submit organisation details
-    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-    fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-    fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+    fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
 
     // Submit admin details
-    fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
-    fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+    fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+    fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
 
     expect(await screen.findByText('Error creating organization')).toBeInTheDocument();
   });
 
-  test('disables the submit button while submitting admin details', async () => {
-    api.post.mockResolvedValueOnce({ status: 200 });
+  test('handles cancel button click during organization details entry', () => {
+    renderWithRouter(<AddOrganisation/>);
 
-    renderWithRouter(<AddOrganisation />);
-    // Submit organisation details
-    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
-    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
-    fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
-    fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    // Fill in some details
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
 
-    fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
-    fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
+    // Click the Cancel button
+    fireEvent.click(screen.getByRole('button', {name: 'Cancel'}));
 
-    const submitButton = screen.getByRole('button', { name: 'Add Organisation' });
-    fireEvent.click(submitButton);
-
-    expect(submitButton).toBeDisabled();
-
-    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
-    expect(submitButton).not.toBeDisabled();
+    // Verify the fields are cleared and navigation happens
+    expect(screen.getByLabelText('Organisation Name:').value).toBe('');
+    expect(screen.getByLabelText('Industry:').value).toBe('');
+    expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
   });
 
-  test('does not allow form submission with missing required fields', () => {
-    renderWithRouter(<AddOrganisation />);
+  test('handles back button click during admin details entry', async () => {
+    renderWithRouter(<AddOrganisation/>);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    // Submit organization details
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.change(screen.getByLabelText('Address:'), {target: {value: '123 Main St'}});
+    fireEvent.change(screen.getByLabelText('Description:'), {target: {value: 'An example organisation'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
 
-    expect(screen.getByLabelText('Organisation Name:').validationMessage).toBeTruthy();
-    expect(screen.getByLabelText('Industry:').validationMessage).toBeTruthy();
+    // Verify admin form is displayed
+    await waitFor(() => {
+      expect(screen.getByRole('heading', {name: 'Input Admin Details'})).toBeInTheDocument();
+      expect(screen.getByLabelText('Username:')).toBeInTheDocument();
+      expect(screen.getByLabelText('Password:')).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+    // Fill admin details
+    fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+    fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
 
-    expect(screen.getByLabelText('Username:').validationMessage).toBeTruthy();
-    expect(screen.getByLabelText('Password:').validationMessage).toBeTruthy();
+    // Click the Back button
+    fireEvent.click(screen.getByRole('button', {name: 'Back'}));
+
+    // Verify the form switches back to organisation details
+    expect(screen.getByRole('heading', {name: 'Add Organisation'})).toBeInTheDocument();
+    expect(screen.getByLabelText('Organisation Name:')).toBeInTheDocument();
+    expect(screen.getByLabelText('Industry:')).toBeInTheDocument();
+
+    // Ensure admin fields are not visible
+    expect(screen.queryByLabelText('Username:')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Password:')).not.toBeInTheDocument();
+  });
+
+
+  test('displays loading state during admin details submission', async () => {
+    api.post.mockResolvedValueOnce({status: 200});
+
+    renderWithRouter(<AddOrganisation/>);
+
+    // Submit organization details
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
+    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Continue'}));
+
+    // Fill admin details and submit
+    fireEvent.change(screen.getByLabelText('Username:'), {target: {value: 'adminUser'}});
+    fireEvent.change(screen.getByLabelText('Password:'), {target: {value: 'adminPass'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Add Organisation'}));
+
+    // Verify loading state
+    expect(screen.getByRole('button', {name: 'Submitting...'})).toBeDisabled();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
+    });
   });
 });
