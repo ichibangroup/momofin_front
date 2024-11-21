@@ -50,7 +50,7 @@ describe('AddOrganisation Component', () => {
   });
 
   test('submits both organisation and admin details', async () => {
-    api.post.mockResolvedValueOnce({status: 200});
+    api.post = jest.fn().mockImplementation(() => Promise.resolve({ status: 200 }));
 
     renderWithRouter(<AddOrganisation/>);
     // Submit organisation details
@@ -173,4 +173,33 @@ describe('AddOrganisation Component', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
     });
   });
+
+  test('displays error message when status code is not 200', async () => {
+    api.post.mockRejectedValueOnce({
+      response: {
+        status: 400,
+        data: { message: 'Failed to add organisation. Please try again.' },
+      },
+    });
+
+    renderWithRouter(<AddOrganisation />);
+
+    // Submit organisation details
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
+    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
+    fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
+    fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    // Submit admin details
+    fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
+    fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
+
+    // Wait for the error message to be displayed
+    await waitFor(() => {
+      expect(screen.getByText('Failed to add organisation. Please try again.')).toBeInTheDocument();
+    });
+  });
+
 });
