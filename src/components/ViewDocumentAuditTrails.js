@@ -22,7 +22,7 @@ const ViewAuditTrails = () => {
     const pageSize = 10;
 
     const fetchAuditTrails = async (isNewPage = false) => {
-        if (!hasMore && isNewPage) return; // Exit if there's no more data
+        if (!hasMore && isNewPage) return;
     
         try {
             setLoading(true);
@@ -48,7 +48,7 @@ const ViewAuditTrails = () => {
             });
     
             setPage((prevPage) => isNewPage ? prevPage + 1 : prevPage);
-            setHasMore(!response.data.last); // Assuming response.data.last indicates the last page
+            setHasMore(!response.data.last);
             setError(null);
         } catch (error) {
             console.error('Error fetching audits:', error);
@@ -89,7 +89,7 @@ const ViewAuditTrails = () => {
         <div className="view-audits" data-testid="viewAudits-1">
             <h1 className="title">View Audits</h1>
 
-            {/* Filter Section */}
+            
             <div className="filter-section">
                 <input
                     type="text"
@@ -128,11 +128,9 @@ const ViewAuditTrails = () => {
                 />
             </div>
 
-            {/* Display Loading or Error */}
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
 
-            {/* Table Section */}
             <table className="audit-table">
                 <thead>
                     <tr className="headers">
