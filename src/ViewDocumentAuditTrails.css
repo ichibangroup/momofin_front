@@ -1,0 +1,68 @@
+.view-audits {
+    width: 90%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.audit-table th, .audit-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left; /* Set general alignment for text columns */
+}
+
+.audit-table th.sort-header {
+    background-color: #e0e0e0;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 20px;
+    border: none;
+}
+
+/* Round corners for the first and last header */
+.audit-table th:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.audit-table th:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* Background color for the entire header row */
+.audit-table thead tr {
+    background-color: #f2f2f2;
+}
+
+.audit-table th {
+    text-align: left; /* Align headers to match text alignment */
+}
+
+.audit-table td {
+    text-align: left; /* Align text to left in cells */
+}
+
+/* Specific column widths for better alignment */
+.audit-table th:nth-child(1), .audit-table td:nth-child(1) {
+    width: 25%; /* Document column width */
+}
+
+.audit-table th:nth-child(2), .audit-table td:nth-child(2) {
+    width: 25%; /* User column width */
+}
+
+.audit-table th:nth-child(3), .audit-table td:nth-child(3) {
+    width: 25%; /* Action column width */
+}
+
+.audit-table th:nth-child(4), .audit-table td:nth-child(4) {
+    width: 25%; /* Date column width */
+}
