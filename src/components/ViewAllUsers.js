@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,7 +7,6 @@ import {
   faStar,
   faPencilAlt,
   faTrash,
-  faUserPlus,
   faSort,
   faSortUp,
   faSortDown
@@ -29,6 +28,7 @@ function ViewUsers() {
                 setLoading(true);
                 const response = await api.get('/api/momofin-admin/users');
                 setUsers(response.data);
+                console.log('Users:', response.data);
                 setError(null);
             } catch (error) {
                 console.error('Error fetching users:', error);
@@ -50,6 +50,7 @@ function ViewUsers() {
             <FontAwesomeIcon icon={faSortDown} className="ml-1 text-blue-500" />;
     };
 
+    
     const sortThisData = (key) => {
         const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         setSortConfig({ key, direction });
@@ -162,8 +163,8 @@ function ViewUsers() {
                     <td>{user.organization}</td>
                     <td>{user.email}</td>
                     <td className="actions">
-                    <>
-                                    <button className="edit-btn mr-2" title="Edit User" onClick={() => handleEditClick(user.userId)}>
+                    
+                                    { !(user.momofinAdmin || user.organizationAdmin) && <> <button className="edit-btn mr-2" title="Edit User" onClick={() => handleEditClick(user.userId)}>
                                         <FontAwesomeIcon icon={faPencilAlt} />
                                     </button>
                                     <button
@@ -179,8 +180,8 @@ function ViewUsers() {
                                         onClick={() => handlePromoteToAdmin(user.organization, user.userId)}
                                     >
                                         <FontAwesomeIcon icon={faStar} />
-                                    </button>
-                                </>
+                                    </button> </>}
+                                
                     </td>
                 </tr>
             ))}
@@ -192,13 +193,6 @@ function ViewUsers() {
         onConfirm={handleDeleteConfirm}
         userName={deleteModal.user?.name || ''}
     />
-     <Link
-    to="/app/configOrganisation/addUserOrgAdmin" 
-    className="custom-add-btn"
->
-    <FontAwesomeIcon icon={faUserPlus} />
-    ADD USER
-</Link>
 </div>
 
     );
