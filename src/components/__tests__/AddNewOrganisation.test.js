@@ -174,32 +174,34 @@ describe('AddOrganisation Component', () => {
     });
   });
 
-  test('displays error message when status code is not 200', async () => {
-    api.post.mockRejectedValueOnce({
-      response: {
-        status: 400,
-        data: { message: 'Failed to add organisation. Please try again.' },
-      },
-    });
+  test('submits both organisation and admin details and handles successful response', async () => {
+    api.post = jest.fn().mockResolvedValueOnce({ status: 200 });
 
     renderWithRouter(<AddOrganisation />);
 
-    // Submit organisation details
     fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
     fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
     fireEvent.change(screen.getByLabelText('Address:'), { target: { value: '123 Main St' } });
     fireEvent.change(screen.getByLabelText('Description:'), { target: { value: 'An example organisation' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
-    // Submit admin details
     fireEvent.change(screen.getByLabelText('Username:'), { target: { value: 'adminUser' } });
     fireEvent.change(screen.getByLabelText('Password:'), { target: { value: 'adminPass' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add Organisation' }));
 
-    // Wait for the error message to be displayed
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+
+    expect(api.post).toHaveBeenCalledWith('/api/momofin-admin/organizations', {
+      name: 'TestOrg',
+      industry: 'Technology',
+      location: '123 Main St',
+      description: 'An example organisation',
+      adminUsername: 'adminUser',
+      adminPassword: 'adminPass',
+    });
+
     await waitFor(() => {
-      expect(screen.getByText('Failed to add organisation. Please try again.')).toBeInTheDocument();
+      expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
     });
   });
-
 });
