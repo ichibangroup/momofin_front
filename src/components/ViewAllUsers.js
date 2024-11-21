@@ -22,22 +22,23 @@ function ViewUsers() {
     const navigate = useNavigate();
     const [, setStatusMessage] = useState({ text: '', type: '' });
 
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/api/momofin-admin/users');
+            setUsers(response.data);
+            console.log('Users:', response.data);
+            setError(null);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setError('Failed to fetch users. Please try again later.');
+            setLoading(false);
+        }finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                setLoading(true);
-                const response = await api.get('/api/momofin-admin/users');
-                setUsers(response.data);
-                console.log('Users:', response.data);
-                setError(null);
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                setError('Failed to fetch users. Please try again later.');
-                setLoading(false);
-            }finally {
-                setLoading(false);
-            }
-        };
         fetchUsers();
     }, []);
 
@@ -80,6 +81,7 @@ function ViewUsers() {
         try {
             setLoading(true);
             await api.put(`/api/momofin-admin/organizations/name/${orgId}/users/${userId}/set-admin`);
+            await fetchUsers();
             setStatusMessage({
                 text: 'User has been successfully promoted to organization admin.',
                 type: 'success'
