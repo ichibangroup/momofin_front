@@ -1,149 +1,157 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import './AddNewOrganisation.css';
 
-const OrganisationForm = ({ formData, onChange, onSubmit, onCancel }) => (
-    <form onSubmit={onSubmit}>
-      <div className="mb-3">
-        <label htmlFor="name" className="add-organisation-form-label">Organisation Name:</label>
-        <input
-            type="text"
-            className="add-organisation-form-control"
-            id="name"
-            value={formData.name}
-            onChange={(e) => onChange('name', e.target.value)}
-            required
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="industry" className="add-organisation-form-label">Industry:</label>
-        <input
-            type="text"
-            className="add-organisation-form-control"
-            id="industry"
-            value={formData.industry}
-            onChange={(e) => onChange('industry', e.target.value)}
-            required
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="address" className="add-organisation-form-label">Address:</label>
-        <input
-            type="text"
-            className="add-organisation-form-control"
-            id="address"
-            value={formData.address}
-            onChange={(e) => onChange('address', e.target.value)}
-            required
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="description" className="add-organisation-form-label">Description:</label>
-        <textarea
-            className="add-organisation-form-control"
-            id="description"
-            value={formData.description}
-            onChange={(e) => onChange('description', e.target.value)}
-            required
-        />
-      </div>
-      <div className="add-organisation-buttons">
-        <button type="button" className="add-organisation-cancel-btn" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="submit" className="add-organisation-btn continue-btn">
-          Continue
-        </button>
-      </div>
-    </form>
-);
+const ActionButton = ({ label, onClick, disabled, className }) => {
+  return (
+      <button onClick={onClick} disabled={disabled} className={className}>
+        {label}
+      </button>
+  );
+};
 
-const AdminForm = ({ formData, onChange, onSubmit, onBack, isSubmitting, errorMessage }) => (
-    <form onSubmit={onSubmit}>
-      <div className="mb-3">
-        <label htmlFor="username" className="add-organisation-form-label">Username:</label>
-        <input
-            type="text"
-            className="add-organisation-form-control"
-            id="username"
-            value={formData.username}
-            onChange={(e) => onChange('username', e.target.value)}
-            required
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="password" className="add-organisation-form-label">Password:</label>
-        <input
-            type="password"
-            className="add-organisation-form-control"
-            id="password"
-            value={formData.password}
-            onChange={(e) => onChange('password', e.target.value)}
-            required
-        />
-      </div>
-      {errorMessage && <div className="add-organisation-error-message">{errorMessage}</div>}
-      <div className="add-organisation-buttons">
-        <button type="button" className="add-organisation-back-btn" onClick={onBack}>
-          Back
-        </button>
-        <button type="submit" className="add-organisation-btn submit-btn" disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Add Organisation'}
-        </button>
-      </div>
-    </form>
-);
+ActionButton.propTypes = {
+  label: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  className: PropTypes.string,
+};
+
+ActionButton.defaultProps = {
+  disabled: false,
+  className: '',
+};
+
+const OrganisationDetailsForm = ({ data, onChange, onSubmit, onCancel }) => {
+  return (
+      <form onSubmit={onSubmit}>
+        {['name', 'industry', 'address', 'description'].map((field) => (
+            <div className="mb-3" key={field}>
+              <label htmlFor={field} className="add-organisation-form-label">
+                {field === 'name'
+                    ? `Organisation Name:`
+                    : `${field.charAt(0).toUpperCase() + field.slice(1)}:`}
+              </label>
+              <input
+                  type={field === 'description' ? 'textarea' : 'text'}
+                  className="add-organisation-form-control"
+                  id={field}
+                  value={data[field]}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  required
+              />
+            </div>
+        ))}
+        <div className="add-organisation-buttons">
+          <ActionButton label="Cancel" onClick={onCancel} className="add-organisation-cancel-btn" />
+          <ActionButton label="Continue" className="add-organisation-btn continue-btn" />
+        </div>
+      </form>
+  );
+};
+
+OrganisationDetailsForm.propTypes = {
+  data: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    industry: PropTypes.string.isRequired,
+    address: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
+
+const AdminDetailsForm = ({ data, onChange, onSubmit, onBack, isSubmitting, apiError }) => {
+  return (
+      <form onSubmit={onSubmit}>
+        {['username', 'password'].map((field) => (
+            <div className="mb-3" key={field}>
+              <label htmlFor={field} className="add-organisation-form-label">
+                {`${field.charAt(0).toUpperCase() + field.slice(1)}:`}
+              </label>
+              <input
+                  type={field === 'password' ? 'password' : 'text'}
+                  className="add-organisation-form-control"
+                  id={field}
+                  value={data[field]}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  required
+              />
+            </div>
+        ))}
+        {apiError && <div className="add-organisation-error-message">{apiError}</div>}
+        <div className="add-organisation-buttons">
+          <ActionButton label="Back" onClick={onBack} className="add-organisation-back-btn" />
+          <ActionButton
+              label={isSubmitting ? 'Submitting...' : 'Add Organisation'}
+              disabled={isSubmitting}
+              className="add-organisation-btn submit-btn"
+          />
+        </div>
+      </form>
+  );
+};
+
+AdminDetailsForm.propTypes = {
+  data: PropTypes.shape({
+    username: PropTypes.string.isRequired,
+    password: PropTypes.string.isRequired,
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+  isSubmitting: PropTypes.bool.isRequired,
+  apiError: PropTypes.string,
+};
+
+AdminDetailsForm.defaultProps = {
+  apiError: null,
+};
 
 const AddOrganisation = () => {
-  const [formData, setFormData] = useState({
+  const [organisationData, setOrganisationData] = useState({
     name: '',
     industry: '',
     address: '',
     description: '',
-    username: '',
-    password: ''
   });
-  const [isOrgDetailsSubmitted, setIsOrgDetailsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adminData, setAdminData] = useState({ username: '', password: '' });
   const [apiError, setApiError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOrgDetailsSubmitted, setIsOrgDetailsSubmitted] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleChange = (field, value) => {
-    setFormData((prevData) => ({ ...prevData, [field]: value }));
+  const handleInputChange = (dataSetter) => (field, value) => {
+    dataSetter((prevState) => ({ ...prevState, [field]: value }));
   };
 
-  const handleOrgDetailsSubmit = (event) => {
+  const handleSubmitOrganisationDetails = (event) => {
     event.preventDefault();
     setIsOrgDetailsSubmitted(true);
   };
 
-  const handleAdminDetailsSubmit = async (event) => {
+  const handleSubmitAdminDetails = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
     setApiError(null);
 
-    try {
-      const response = await api.post('/api/momofin-admin/organizations', {
-        name: formData.name,
-        industry: formData.industry,
-        location: formData.address,
-        description: formData.description,
-        adminUsername: formData.username,
-        adminPassword: formData.password,
-      });
+    const organisationPayload = {
+      ...organisationData,
+      adminUsername: adminData.username,
+      adminPassword: adminData.password,
+      location: organisationData.address
+    };
 
-      console.log('Submitted organization and admin data:', response.data);
+    delete organisationPayload.address;
+
+    try {
+      const response = await api.post('/api/momofin-admin/organizations', organisationPayload);
       if (response.status === 200) {
-        setFormData({
-          name: '',
-          industry: '',
-          address: '',
-          description: '',
-          username: '',
-          password: '',
-        });
+        resetForms();
         navigate('/app/viewOrg');
       }
     } catch (error) {
@@ -153,17 +161,19 @@ const AddOrganisation = () => {
     }
   };
 
-  const handleGoBack = () => setIsOrgDetailsSubmitted(false);
+  const resetForms = () => {
+    setOrganisationData({ name: '', industry: '', address: '', description: '' });
+    setAdminData({ username: '', password: '' });
+    setIsOrgDetailsSubmitted(false);
+  };
+
+  const handleGoBack = () => {
+    setAdminData({ username: '', password: '' });
+    setIsOrgDetailsSubmitted(false);
+  };
 
   const handleCancel = () => {
-    setFormData({
-      name: '',
-      industry: '',
-      address: '',
-      description: '',
-      username: '',
-      password: '',
-    });
+    resetForms();
     navigate('/app/viewOrg');
   };
 
@@ -175,19 +185,19 @@ const AddOrganisation = () => {
         <div className="add-organisation-card">
           <div className="add-organisation-card-body">
             {isOrgDetailsSubmitted ? (
-                <AdminForm
-                    formData={formData}
-                    onChange={handleChange}
-                    onSubmit={handleAdminDetailsSubmit}
+                <AdminDetailsForm
+                    data={adminData}
+                    onChange={handleInputChange(setAdminData)}
+                    onSubmit={handleSubmitAdminDetails}
                     onBack={handleGoBack}
                     isSubmitting={isSubmitting}
-                    errorMessage={apiError}
+                    apiError={apiError}
                 />
             ) : (
-                <OrganisationForm
-                    formData={formData}
-                    onChange={handleChange}
-                    onSubmit={handleOrgDetailsSubmit}
+                <OrganisationDetailsForm
+                    data={organisationData}
+                    onChange={handleInputChange(setOrganisationData)}
+                    onSubmit={handleSubmitOrganisationDetails}
                     onCancel={handleCancel}
                 />
             )}

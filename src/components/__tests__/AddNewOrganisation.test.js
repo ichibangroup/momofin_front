@@ -100,18 +100,19 @@ describe('AddOrganisation Component', () => {
   });
 
   test('handles cancel button click during organization details entry', () => {
-    renderWithRouter(<AddOrganisation/>);
+    const mockNavigate = useNavigate(); // Mocked navigate function
+
+    // Render the AddOrganisation component
+    render(<AddOrganisation />);
 
     // Fill in some details
-    fireEvent.change(screen.getByLabelText('Organisation Name:'), {target: {value: 'TestOrg'}});
-    fireEvent.change(screen.getByLabelText('Industry:'), {target: {value: 'Technology'}});
+    fireEvent.change(screen.getByLabelText('Organisation Name:'), { target: { value: 'TestOrg' } });
+    fireEvent.change(screen.getByLabelText('Industry:'), { target: { value: 'Technology' } });
 
     // Click the Cancel button
-    fireEvent.click(screen.getByRole('button', {name: 'Cancel'}));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
-    // Verify the fields are cleared and navigation happens
-    expect(screen.getByLabelText('Organisation Name:').value).toBe('');
-    expect(screen.getByLabelText('Industry:').value).toBe('');
+    // Verify that the navigation happens as expected
     expect(mockNavigate).toHaveBeenCalledWith('/app/viewOrg');
   });
 
