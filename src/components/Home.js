@@ -54,6 +54,16 @@ function Home() {
         >
           <h3>Upload and Verify Documents</h3>
         </div>
+
+        <div 
+          className="action-box audit-box" 
+          onClick={() => navigate('viewDocumentAuditTrails')}  
+          role="button" 
+          onKeyDown={handleKeyDown} 
+          style={{ cursor: 'pointer' }}
+        >
+          <h3>View Document Audit Trails</h3>
+        </div>
       </div>
     </div>
   );
