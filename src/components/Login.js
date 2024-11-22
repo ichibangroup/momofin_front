@@ -120,76 +120,78 @@ function Login({ onSubmit }) {
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
-        <div className="header-container">
-          <h2>Sign In</h2>
-          <img src={logoAvento} alt="Logo Avento" style={{ width: '100px', height: 'auto' }} className="login-logo" />
-        </div>
-        <div className="input-group">
-          <Building className="input-icon"/>
-          <input
-            type="text"
-            id="organizationName"
-            placeholder="Organization Name"
-            value={organizationName}
-            onChange={handleInputChange(setOrganizationName)}
-            required
-          />
-          {errors.organizationName && 
-            <span className="error">
-              {sanitizePlainText(errors.organizationName)}
-            </span>
-          }
-        </div>
-        <div className="input-group">
-          <User className="input-icon"/>
-          <input
-            type="text"
-            id="username"
-            placeholder="Username"
-            value={username}
-            onChange={handleInputChange(setUsername)}
-            required
-          />
-          {errors.username && 
-            <span className="error">
-              {sanitizePlainText(errors.username)}
-            </span>
-          }
-        </div>
-        <div className="input-group">
-          <Lock className="input-icon"/>
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            value={password}
-            onChange={handleInputChange(setPassword)}
-            required
-          />
-          {errors.password && 
-            <span className="error">
-              {sanitizePlainText(errors.password)}
-            </span>
-          }
-        </div>
-        {errors.server && 
-          <span className="error">
-            {sanitizePlainText(errors.server)}
-          </span>
-        }
-        {authMessage && (
-          <div className="auth-message">
-            {sanitizePlainText(authMessage)}
+    <><script async src="https: //www.googletagmanager.com/gtag/js?id=G-L69JY6PF8K"></script>
+    <script
+      dangerouslySetInnerHTML = {{
+      __html: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push (arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L69JY6PF8K');`,
+      }}
+    /><div className="login-container">
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="header-container">
+            <h2>Sign In</h2>
+            <img src={logoAvento} alt="Logo Avento" style={{ width: '100px', height: 'auto' }} className="login-logo" />
           </div>
-        )}
-        <button className="signin-button" type="submit">Sign In</button>
-        <Link to="/forgot-password" className="forgot-password">
-          Forgot Password?
-        </Link>
-      </form>
-    </div>
+          <div className="input-group">
+            <Building className="input-icon" />
+            <input
+              type="text"
+              id="organizationName"
+              placeholder="Organization Name"
+              value={organizationName}
+              onChange={handleInputChange(setOrganizationName)}
+              required />
+            {errors.organizationName &&
+              <span className="error">
+                {sanitizePlainText(errors.organizationName)}
+              </span>}
+          </div>
+          <div className="input-group">
+            <User className="input-icon" />
+            <input
+              type="text"
+              id="username"
+              placeholder="Username"
+              value={username}
+              onChange={handleInputChange(setUsername)}
+              required />
+            {errors.username &&
+              <span className="error">
+                {sanitizePlainText(errors.username)}
+              </span>}
+          </div>
+          <div className="input-group">
+            <Lock className="input-icon" />
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              value={password}
+              onChange={handleInputChange(setPassword)}
+              required />
+            {errors.password &&
+              <span className="error">
+                {sanitizePlainText(errors.password)}
+              </span>}
+          </div>
+          {errors.server &&
+            <span className="error">
+              {sanitizePlainText(errors.server)}
+            </span>}
+          {authMessage && (
+            <div className="auth-message">
+              {sanitizePlainText(authMessage)}
+            </div>
+          )}
+          <button className="signin-button" type="submit">Sign In</button>
+          <Link to="/forgot-password" className="forgot-password">
+            Forgot Password?
+          </Link>
+        </form>
+      </div></>
   );
 }
 

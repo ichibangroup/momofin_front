@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
 import './DocumentVerification.css';
+import * as Sentry from '@sentry/react';
 
 
 export class IHashGenerator {
@@ -80,6 +81,14 @@ const DocumentVerification = () => {
   const verifier = new SimpleVerifier();
   const processor = new DocumentProcessor(hashGenerator, verifier);
 
+  logsubmitDocumentSuccess = (file) => {
+    Sentry.captureMessage(`Document submitted: ${file.name}`);
+  };
+
+  logsubmitDocumentFailure = (file, error) => {
+    Sentry.captureException(`Error submitting document ${file}: ${error.message}`);
+  };
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     const MAX_FILE_SIZE_IN_MB = 5;
@@ -103,6 +112,7 @@ const DocumentVerification = () => {
       try {
         const result = await processor.submitDocument(file);
         setSubmissionResult(result.documentSubmissionResult);
+        logsubmitDocumentSuccess(file);
         setError(null);
       } catch (err) {
         setError(err.message);
