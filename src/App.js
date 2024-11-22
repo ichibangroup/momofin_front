@@ -1,15 +1,16 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import AuthLayout from './components/AuthLayout';
-import LoadingIndicator from './components/LoadingIndicator';
-import Login from './components/Login';
-import Register from './components/Register';
-import ProtectedRoute from './utils/ProtectedRoute';
+import React, { Suspense, lazy, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Layout from "./components/Layout";
+import AuthLayout from "./components/AuthLayout";
+import LoadingIndicator from "./components/LoadingIndicator";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import ProtectedRoute from "./utils/ProtectedRoute";
 import SpecifiedDocumentVerifier from "./components/SpecifiedDocumentVerifier";
 import ViewEditRequests from "./components/ViewEditRequests";
 import EditDocumentPage from "./components/EditDocumentPage";
 import * as Sentry from "@sentry/react";
+import { trackPageView } from "./analytics";
 
 Sentry.init({
   dsn: "https://9174aa529b07114aa6f2c891e6a93125@o4508210717327360.ingest.de.sentry.io/4508210726174800",
@@ -17,45 +18,47 @@ Sentry.init({
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
   ],
-  // Tracing
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
-  // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
+  tracesSampleRate: 1.0,
   tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
-  // Session Replay
-  replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-  replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
 });
 
 // Lazy load other components
-const Home = lazy(() => import('./components/Home'));
-const DocumentVerification = lazy(() => import('./components/DocumentVerification'));
-const EditProfile = lazy(() => import('./components/EditProfile'));
-const ConfigOrganisation = lazy(() => import('./components/ConfigOrganisation'));
-const ViewDocuments = lazy(() => import('./components/ViewDocuments'));
-const MomofinDashboard = lazy(() => import('./components/MomofinDashboard'));
-const AddUserOrgAdmin = lazy(() => import('./components/AddUserOrgAdmin'));
-const AddUserMomofinAdmin = lazy(() => import('./components/AddUserMomofinAdmin'));
-const AddNewOrganisation = lazy(() => import('./components/AddNewOrganisation'));
-const ViewOrg = lazy(() => import('./components/ViewOrg'));
-const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers'));
-const ViewAllUsers = lazy(() => import('./components/ViewAllUsers')); 
-const ViewDocumentAudits = lazy(() => import('./components/ViewDocumentAuditTrails'));
-const EditUserOrgProfile = lazy(() => import('./components/EditUserOrgProfile'));
+const Home = lazy(() => import("./components/Home"));
+const DocumentVerification = lazy(() => import("./components/DocumentVerification"));
+const EditProfile = lazy(() => import("./components/EditProfile"));
+const ConfigOrganisation = lazy(() => import("./components/ConfigOrganisation"));
+const ViewDocuments = lazy(() => import("./components/ViewDocuments"));
+const MomofinDashboard = lazy(() => import("./components/MomofinDashboard"));
+const AddUserOrgAdmin = lazy(() => import("./components/AddUserOrgAdmin"));
+const AddUserMomofinAdmin = lazy(() => import("./components/AddUserMomofinAdmin"));
+const AddNewOrganisation = lazy(() => import("./components/AddNewOrganisation"));
+const ViewOrg = lazy(() => import("./components/ViewOrg"));
+const ViewOrgUsers = lazy(() => import("./components/ViewOrgUsers"));
+const ViewAllUsers = lazy(() => import("./components/ViewAllUsers"));
+const ViewDocumentAudits = lazy(() => import("./components/ViewDocumentAuditTrails"));
+const EditUserOrgProfile = lazy(() => import("./components/EditUserOrgProfile"));
 
+// Analytics Component
+const Analytics = () => {
+  const location = useLocation();
 
+  useEffect(() => {
+    trackPageView(location.pathname); // Send pageview on route change
+  }, [location]);
+
+  return null;
+};
 
 function App() {
   return (
     <Router>
+      <Analytics /> {/* Track pageviews dynamically */}
       <Routes>
-        {/* Redirect from root path to /login */}
         <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Login and Register routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Main Layout */}
         <Route path="/app" element={<Layout />}>
           <Route path="/app" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><Home /></Suspense></ProtectedRoute>} />
           <Route path="verify" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><DocumentVerification /></Suspense></ProtectedRoute>} />
@@ -77,8 +80,6 @@ function App() {
           <Route path="editDocument/:documentId" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><EditDocumentPage /></Suspense></ProtectedRoute>} />
           <Route path="editUserOrgProfile/:userId" element={<Suspense fallback={<LoadingIndicator />}><EditUserOrgProfile /></Suspense>} />
         </Route>
-
-        {/* Auth layout routes */}
         <Route path="auth" element={<AuthLayout />}>
           <Route path="login" element={<Suspense fallback={<LoadingIndicator />}><Login /></Suspense>} />
         </Route>
