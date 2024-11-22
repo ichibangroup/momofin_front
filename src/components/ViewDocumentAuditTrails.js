@@ -1,95 +1,95 @@
 import React, { useEffect, useState } from 'react';
 import '../ViewDocumentAuditTrails.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import {
+    faSort,
+    faSortUp,
+    faSortDown
+} from '@fortawesome/free-solid-svg-icons';
 import api from "../utils/api";
 
 const ViewAuditTrails = () => {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [auditTrails, setAuditTrails] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [hasMore, setHasMore] = useState(true);
+    const [page, setPage] = useState(0);
     const [filters, setFilters] = useState({
         username: '',
         action: '',
         outcome: '',
         startDate: '',
         endDate: '',
-        documentName: ''
+        documentName: '',
     });
-    const [page, setPage] = useState(0);
-    const pageSize = 10;
+    const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
-    const fetchAuditTrails = async (isNewPage = false) => {
-        if (!hasMore && isNewPage) return;
-    
+    const fetchAuditTrails = async (isLoadMore = false) => {
         try {
             setLoading(true);
             const params = {
                 ...filters,
-                sortBy: "timestamp",
-                direction: "DESC",
-                page: isNewPage ? page + 1 : page,
-                size: pageSize,
+                sortBy: sortConfig.key,
+                direction: sortConfig.direction.toUpperCase(),
+                page,
+                size: 10,
             };
-    
+
             Object.keys(params).forEach(key => {
                 if (!params[key]) delete params[key];
             });
-    
+
             const response = await api.get('/audit/audits', { params });
-            console.log("Received audit trails response:", response.data);
-    
-            setAuditTrails((prevTrails) => {
-                const newTrails = isNewPage ? [...prevTrails, ...response.data.content] : response.data.content;
-                const uniqueTrails = Array.from(new Map(newTrails.map(item => [item.id, item])).values());
-                return uniqueTrails;
-            });
-    
-            setPage((prevPage) => isNewPage ? prevPage + 1 : prevPage);
+
+            setAuditTrails(prev => isLoadMore ? [...prev, ...response.data.content] : response.data.content);
             setHasMore(!response.data.last);
             setError(null);
-        } catch (error) {
-            console.error('Error fetching audits:', error);
+        } catch (err) {
+            console.error('Error fetching audits:', err);
             setError('Failed to fetch audits. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
-    
 
     useEffect(() => {
+        setPage(0); // Reset to the first page when filters or sorting changes
         fetchAuditTrails();
-    }, [filters]);
+    }, [filters, sortConfig]);
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop + 1 >=
-                document.documentElement.scrollHeight
-            ) {
-                fetchAuditTrails(true);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+        if (page > 0) fetchAuditTrails(true);
+    }, [page]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters((prevFilters) => ({
+        setFilters(prevFilters => ({
             ...prevFilters,
-            [name]: value
+            [name]: value,
         }));
     };
+
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => ({
+            key,
+            direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
+        }));
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
+        return sortConfig.direction === 'asc' 
+            ? <FontAwesomeIcon icon={faSortUp} className="ml-1 text-blue-500" /> 
+            : <FontAwesomeIcon icon={faSortDown} className="ml-1 text-blue-500" />;
+    };
+
+    const loadMore = () => setPage(prevPage => prevPage + 1);
 
     return (
         <div className="view-audits" data-testid="viewAudits-1">
             <h1 className="title">View Audits</h1>
 
-            
+            {/* Filter Section */}
             <div className="filter-section">
                 <input
                     type="text"
@@ -128,26 +128,36 @@ const ViewAuditTrails = () => {
                 />
             </div>
 
+            {/* Display Loading or Error */}
             {loading && <p>Loading...</p>}
             {error && <p>{error}</p>}
 
+            {/* Table Section */}
             <table className="audit-table">
                 <thead>
                     <tr className="headers">
-                        <th>Document</th>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Date</th>
+                        <th className="sort-header" onClick={() => handleSort('documentName')}>
+                            Document {getSortIcon('documentName')}
+                        </th>
+                        <th className="sort-header" onClick={() => handleSort('username')}>
+                            User {getSortIcon('username')}
+                        </th>
+                        <th className="sort-header" onClick={() => handleSort('action')}>
+                            Action {getSortIcon('action')}
+                        </th>
+                        <th className="sort-header" onClick={() => handleSort('timestamp')}>
+                            Date {getSortIcon('timestamp')}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {auditTrails.length > 0 ? (
-                        auditTrails.map((audittrail, index) => (
-                            <tr key={audittrail.id || `audit-${index}`}>
-                                <td>{audittrail.documentName}</td>
-                                <td>{audittrail.username}</td>
-                                <td>{audittrail.action}</td>
-                                <td>{audittrail.date}</td>
+                        auditTrails.map((audit) => (
+                            <tr key={audit.id}>
+                                <td>{audit.documentName}</td>
+                                <td>{audit.username}</td>
+                                <td>{audit.action}</td>
+                                <td>{audit.date}</td>
                             </tr>
                         ))
                     ) : (
@@ -157,8 +167,13 @@ const ViewAuditTrails = () => {
                     )}
                 </tbody>
             </table>
+
+            {/* Load More Button */}
+            {hasMore && !loading && (
+                <button onClick={loadMore} className="load-more-btn">Load More</button>
+            )}
         </div>
     );
-}
+};
 
 export default ViewAuditTrails;
