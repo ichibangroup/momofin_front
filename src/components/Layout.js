@@ -1,37 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    faCogs, faUpload, faHome, faBorderAll, faAddressBook, 
-    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut 
+import {
+    faCogs, faUpload, faHome, faBorderAll, faAddressBook,
+    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
 import { setAuthToken } from "../utils/auth";
+import { LogoutActivityLogger } from '../utils/logoutLogger';
 
 const Layout = () => {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const [isActive, setIsActive] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    const [editRequestsCount, setEditRequestsCount] = useState(0);
+    const fetchEditRequestsCount = async () => {
+        try {
+            const response = await api.get('/doc/edit-request');
+            // Assuming the response includes an array of edit requests
+            setEditRequestsCount(response.data.length);
+        } catch (err) {
+            console.error('Failed to fetch edit requests count:', err);
+        }
+    };
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
                 const response = await api.get('/auth/info');
+                if (!response.data) {
+                    // Handle case where no user data is returned
+                    setAuthToken(); // Set the auth token (clear if needed)
+                    navigate('/login');
+                    return;
+                }
                 setUser(response.data);
                 setError(null);
+                fetchEditRequestsCount();
             } catch (err) {
                 setError('Failed to fetch user information');
+                setAuthToken(); // Set the auth token (clear if needed)
+                navigate('/login');
             }
         };
-
+    
         fetchUserInfo();
-    }, []);
+    }, [navigate]);
+    
+    
 
-    const handleLogout = () => {
-        setAuthToken(); // Clear auth token
-        navigate('/login'); // Redirect to login
+    const handleLogout = async () => {
+        if (user) {
+            // Log logout attempt
+            LogoutActivityLogger.logLogoutAttempt(
+                user.userId,
+                user.organization?.organizationId
+            );
+
+            try {
+                // Optional: Call logout endpoint if you have one
+                // await api.post('/auth/logout');
+
+                // Log successful logout
+                LogoutActivityLogger.logLogoutSuccess(
+                    user.userId,
+                    user.organization?.organizationId,
+                    user.username
+                );
+
+                // Clear auth token
+                setAuthToken();
+
+                // Log navigation after logout
+                LogoutActivityLogger.logNavigationAfterLogout(
+                    location.pathname,
+                    '/login'
+                );
+
+                // Redirect to login
+                navigate('/login', { 
+                    state: { message: 'You have been successfully logged out.' }
+                });
+            } catch (error) {
+                // Log logout failure
+                LogoutActivityLogger.logLogoutFailure(
+                    user.userId,
+                    user.organization?.organizationId,
+                    error
+                );
+
+                console.error('Logout failed:', error);
+                setError('Failed to logout properly');
+                
+                // Still clear token and redirect even if logging fails
+                setAuthToken();
+                navigate('/login');
+            }
+        } else {
+            // If no user data, just redirect
+            setAuthToken();
+            navigate('/login');
+        }
     };
 
     const toggleSidebar = () => {
@@ -93,13 +165,27 @@ const Layout = () => {
                                 <>
                                     <li>
                                         <Link to={`editProfile/${user.userId}`}>
-                                            <span className="icon"><FontAwesomeIcon icon={faAddressCard} /></span>
+                                            <span className="icon"><FontAwesomeIcon icon={faAddressCard}/></span>
                                             <span className="list">Edit Profile</span>
                                         </Link>
                                     </li>
                                     <li>
-                                        <a href="/login" onClick={handleLogout}>
-                                            <span className="icon"><FontAwesomeIcon icon={faSignOut} /></span>
+                                        <Link to={`viewEditRequests`}>
+                                            <span className="icon"><FontAwesomeIcon icon={faFileSignature}/></span>
+                                            <span className="list">
+                                                View Edit Requests
+                                                {editRequestsCount > 0 && (
+                                                    <span className="badge">{editRequestsCount}</span>
+                                                )}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <a href="/login" onClick={(e) => {
+                                            e.preventDefault();
+                                            handleLogout();
+                                        }}>
+                                            <span className="icon"><FontAwesomeIcon icon={faSignOut}/></span>
                                             <span className="list">Log Out</span>
                                         </a>
                                     </li>
@@ -107,7 +193,7 @@ const Layout = () => {
                             )}
                         </ul>
 
-                        <button 
+                        <button
                             className="hamburger"
                             onClick={toggleSidebar}
                             data-testid="hamburger"
@@ -116,7 +202,7 @@ const Layout = () => {
                         >
                             <div className="inner_hamburger">
                                 <span className="arrow">
-                                    <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left" />
+                                    <FontAwesomeIcon icon={faLongArrowAltLeft} className="fa-long-arrow-alt-left"/>
                                     <FontAwesomeIcon icon={faLongArrowAltRight} className="fa-long-arrow-alt-right" />
                                 </span>
                             </div>

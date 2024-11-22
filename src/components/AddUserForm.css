@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
 
 /* Container and Layout */
-.edit-profile-container {
+.add-user-container {
   position: relative;
   width: 100%;
   max-width: 1200px;
@@ -17,7 +17,7 @@
   display: none;
 }
 
-.edit-profile-content {
+.add-user-content {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -84,10 +84,11 @@
 
 /* Password Section */
 .password-section {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
   width: 100%;
+}
+
+.password-section .form-field {
+  max-width: calc(50% - 20px);
 }
 
 .button-container {
@@ -126,28 +127,16 @@
   background-color: #7A8499;
 }
 
-.loading-container {
-  text-align: center;
-  padding: 20px;
-  font-family: 'Space Grotesk', sans-serif;
-  color: #0D3B66;
-}
-
-.error-container {
-  padding: 16px;
-  background-color: #FFE5E5;
-  margin-bottom: 16px;
-}
-
-.error-message {
+.form-error {
   color: #FF3B30;
+  font-size: 12px;
+  margin-top: 4px;
   font-family: 'Space Grotesk', sans-serif;
-  margin-bottom: 12px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  .edit-profile-container {
+  .add-user-container {
     width: 95%;
     margin: 16px auto;
   }
@@ -159,10 +148,14 @@
     grid-template-columns: 1fr;
     gap: 24px;
   }
+  
+  .password-section .form-field {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-  .edit-profile-container {
+  .add-user-container {
     width: 100%;
     padding: 16px;
   }
@@ -178,49 +171,4 @@
   .button {
     width: 100%;
   }
-}
-
-/* Add these styles to your existing EditProfile.css */
-
-.input-tooltip-container {
-  position: relative;
-  width: 100%;
-}
-
-.tooltip {
-  visibility: hidden;
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1000;
-  opacity: 0;
-  transition: opacity 0.2s, visibility 0.2s;
-}
-
-.tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
-}
-
-.input-tooltip-container:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Ensure the input maintains its original styling */
-.input-tooltip-container .form-input {
-  width: 100%;
 }

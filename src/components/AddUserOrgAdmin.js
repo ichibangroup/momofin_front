@@ -6,7 +6,7 @@ const AddUserOrgAdmin = () => {
   const { handleSubmit } = useAddUserLogic();
 
   return (
-    <AddUserForm title="Add User (Org Admin)" onSubmit={handleSubmit} />
+    <AddUserForm title="Add User" onSubmit={handleSubmit} />
   );
 };
 
