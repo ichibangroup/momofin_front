@@ -3,6 +3,8 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom';
 import ViewOrganisations from '../ViewOrg';
 import api from '../../utils/api';
+import { BrowserRouter as Router } from 'react-router-dom';
+
 
 // Mock the entire api module
 jest.mock('../../utils/api');
@@ -271,6 +273,37 @@ test('status message disappears after timeout', async () => {
 
     // Verify that editing state is reset
     expect(screen.queryByTitle('Save Changes')).not.toBeInTheDocument();
+  });
+
+  test('sortData maintains stability when values are equal', async () => {
+    jest.setTimeout(10000); // Extend timeout for this test
+
+    // Mock organizations with identical "industry" values
+    const mockOrganizations = [
+      { organizationId: 1, name: 'Org A', industry: 'Tech', location: 'City A', description: 'Desc A' },
+      { organizationId: 2, name: 'Org B', industry: 'Tech', location: 'City B', description: 'Desc B' },
+    ];
+    
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
+    render(
+      <Router>
+        <ViewOrganisations />
+      </Router>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Assuming sortData is triggered by clicking a column header
+    const industryHeader = screen.getByText('Industry');
+    fireEvent.click(industryHeader);
+
+    // Verify that sort stability is maintained (original order preserved for equal values)
+    const rows = screen.getAllByRole('row');
+    expect(rows[1]).toHaveTextContent('Org A');
+    expect(rows[2]).toHaveTextContent('Org B');
   });
 
 });
