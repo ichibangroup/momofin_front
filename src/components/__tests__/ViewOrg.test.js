@@ -217,9 +217,11 @@ test('status message disappears after timeout', async () => {
   
     // Fast-forward timers
     jest.advanceTimersByTime(5000);
-  
+
+  await waitFor(() => {
     // Verify status message is cleared
     expect(screen.queryByText(/Failed to update organization/i)).toBeNull();
+  });
   });
 
 
