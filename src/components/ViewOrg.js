@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../ViewOrg.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faPencilAlt, 
+  faTrash, 
+  faSort, 
+  faSortUp, 
+  faSortDown,
+  faBuilding 
+} from '@fortawesome/free-solid-svg-icons';
+import './ViewOrg.css';
 import api from "../utils/api";
+import StatusNotification from './StatusNotification';
 
 const ViewOrganisations = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [organizations, setOrganizations] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -38,6 +49,29 @@ const ViewOrganisations = () => {
     window.statusMessageTimeout = setTimeout(() => {
       setStatusMessage({ text: '', type: '' });
     }, 5000);
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
+    return sortConfig.direction === 'asc' ?
+      <FontAwesomeIcon icon={faSortUp} className="ml-1 text-blue-500" /> :
+      <FontAwesomeIcon icon={faSortDown} className="ml-1 text-blue-500" />;
+  };
+
+  const sortData = (key) => {
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ key, direction });
+
+    const sortedOrgs = [...organizations].sort((a, b) => {
+      const valueA = a[key]?.toString().toLowerCase() || '';
+      const valueB = b[key]?.toString().toLowerCase() || '';
+
+      if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+      if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setOrganizations(sortedOrgs);
   };
 
   const handleEdit = (org) => {
@@ -103,7 +137,6 @@ const ViewOrganisations = () => {
   };
 
   const handleDelete = async () => {
-
     const orgToDelete = selectedOrg;
 
     try {
@@ -135,82 +168,79 @@ const ViewOrganisations = () => {
     }
   };
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  const getOrgIcon = () => {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="tooltip-container">
+          <FontAwesomeIcon
+            icon={faBuilding}
+            className="text-blue-500"
+            title="Organization"
+          />
+        </span>
+      </div>
+    );
+  };
+
+  if (loading) return <div className="text-center p-4">Loading...</div>;
 
   return (
-    <div className="view-organisations">
+    <div className="user-management" data-testid="viewOrgs-1">
+      <StatusNotification
+        message={statusMessage.text}
+        type={statusMessage.type}
+      />
       <h1>View All Organisations</h1>
-      
-      {statusMessage.text && (
-        <div className={`alert alert-${statusMessage.type}`}>
-          {statusMessage.text}
-        </div>
-      )}
-
-      <div className="headers">
-        <div>Name</div>
-        <div>Industry</div>
-        <div>Address</div>
-        <div>Description</div>
-        <div>Actions</div>
-      </div>
-
-      <div className="organisation-rows-container">
-        {organizations.map((org) => (
-          <div key={org.organizationId} className="organisation-row">
-            {isEditing && editingOrg?.organizationId === org.organizationId ? (
-              <>
-                <div className="read-only-field">{org.name}</div>
-                <div><input className="edit-input" value={editingOrg.newIndustry} onChange={e => setEditingOrg({...editingOrg, newIndustry: e.target.value})} /></div>
-                <div><input className="edit-input" value={editingOrg.newLocation} onChange={e => setEditingOrg({...editingOrg, newLocation: e.target.value})} /></div>
-                <div><input className="edit-input" value={editingOrg.newDescription} onChange={e => setEditingOrg({...editingOrg, newDescription: e.target.value})} /></div>
-                <div className="actions">
-                  <button className="save-btn" onClick={handleUpdate}>💾</button>
-                  <button className="cancel-btn" data-testid="cancel-edit-btn" onClick={() => {
-                    setIsEditing(false);
-                    setEditingOrg(null);
-                  }}>❌</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>{org.name}</div>
-                <div>{org.industry}</div>
-                <div>{org.location}</div>
-                <div>{org.description}</div>
-                <div className="actions">
-                  <button 
-                    data-testid="edit-btn" 
-                    className="edit-btn"
-                    onClick={() => handleEdit(org)}
-                  >
-                    ✏️
-                  </button>
-                  <button 
-                    data-testid="delete-btn" 
-                    className="delete-btn"
-                    onClick={() => {
-                      setSelectedOrg(org);
-                      setShowDeleteDialog(true);
-                    }}
-                  >
-                    ❌
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <button 
-        className="add-btn" 
-        onClick={() => navigate('/app/momofinDashboard/addNewOrganisation')}
-      >
-        ADD ORGANISATION
-      </button>
+      <table>
+        <thead>
+          <tr className="headers">
+            <th>Type</th>
+            <th className="sort-header" onClick={() => sortData('name')}>
+              Name {getSortIcon('name')}
+            </th>
+            <th className="sort-header" onClick={() => sortData('industry')}>
+              Industry {getSortIcon('industry')}
+            </th>
+            <th className="sort-header" onClick={() => sortData('location')}>
+              Address {getSortIcon('location')}
+            </th>
+            <th className="sort-header" onClick={() => sortData('description')}>
+              Description {getSortIcon('description')}
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {organizations.map((org) => (
+            <tr key={org.organizationId} className="user-row">
+              <td>{getOrgIcon()}</td>
+              <td>{org.name}</td>
+              <td>{org.industry}</td>
+              <td>{org.location}</td>
+              <td>{org.description}</td>
+              <td className="actions">
+                <button 
+                  className="edit-btn mr-2" 
+                  title="Edit Organisation" 
+                  onClick={() => handleEdit(org)}
+                >
+                  <FontAwesomeIcon icon={faPencilAlt} />
+                </button>
+                <button
+                  className="delete-btn"
+                  title="Delete Organisation"
+                  onClick={() => {
+                    setSelectedOrg(org);
+                    setShowDeleteDialog(true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {showDeleteDialog && (
         <div className="modal-overlay">
@@ -224,6 +254,13 @@ const ViewOrganisations = () => {
           </div>
         </div>
       )}
+
+      <Link
+        to="/app/momofinDashboard/addNewOrganisation"
+        className="custom-add-btn"
+      >
+        ADD ORGANISATION
+      </Link>
     </div>
   );
 };
