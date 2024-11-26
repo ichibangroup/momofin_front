@@ -17,7 +17,7 @@ body {
 .view-organisations-title {
     font-family: 'Space Grotesk', sans-serif;
     text-align: center;
-    color: #567DF4;
+    color: rgb(26, 55, 95);
     font-size: 2rem;
     margin-bottom: 20px;
     font-weight: 600;
