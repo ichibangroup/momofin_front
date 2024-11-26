@@ -7,7 +7,9 @@ import {
   faSort, 
   faSortUp, 
   faSortDown,
-  faBuilding 
+  faBuilding,
+  faSave,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './ViewOrg.css';
 import api from "../utils/api";
@@ -133,6 +135,10 @@ const ViewOrganisations = () => {
 
       const errorMessage = error.response?.data?.message || 'Failed to update organization';
       showStatusMessage(errorMessage, 'error');
+      
+      // Reset editing state
+      setIsEditing(false);
+      setEditingOrg(null);
     }
   };
 
@@ -190,11 +196,10 @@ const ViewOrganisations = () => {
         message={statusMessage.text}
         type={statusMessage.type}
       />
-      <h1>View All Organisations</h1>
+      <h1 className="view-organisations-title">View All Organisations</h1>
       <table>
         <thead>
           <tr className="headers">
-            <th>Type</th>
             <th className="sort-header" onClick={() => sortData('name')}>
               Name {getSortIcon('name')}
             </th>
@@ -213,30 +218,77 @@ const ViewOrganisations = () => {
         <tbody>
           {organizations.map((org) => (
             <tr key={org.organizationId} className="user-row">
-              <td>{getOrgIcon()}</td>
-              <td>{org.name}</td>
-              <td>{org.industry}</td>
-              <td>{org.location}</td>
-              <td>{org.description}</td>
-              <td className="actions">
-                <button 
-                  className="edit-btn mr-2" 
-                  title="Edit Organisation" 
-                  onClick={() => handleEdit(org)}
-                >
-                  <FontAwesomeIcon icon={faPencilAlt} />
-                </button>
-                <button
-                  className="delete-btn"
-                  title="Delete Organisation"
-                  onClick={() => {
-                    setSelectedOrg(org);
-                    setShowDeleteDialog(true);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
+              {isEditing && editingOrg?.organizationId === org.organizationId ? (
+                <>
+                  <td className="read-only-field">{org.name}</td>
+                  <td>
+                    <input 
+                      className="edit-input w-full" 
+                      value={editingOrg.newIndustry} 
+                      onChange={e => setEditingOrg({...editingOrg, newIndustry: e.target.value})} 
+                    />
+                  </td>
+                  <td>
+                    <input 
+                      className="edit-input w-full" 
+                      value={editingOrg.newLocation} 
+                      onChange={e => setEditingOrg({...editingOrg, newLocation: e.target.value})} 
+                    />
+                  </td>
+                  <td>
+                    <input 
+                      className="edit-input w-full" 
+                      value={editingOrg.newDescription} 
+                      onChange={e => setEditingOrg({...editingOrg, newDescription: e.target.value})} 
+                    />
+                  </td>
+                  <td className="actions">
+                    <button 
+                      className="save-btn mr-2" 
+                      title="Save Changes"
+                      onClick={handleUpdate}
+                    >
+                      <FontAwesomeIcon icon={faSave} />
+                    </button>
+                    <button
+                      className="cancel-btn"
+                      title="Cancel Edit"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditingOrg(null);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>{org.name}</td>
+                  <td>{org.industry}</td>
+                  <td>{org.location}</td>
+                  <td>{org.description}</td>
+                  <td className="actions">
+                    <button 
+                      className="edit-btn mr-2" 
+                      title="Edit Organisation" 
+                      onClick={() => handleEdit(org)}
+                    >
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </button>
+                    <button
+                      className="delete-btn"
+                      title="Delete Organisation"
+                      onClick={() => {
+                        setSelectedOrg(org);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
