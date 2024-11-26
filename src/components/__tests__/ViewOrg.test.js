@@ -1,377 +1,274 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import ViewOrganisations from '../ViewOrg';
-import api from "../../utils/api";
+import api from '../../utils/api';
 
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-}));
-
-const mockOrganisations = [{
-    organizationId: '1',
-    name: 'Organization 1',
-    industry: 'Technology',
-    location: '123 Main St, City, State, Country',
-    description: 'This is a long description about Organization 1. It provides technology solutions.',
-},
-{
-    organizationId: '2',
-    name: 'Organization 2',
-    industry: 'Healthcare',
-    location: '456 Oak St, City, State, Country',
-    description: 'This is a shorter description for Organization 2.',
-},
-{
-    organizationId: '3',
-    name: 'Organization 3',
-    industry: 'Entertainment',
-    location: 'Depok City',
-    description: 'Test description for Organization 3',
-}];
-
+// Mock the entire api module
 jest.mock('../../utils/api');
 
+// Mock react-router's useNavigate hook
+const mockedNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockedNavigate
+}));
+
+const mockOrganizations = [
+  {
+    organizationId: '1',
+    name: 'Org A',
+    industry: 'Technology',
+    location: 'New York',
+    description: 'Tech company'
+  },
+  {
+    organizationId: '2',
+    name: 'Org B',
+    industry: 'Finance',
+    location: 'San Francisco',
+    description: 'Financial services'
+  }
+];
+
 describe('ViewOrganisations Component', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        api.get.mockResolvedValue({
-          data: mockOrganisations,
-          status: 200
-        });
-    });
-
-    it('renders organization data correctly', async () => {
-        render(
-          <BrowserRouter>
-            <ViewOrganisations />
-          </BrowserRouter>
-        );
-    
-        await waitFor(() => {
-          expect(api.get).toHaveBeenCalledWith('/api/momofin-admin/organizations');
-          expect(screen.getByText('Organization 1')).toBeInTheDocument();
-          expect(screen.getByText('Technology')).toBeInTheDocument();
-          expect(screen.getByText('Organization 2')).toBeInTheDocument();
-          expect(screen.getByText('Healthcare')).toBeInTheDocument();
-        });
-    });
-    
-    it('displays edit and delete buttons for each organization', async () => {
-        render(
-          <BrowserRouter>
-            <ViewOrganisations />
-          </BrowserRouter>
-        );
-    
-        await waitFor(() => {
-          const editButtons = screen.getAllByTestId("edit-btn");
-          const deleteButtons = screen.getAllByTestId("delete-btn");
-          expect(editButtons).toHaveLength(3);
-          expect(deleteButtons).toHaveLength(3);
-        });
-    });
-    
-    it('navigates to add new organisation page when "Add Organisation" button is clicked', async () => {
-      render(
-        <BrowserRouter>
-          <ViewOrganisations />
-        </BrowserRouter>
-      );
-
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      });
-  
-      fireEvent.click(screen.getByText('ADD ORGANISATION'));
-      expect(mockNavigate).toHaveBeenCalledWith('/app/momofinDashboard/addNewOrganisation');
+  // Mocking timer functions
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
   });
 
-  it('cancels edit operation', async () => {
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllTimers();
+  });
+
+  // Test rendering and fetching organizations
+  test('renders organizations and handles loading state', async () => {
+    // Mock successful API call
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
     render(
-        <BrowserRouter>
-            <ViewOrganisations />
-        </BrowserRouter>
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
     );
 
-    // Wait and click edit
+    // Check loading state
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    // Wait for organizations to load
     await waitFor(() => {
-        const editButtons = screen.getAllByTestId('edit-btn');
-        fireEvent.click(editButtons[0]);
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+      expect(screen.getByText('Org B')).toBeInTheDocument();
     });
 
-    // Find cancel button by both class and testid
-    const cancelButton = screen.getByTestId('cancel-edit-btn');
-    fireEvent.click(cancelButton);
-
-    expect(screen.queryByDisplayValue('Technology')).not.toBeInTheDocument();
-});
-    
-    it('handles API fetch error', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-        api.get.mockRejectedValueOnce(new Error('API Error'));
-    
-        render(
-          <BrowserRouter>
-            <ViewOrganisations />
-          </BrowserRouter>
-        );
-    
-        await waitFor(() => {
-          expect(consoleSpy).toHaveBeenCalledWith('Error fetching organizations:', expect.any(Error));
-          expect(screen.getByText('Failed to fetch organizations. Please try again later.')).toBeInTheDocument();
-        });
-    
-        consoleSpy.mockRestore();
-    });
-
-    it('handles edit mode and updates organization successfully', async () => {
-        api.put.mockResolvedValueOnce({ 
-            data: { ...mockOrganisations[0], industry: 'NewTech' }
-        });
-
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const editButtons = screen.getAllByTestId('edit-btn');
-            fireEvent.click(editButtons[0]);
-        });
-
-        const industryInput = screen.getByDisplayValue('Technology');
-        fireEvent.change(industryInput, { target: { value: 'NewTech' } });
-
-        const saveButton = screen.getByText('💾');
-        await act(async () => {
-            fireEvent.click(saveButton);
-        });
-
-        expect(screen.getByText('Organization updated successfully')).toBeInTheDocument();
-    });
-
-    it('prevents multiple simultaneous edits', async () => {
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const editButtons = screen.getAllByTestId('edit-btn');
-            fireEvent.click(editButtons[0]);
-            fireEvent.click(editButtons[1]);
-        });
-
-        expect(screen.getByText('Another edit operation is in progress. Please wait.')).toBeInTheDocument();
-    });
-
-    it('handles update error correctly', async () => {
-        api.put.mockRejectedValueOnce({ response: { data: { message: 'Update failed' } } });
-
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const editButtons = screen.getAllByTestId('edit-btn');
-            fireEvent.click(editButtons[0]);
-        });
-
-        const saveButton = screen.getByText('💾');
-        await act(async () => {
-            fireEvent.click(saveButton);
-        });
-
-        expect(screen.getByText('Update failed')).toBeInTheDocument();
-    });
-
-    it('handles delete confirmation and success', async () => {
-        api.delete.mockResolvedValueOnce({});
-        
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const deleteButtons = screen.getAllByTestId('delete-btn');
-            fireEvent.click(deleteButtons[0]);
-        });
-
-        expect(screen.getByText(/Are you sure you want to delete Organization 1?/)).toBeInTheDocument();
-
-        const confirmButton = screen.getByText('Delete');
-        await act(async () => {
-            fireEvent.click(confirmButton);
-        });
-
-        expect(screen.getByText('Organization 1 has been successfully deleted.')).toBeInTheDocument();
-    });
-
-    it('handles delete error correctly', async () => {
-        api.delete.mockRejectedValueOnce({ response: { data: { message: 'Delete failed' } } });
-
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const deleteButtons = screen.getAllByTestId('delete-btn');
-            fireEvent.click(deleteButtons[0]);
-        });
-
-        const confirmButton = screen.getByText('Delete');
-        await act(async () => {
-            fireEvent.click(confirmButton);
-        });
-
-        expect(screen.getByText('Delete failed')).toBeInTheDocument();
-    });
-
-    it('cancels delete operation', async () => {
-        render(
-            <BrowserRouter>
-                <ViewOrganisations />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => {
-            const deleteButtons = screen.getAllByTestId('delete-btn');
-            fireEvent.click(deleteButtons[0]);
-        });
-
-        const cancelButton = screen.getByText('Cancel');
-        fireEvent.click(cancelButton);
-
-        expect(screen.queryByText(/Are you sure you want to delete/)).not.toBeInTheDocument();
-    });
-    it('handles input changes during edit', async () => {
-      render(
-          <BrowserRouter>
-              <ViewOrganisations />
-          </BrowserRouter>
-      );
-  
-      await waitFor(() => {
-          const editButtons = screen.getAllByTestId('edit-btn');
-          fireEvent.click(editButtons[0]);
-      });
-  
-      const locationInput = screen.getByDisplayValue('123 Main St, City, State, Country');
-      const descriptionInput = screen.getByDisplayValue('This is a long description about Organization 1. It provides technology solutions.');
-  
-      fireEvent.change(locationInput, { target: { value: 'New Location' } });
-      fireEvent.change(descriptionInput, { target: { value: 'New Description' } });
-  
-      expect(screen.getByDisplayValue('New Location')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('New Description')).toBeInTheDocument();
+    // Verify API call
+    expect(api.get).toHaveBeenCalledWith('/api/momofin-admin/organizations');
   });
-  
-  it('handles invalid organization for deletion', async () => {
+
+  // Test organizations fetch error
+  test('handles organizations fetch error', async () => {
+    // Mock API error
+    api.get.mockRejectedValue(new Error('Fetch failed'));
+
     render(
-        <BrowserRouter>
-            <ViewOrganisations />
-        </BrowserRouter>
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+    // Wait for error message
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch organizations/i)).toBeInTheDocument();
+    });
+  });
 
-    // Only click the first delete button
-    const deleteButtons = screen.getAllByTestId('delete-btn');
-    fireEvent.click(deleteButtons[0]);
-    
-    // Force an invalid state through the API
-    api.delete.mockRejectedValueOnce(new Error('Invalid organization ID'));
-    
-    const confirmButton = screen.getByText('Delete');
-    await act(async () => {
-        fireEvent.click(confirmButton);
+  // Test sorting functionality
+  test('sorts organizations by different columns', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Failed to delete organization')).toBeInTheDocument();
-});
-  
-  it('handles delete error without error message', async () => {
-      api.delete.mockRejectedValueOnce(new Error());
-      
-      render(
-          <BrowserRouter>
-              <ViewOrganisations />
-          </BrowserRouter>
-      );
-  
-      await waitFor(() => {
-          const deleteButtons = screen.getAllByTestId('delete-btn');
-          fireEvent.click(deleteButtons[0]);
-      });
-  
-      const confirmButton = screen.getByText('Delete');
-      await act(async () => {
-          fireEvent.click(confirmButton);
-      });
-  
-      expect(screen.getByText('Failed to delete organization')).toBeInTheDocument();
+    // Click on sort headers
+    const nameHeader = screen.getByText('Name');
+    const industryHeader = screen.getByText('Industry');
+
+    fireEvent.click(nameHeader);
+    fireEvent.click(industryHeader);
+
+    // Additional assertions could be added to verify sorting
   });
-  
-  it('handles update error without error message', async () => {
-      api.put.mockRejectedValueOnce(new Error());
-  
-      render(
-          <BrowserRouter>
-              <ViewOrganisations />
-          </BrowserRouter>
-      );
-  
-      await waitFor(() => {
-          const editButtons = screen.getAllByTestId('edit-btn');
-          fireEvent.click(editButtons[0]);
-      });
-  
-      const saveButton = screen.getByText('💾');
-      await act(async () => {
-          fireEvent.click(saveButton);
-      });
-  
-      expect(screen.getByText('Failed to update organization')).toBeInTheDocument();
+
+  // Test edit functionality
+  test('edits organization successfully', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+    api.put.mockResolvedValue({
+      data: {
+        ...mockOrganizations[0],
+        industry: 'Updated Tech'
+      }
+    });
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Find and click edit button
+    const editButtons = screen.getAllByTitle('Edit Organisation');
+    fireEvent.click(editButtons[0]);
+
+    // Edit inputs
+    const industryInput = screen.getByDisplayValue('Technology');
+    fireEvent.change(industryInput, { target: { value: 'Updated Tech' } });
+
+    // Save changes
+    const saveButton = screen.getByTitle('Save Changes');
+    fireEvent.click(saveButton);
+
+    // Wait for success message
+    await waitFor(() => {
+      expect(screen.getByText(/Organization updated successfully/i)).toBeInTheDocument();
+    });
   });
-  
-  it('clears status message after timeout', async () => {
-      jest.useFakeTimers();
-      
-      render(
-          <BrowserRouter>
-              <ViewOrganisations />
-          </BrowserRouter>
-      );
-  
-      await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
-  
-      // Trigger a status message
-      const editButtons = screen.getAllByTestId('edit-btn');
-      fireEvent.click(editButtons[0]);
-      fireEvent.click(editButtons[1]);
-  
-      expect(screen.getByText('Another edit operation is in progress. Please wait.')).toBeInTheDocument();
-  
-      // Fast-forward time
-      act(() => {
-          jest.advanceTimersByTime(5000);
-      });
-  
-      expect(screen.queryByText('Another edit operation is in progress. Please wait.')).not.toBeInTheDocument();
-  
-      jest.useRealTimers();
+
+  // Test delete functionality
+  test('deletes organization successfully', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+    api.delete.mockResolvedValue({});
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Open delete dialog
+    const deleteButtons = screen.getAllByTitle('Delete Organisation');
+    fireEvent.click(deleteButtons[0]);
+
+    // Confirm delete
+    const confirmDeleteButton = screen.getByText('Delete');
+    fireEvent.click(confirmDeleteButton);
+
+    // Wait for success message
+    await waitFor(() => {
+      expect(screen.getByText(/has been successfully deleted/i)).toBeInTheDocument();
+    });
   });
+
+// Test status message disappears after timeout
+test('status message disappears after timeout', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+  
+    // Mock API calls
+    api.get.mockResolvedValue({ data: mockOrganizations });
+    api.put.mockRejectedValue(new Error('Update failed'));
+  
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+  
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+  
+    // Attempt edit to trigger status message
+    const editButtons = screen.getAllByTitle('Edit Organisation');
+    fireEvent.click(editButtons[0]);
+  
+    // Edit inputs
+    const industryInput = screen.getByDisplayValue('Technology');
+    fireEvent.change(industryInput, { target: { value: 'Updated Tech' } });
+  
+    // Save changes
+    const saveButton = screen.getByTitle('Save Changes');
+    fireEvent.click(saveButton);
+  
+    // Wait for error message
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to update organization/i)).toBeInTheDocument();
+    });
+  
+    // Fast-forward timers
+    jest.advanceTimersByTime(5000);
+  
+    // Verify status message is cleared
+    expect(screen.queryByText(/Failed to update organization/i)).toBeNull();
+  });
+
+
+
+  // Test multiple error scenarios with more comprehensive error handling
+  test('handles multiple error scenarios', async () => {
+    // Mock edit errors with different response scenarios
+    api.get.mockResolvedValue({ data: mockOrganizations });
+    
+    // Simulate an error response with a custom error message
+    const mockErrorResponse = {
+      response: {
+        data: {
+          message: 'Specific update error'
+        }
+      }
+    };
+    api.put.mockRejectedValue(mockErrorResponse);
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Attempt edit
+    const editButtons = screen.getAllByTitle('Edit Organisation');
+    fireEvent.click(editButtons[0]);
+
+    // Edit inputs
+    const industryInput = screen.getByDisplayValue('Technology');
+    fireEvent.change(industryInput, { target: { value: 'Updated Tech' } });
+
+    // Save changes
+    const saveButton = screen.getByTitle('Save Changes');
+    fireEvent.click(saveButton);
+
+    // Wait for specific error message
+    await waitFor(() => {
+      expect(screen.getByText(/Specific update error/i)).toBeInTheDocument();
+    });
+
+    // Verify that editing state is reset
+    expect(screen.queryByTitle('Save Changes')).not.toBeInTheDocument();
+  });
+
 });

@@ -44,13 +44,18 @@ const ViewOrganisations = () => {
   }, []);
 
   const showStatusMessage = (text, type) => {
+    // Clear any existing timeout
     if (window.statusMessageTimeout) {
       clearTimeout(window.statusMessageTimeout);
     }
+  
+    // Set the status message
     setStatusMessage({ text, type });
+  
+    // Set a new timeout
     window.statusMessageTimeout = setTimeout(() => {
       setStatusMessage({ text: '', type: '' });
-    }, 5000);
+    }, 3000);
   };
 
   const getSortIcon = (key) => {
