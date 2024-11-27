@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
-import FormField from "./FormField";
 import { sanitizeFormData, sanitizePlainText } from '../utils/sanitizer';
+import './AddUserForm.css';
+
+const FormField = ({ label, id, type = 'text', value, onChange, error }) => (
+  <div className="form-field">
+    <label className="form-label" htmlFor={id}>{label}</label>
+    <input
+      className="form-input"
+      id={id}
+      name={id}
+      type={type}
+      value={value}
+      onChange={onChange}
+    />
+    {error && <span className="form-error">{error}</span>}
+  </div>
+);
 
 const AddUserForm = ({ title, onSubmit }) => {
   const [errors, setErrors] = useState({});
@@ -15,7 +30,6 @@ const AddUserForm = ({ title, onSubmit }) => {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    // Sanitize input as it comes in
     const sanitizedValue = sanitizePlainText(value);
     setFormData(prev => ({
       ...prev,
@@ -32,8 +46,6 @@ const AddUserForm = ({ title, onSubmit }) => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Sanitize values before validation
     const sanitizedData = sanitizeFormData(formData);
 
     if (!sanitizedData.name.trim()) newErrors.name = 'Name is required';
@@ -54,9 +66,7 @@ const AddUserForm = ({ title, onSubmit }) => {
     }
 
     try {
-      // Sanitize all form data before sending to API
       const sanitizedFormData = sanitizeFormData(formData);
-      
       const response = await api.post('/auth/register', sanitizedFormData);
 
       if (response.status === 200) {
@@ -71,61 +81,71 @@ const AddUserForm = ({ title, onSubmit }) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      // Sanitize error message before displaying
       const errorMessage = error.response?.data?.message || 'Registration failed';
       alert(sanitizePlainText(errorMessage));
     }
   };
 
   return (
-    <div className="container mx-auto mt-8 max-w-2xl">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h1 className="text-2xl font-bold mb-6">{sanitizePlainText(title)}</h1>
-        <form onSubmit={handleSubmit}>
-          <FormField
-            id="name"
-            label="Name"
-            value={formData.name}
-            onChange={handleChange}
-            error={errors.name}
-          />
-          <FormField
-            id="username"
-            label="Username"
-            value={formData.username}
-            onChange={handleChange}
-            error={errors.username}
-          />
-          <FormField
-            id="password"
-            label="Password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-          />
-          <FormField
-            id="email"
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email}
-          />
-          <FormField
-            id="position"
-            label="Position"
-            value={formData.position}
-            onChange={handleChange}
-            error={errors.position}
-          />
+    <div className="add-user-container">
+      <div className="decorative-lines"></div>
+      <div className="add-user-content">
+        <h1 className="page-title">{sanitizePlainText(title)}</h1>
+        <form onSubmit={handleSubmit} className="profile-form">
+          <div className="form-row">
+            <FormField
+              label="Name"
+              id="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+            />
+            <FormField
+              label="Username"
+              id="username"
+              value={formData.username}
+              onChange={handleChange}
+              error={errors.username}
+            />
+          </div>
+          
+          <div className="form-row">
+            <FormField
+              label="Position"
+              id="position"
+              value={formData.position}
+              onChange={handleChange}
+              error={errors.position}
+            />
+            <FormField
+              label="Email"
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+            />
+          </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Register User
-          </button>
+          <div className="password-section">
+            <FormField
+              label="Password"
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+            />
+          </div>
+
+          <div className="button-container">
+            <button type="button" className="button button-secondary">
+              Cancel
+            </button>
+            <button type="submit" className="button button-primary">
+              Register User
+            </button>
+          </div>
         </form>
       </div>
     </div>
