@@ -23,6 +23,7 @@ const mockOrganisation = {
 }
 
 const renderWithRouter = (organizationId = '123') => {
+
   return render(
       <MemoryRouter initialEntries={[`/app/configOrganisation/${organizationId}`]}>
         <Routes>
@@ -290,3 +291,78 @@ describe('ConfigOrganisation component',  () => {
     expect(api.get).not.toHaveBeenCalled();
   });
 });
+
+test('displays validation errors when required fields are empty', async () => {
+  renderWithRouter();
+
+  // Simulate user submitting the form without filling out the required fields
+  fireEvent.click(screen.getByText(/SAVE/i));
+
+  // Check for validation error messages
+  await waitFor(() => {
+    const nameError = screen.getByText(/Name is required/i);
+    const industryError = screen.getByText(/Industry is required/i);
+    const addressError = screen.getByText(/Address is required/i);
+    expect(nameError).toBeInTheDocument();
+    expect(industryError).toBeInTheDocument();
+    expect(addressError).toBeInTheDocument();
+  });
+});
+
+test('submits form with valid data', async () => {
+  api.put.mockResolvedValueOnce({ status: 200, data: { message: 'Organization updated' } });
+
+  renderWithRouter();
+
+  // Fill out the form with valid data
+  fireEvent.change(screen.getByLabelText(/NAME/i), { target: { value: 'New Group Name' } });
+  fireEvent.change(screen.getByLabelText(/INDUSTRY/i), { target: { value: 'Tech' } });
+  fireEvent.change(screen.getByLabelText(/ADDRESS/i), { target: { value: '123 New Address' } });
+  fireEvent.change(screen.getByLabelText(/DESCRIPTION/i), { target: { value: 'New Description' } });
+
+  // Submit the form
+  fireEvent.click(screen.getByText(/SAVE/i));
+
+  // Check if the form was submitted
+  await waitFor(() => {
+    expect(api.put).toHaveBeenCalledWith('/api/organizations/123', expect.objectContaining({
+      name: 'New Group Name',
+      industry: 'Tech',
+      location: '123 New Address',
+      description: 'New Description'
+    }));
+  });
+});
+
+test('shows validation error for invalid email format', async () => {
+  renderWithRouter();
+
+  // Input an invalid email
+  fireEvent.change(screen.getByLabelText(/EMAIL/i), { target: { value: 'invalid-email' } });
+
+  // Submit the form
+  fireEvent.click(screen.getByText(/SAVE/i));
+
+  // Check for validation error for the email field
+  await waitFor(() => {
+    const emailError = screen.getByText(/Invalid email address/i);
+    expect(emailError).toBeInTheDocument();
+  });
+});
+
+test('shows error for name shorter than minimum length', async () => {
+  renderWithRouter();
+
+  // Enter a short name
+  fireEvent.change(screen.getByLabelText(/NAME/i), { target: { value: 'AB' } });
+
+  // Submit the form
+  fireEvent.click(screen.getByText(/SAVE/i));
+
+  // Check for validation error for the name field
+  await waitFor(() => {
+    const nameError = screen.getByText(/Name must be at least 3 characters/i);
+    expect(nameError).toBeInTheDocument();
+  });
+});
+
