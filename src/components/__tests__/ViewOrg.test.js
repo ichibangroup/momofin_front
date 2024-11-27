@@ -9,6 +9,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 // Mock the entire api module
 jest.mock('../../utils/api');
 
+jest.mock('../../utils/api', () => ({
+    get: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  }));
+
 // Mock react-router's useNavigate hook
 const mockedNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -304,6 +310,65 @@ test('status message disappears after timeout', async () => {
     const rows = screen.getAllByRole('row');
     expect(rows[1]).toHaveTextContent('Org A');
     expect(rows[2]).toHaveTextContent('Org B');
+  });
+
+  test('shows warning message when attempting to edit multiple organizations simultaneously', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+  
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+  
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /edit organisation/i })).toHaveLength(2);
+    });
+  
+    // Get edit buttons
+    const editButtons = screen.getAllByRole('button', { name: /edit organisation/i });
+  
+    // Click first edit button
+    fireEvent.click(editButtons[0]);
+  
+    // Try to click second edit button
+    fireEvent.click(editButtons[1]);
+  
+    // Check for warning message
+    const warningMessage = await screen.findByText(/Another edit operation is in progress. Please wait./i);
+    expect(warningMessage).toBeInTheDocument();
+  });
+  
+  test('prevents multiple simultaneous edit operations', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+  
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+  
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /edit organisation/i })).toHaveLength(2);
+    });
+  
+    // Get edit buttons
+    const editButtons = screen.getAllByRole('button', { name: /edit organisation/i });
+  
+    // Click first edit button
+    fireEvent.click(editButtons[0]);
+  
+    // Check that first org is in edit mode
+    const editInputs = screen.getAllByRole('textbox');
+    expect(editInputs).toHaveLength(3); // industry, location, description inputs
+  
+    // Try to click second edit button
+    fireEvent.click(editButtons[1]);
+  
+    // Verify that second org is not in edit mode
+    expect(screen.getAllByRole('textbox')).toHaveLength(3); // Still only the first org's inputs
   });
 
 });

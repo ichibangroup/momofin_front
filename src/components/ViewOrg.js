@@ -320,6 +320,7 @@ const ViewOrganisations = () => {
       </Link>
     </div>
   );
+  
 };
 
 export default ViewOrganisations;
