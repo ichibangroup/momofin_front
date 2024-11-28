@@ -131,10 +131,10 @@ function Page() {
             value={keyword}
             onChange={handleSearch}
         />
-        <table className="users-table">
+        <table>
           <thead>
           <tr>
-            <th>File Names</th>
+            <th className="text-center">File Names</th>
             <th className="text-center">Actions</th>
           </tr>
           </thead>
