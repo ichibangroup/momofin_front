@@ -142,3 +142,154 @@ function ViewUsers() {
             window.statusMessageTimeout = setTimeout(() => {
                 setStatusMessage({ text: '', type: '' });
             }, 5000);
+        }
+    };
+
+    const handleDeleteClick = (user) => {
+        setDeleteModal({ isOpen: true, user });
+    };
+
+    const handleDeleteClose = () => {
+        setDeleteModal({ isOpen: false, user: null });
+    };
+
+    const handleEditClick = (userId) => {
+        navigate(`/app/editProfile/${userId}`);
+    };
+
+    const handleDeleteConfirm = async () => {
+        const userToDelete = deleteModal.user;
+
+        try {
+            setLoading(true);
+            handleDeleteClose();
+
+            setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
+
+            await api.delete(`/api/momofin-admin/users/${userToDelete.userId}`);
+
+            if (window.statusMessageTimeout) {
+                clearTimeout(window.statusMessageTimeout);
+            }
+
+            setStatusMessage({
+                text: `${userToDelete.username} has been successfully removed.`,
+                type: 'success'
+            });
+
+            window.statusMessageTimeout = setTimeout(() => {
+                setStatusMessage({ text: '', type: '' });
+            }, 5000);
+
+        } catch (err) {
+            setUsers(prevUsers => [...prevUsers, userToDelete]);
+            const errorMessage = err.response?.data?.message || 'Failed to delete user';
+
+            if (window.statusMessageTimeout) {
+                clearTimeout(window.statusMessageTimeout);
+            }
+
+            setStatusMessage({
+                text: errorMessage,
+                type: 'error'
+            });
+
+            window.statusMessageTimeout = setTimeout(() => {
+                setStatusMessage({ text: '', type: '' });
+            }, 5000);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderActionButtons = (user) => {
+        return (
+            <>
+                {canEditUser(user) && (
+                    <button 
+                        className="edit-btn mr-2" 
+                        title="Edit User" 
+                        onClick={() => handleEditClick(user.userId)}
+                    >
+                        <FontAwesomeIcon icon={faPencilAlt} />
+                    </button>
+                )}
+                {canDeleteUser(user) && (
+                    <button
+                        className="delete-btn mr-2"
+                        title="Remove User"
+                        onClick={() => handleDeleteClick(user)}
+                    >
+                        <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                )}
+                {canPromoteUser(user) && (
+                    <button
+                        className="promote-btn"
+                        title="Promote to Admin"
+                        onClick={() => handlePromoteToAdmin(user.organization, user.userId)}
+                    >
+                        <FontAwesomeIcon icon={faStar} />
+                    </button>
+                )}
+            </>
+        );
+    };
+
+    if (loading) return <div className="text-center p-4">Loading...</div>;
+    if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
+
+    return (
+        <div className="user-management" data-testid="viewUsers-1">
+            {statusMessage.text && (
+                <div className={`status-message ${statusMessage.type}`}>
+                    {statusMessage.text}
+                </div>
+            )}
+            <h1>View All Users</h1>
+            <div className="user-table-container">
+                <table>
+                    <thead>
+                        <tr className="headers">
+                            <th className="sort-header" onClick={() => handleSort('name')}>
+                                Name {getSortIcon('name')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('username')}>
+                                Username {getSortIcon('username')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('organization')}>
+                                Organisation {getSortIcon('organization')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('email')}>
+                                Email {getSortIcon('email')}
+                            </th>
+                            <th className="sort-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {users.map(user => (
+                            <tr key={user.userId} className="user-row">
+                                <td>{user.name}</td>
+                                <td>{user.username}</td>
+                                <td>{user.organization}</td>
+                                <td>{user.email}</td>
+                                <td className="actions">
+                                    {renderActionButtons(user)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <DeleteUserModal
+                isOpen={deleteModal.isOpen}
+                onClose={handleDeleteClose}
+                onConfirm={handleDeleteConfirm}
+                userName={deleteModal.user?.name || ''}
+            />
+        </div>
+    );
+}
+
+export default ViewUsers;
