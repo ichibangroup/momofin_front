@@ -15,21 +15,28 @@ import api from '../../utils/api';
 jest.mock('../../utils/api');
 
 describe('DocumentVerification Component', () => {
+  let mockPreventDefault;
+  let mockStopPropagation;
+  let mockSetState;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPreventDefault = jest.fn();
+    mockStopPropagation = jest.fn();
+    mockSetState = jest.fn();
   });
 
   test('renders DocumentVerification component', () => {
     render(<DocumentVerification />);
     expect(screen.getByText('Document Verification')).toBeInTheDocument();
-    expect(screen.getByLabelText('Choose a file:')).toBeInTheDocument();
+    expect(screen.getByTestId('file-upload-input')).toBeInTheDocument();
     expect(screen.getByText('Submit Document')).toBeInTheDocument();
     expect(screen.getByText('Verify Document')).toBeInTheDocument();
   });
 
   test('handles file selection', () => {
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
     fireEvent.change(fileInput, { target: { files: [file] } });
     expect(fileInput.files[0]).toBe(file);
@@ -37,7 +44,7 @@ describe('DocumentVerification Component', () => {
 
   test('handles file size limit', () => {
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.pdf', { type: 'application/pdf' });
     fireEvent.change(fileInput, { target: { files: [largeFile] } });
     expect(screen.getByText('File size must be less than 5MB.')).toBeInTheDocument();
@@ -47,7 +54,7 @@ describe('DocumentVerification Component', () => {
     api.post.mockResolvedValueOnce({ data: { documentSubmissionResult: 'Success' } });
 
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const submitButton = screen.getByText('Submit Document');
 
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
@@ -63,7 +70,7 @@ describe('DocumentVerification Component', () => {
     api.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Submission failed' } } });
 
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const submitButton = screen.getByText('Submit Document');
 
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
@@ -92,7 +99,7 @@ describe('DocumentVerification Component', () => {
     });
   
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const verifyButton = screen.getByText('Verify Document');
   
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
@@ -134,7 +141,7 @@ describe('DocumentVerification Component', () => {
     api.post.mockRejectedValueOnce({ response: {} });
 
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const submitButton = screen.getByText('Submit Document');
 
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
@@ -150,7 +157,7 @@ describe('DocumentVerification Component', () => {
     api.post.mockRejectedValueOnce({ response: {} });
 
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const verifyButton = screen.getByText('Verify Document');
 
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
@@ -166,7 +173,7 @@ describe('DocumentVerification Component', () => {
     api.post.mockRejectedValueOnce({ response: { data: { errorMessage: 'Verification failed' } } });
 
     render(<DocumentVerification />);
-    const fileInput = screen.getByLabelText('Choose a file:');
+    const fileInput = screen.getByTestId('file-upload-input');
     const verifyButton = screen.getByText('Verify Document');
 
     const file = new File(['dummy content'], 'test.pdf', { type: 'application/pdf' });
