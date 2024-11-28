@@ -36,6 +36,7 @@ const mockOrganizations = [
   }
 ];
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 describe('ViewOrganisations Component', () => {
   // Mocking timer functions
   beforeEach(() => {
@@ -461,5 +462,162 @@ test('status message disappears after timeout', async () => {
     // Verify refetch was called after delete failure
     expect(api.get).toHaveBeenCalledWith('/api/momofin-admin/organizations');
   });
+
+  test('Location input updates correctly during edit', async () => {
+    // Mock the API response for fetching organizations
+    api.get.mockResolvedValueOnce({ data: mockOrganizations });
+  
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+  
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+  
+    // Click edit button
+    const editButtons = screen.getAllByTitle('Edit Organisation');
+    fireEvent.click(editButtons[0]);
+  
+    // Find location input and change its value
+    const locationInput = screen.getByDisplayValue('New York');
+    fireEvent.change(locationInput, { target: { value: 'Los Angeles' } });
+  
+    // Verify the input value has changed
+    expect(locationInput).toHaveValue('Los Angeles');
+  });
+  
+  test('Description input updates correctly during edit', async () => {
+    // Mock the API call to return mock organizations
+    api.get.mockResolvedValueOnce({ data: mockOrganizations });
+  
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+  
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+  
+    // Click edit button
+    const editButtons = screen.getAllByTitle('Edit Organisation');
+    fireEvent.click(editButtons[0]);
+  
+    // Find description input and change its value
+    const descriptionInput = screen.getByDisplayValue('Tech company');
+    fireEvent.change(descriptionInput, { target: { value: 'Updated tech description' } });
+  
+    // Verify the input value has changed
+    expect(descriptionInput).toHaveValue('Updated tech description');
+  });
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+test('Save button triggers update API call', async () => {
+  // Mock successful API response for GET
+  api.get.mockResolvedValue({ data: mockOrganizations });
+
+  // Mock successful API response for PUT
+  api.put.mockResolvedValue({
+    data: {
+      ...mockOrganizations[0],
+      location: 'Los Angeles',
+      description: 'Updated tech description',
+    },
+  });
+
+  render(
+    <MemoryRouter>
+      <ViewOrganisations />
+    </MemoryRouter>
+  );
+
+  // Wait for organizations to load
+  const orgElement = await screen.findByText('Org A');
+  expect(orgElement).toBeInTheDocument();
+
+  // Click edit button
+  const editButtons = screen.getAllByTitle('Edit Organisation');
+  fireEvent.click(editButtons[0]);
+
+  // Change location and description
+  const locationInput = screen.getByDisplayValue('New York');
+  const descriptionInput = screen.getByDisplayValue('Tech company');
+  fireEvent.change(locationInput, { target: { value: 'Los Angeles' } });
+  fireEvent.change(descriptionInput, { target: { value: 'Updated tech description' } });
+
+  // Click save button
+  const saveButton = screen.getByTitle('Save Changes');
+  fireEvent.click(saveButton);
+
+  // Verify API call was made with correct parameters
+  await waitFor(() => {
+    expect(api.put).toHaveBeenCalledWith(
+      '/api/momofin-admin/organizations/1',
+      expect.objectContaining({
+        name: 'Org A',
+        location: 'Los Angeles',
+        description: 'Updated tech description',
+      })
+    );
+  });
+});
+
+
+test('Cancel button stops editing without saving', async () => {
+    // Mock successful API response for GET
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
+    // Mock successful API response for PUT
+    api.put.mockResolvedValue({
+      data: {
+        ...mockOrganizations[0],
+        location: 'Los Angeles',
+        description: 'Updated tech description',
+      },
+    });
+    
+  render(
+    <MemoryRouter>
+      <ViewOrganisations />
+    </MemoryRouter>
+  );
+
+  // Wait for organizations to load and check for Org A
+  await waitFor(() => {
+    expect(screen.getByText(/Org A/i)).toBeInTheDocument();
+  });
+
+  // Click edit button
+  const editButtons = screen.getAllByTitle('Edit Organisation');
+  fireEvent.click(editButtons[0]);
+
+  // Change location and description
+  const locationInput = screen.getByDisplayValue('New York');
+  const descriptionInput = screen.getByDisplayValue('Tech company');
+  
+  fireEvent.change(locationInput, { target: { value: 'Los Angeles' } });
+  fireEvent.change(descriptionInput, { target: { value: 'Updated tech description' } });
+
+  // Click cancel button
+  const cancelButton = screen.getByTitle('Cancel Edit');
+  fireEvent.click(cancelButton);
+
+  // Wait for the changes to be reverted and verify we're out of edit mode
+  await waitFor(() => {
+    expect(screen.getByText('New York')).toBeInTheDocument();
+    expect(screen.getByText('Tech company')).toBeInTheDocument();
+  });
+
+  // Verify no API call was made
+  expect(api.put).not.toHaveBeenCalled();
+});
+
 
 });
