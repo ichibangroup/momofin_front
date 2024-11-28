@@ -1,7 +1,7 @@
 // ConfigOrganisation.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter as Router, MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
+import {render, screen, fireEvent, waitFor} from '@testing-library/react';
+import {BrowserRouter as Router, MemoryRouter, Route, Routes, useParams} from 'react-router-dom';
 import ConfigOrganisation from '../ConfigOrganisation';
 import api from '../../utils/api';
 import userEvent from '@testing-library/user-event';
@@ -19,21 +19,19 @@ const mockOrganisation = {
   industry: 'Medicine',
   location: '25 Plainsboro Rd, Princeton, NJ 08540, United States',
   description: '',
-  mainAdmin: '',
 };
 
 const renderWithRouter = (organizationId = '123') => {
   return render(
       <MemoryRouter initialEntries={[`/app/configOrganisation/${organizationId}`]}>
         <Routes>
-          <Route path="/app/configOrganisation/:id" element={<ConfigOrganisation />} />
+          <Route path="/app/configOrganisation/:id" element={<ConfigOrganisation />}/>
         </Routes>
       </MemoryRouter>
   );
 };
-
-describe('ConfigOrganisation component', () => {
-  beforeEach(() => {
+describe('ConfigOrganisation component',  () => {
+  beforeEach( () => {
     jest.mocked(useParams).mockReturnValue({ id: '123' });
     api.get.mockResolvedValue({
       data: mockOrganisation,
@@ -94,13 +92,11 @@ describe('ConfigOrganisation component', () => {
       expect(descriptionInput.value).toBe('New Description');
     });
 
-    expect(api.put).toHaveBeenCalledWith('/api/organizations/123', {
-      location: '123 New Address',
-      description: 'New Description',
-      industry: 'Tech',
-      mainAdmin: '',
-      name: 'New Group Name',
-    });
+    expect(api.put).toHaveBeenCalledWith('/api/organizations/123',  {
+      'location': '123 New Address',
+      'description': 'New Description',
+      'industry': 'Tech',
+      'name': 'New Group Name'});
   });
 
   test('renders the ADD USER and VIEW ORG USERS LIST links', async () => {
@@ -169,7 +165,6 @@ describe('ConfigOrganisation component', () => {
           industry: 'Tech',
           location: '123 Test St',
           description: 'Test Description',
-          mainAdmin: 'Admin User',
         },
       });
     });
@@ -250,8 +245,7 @@ describe('ConfigOrganisation component', () => {
           location: '123 Test St',
           description: 'Test Description',
           mainAdmin: 'Admin User',
-        },
-      });
+        }});
 
       await waitFor(() => {
         expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
@@ -259,11 +253,153 @@ describe('ConfigOrganisation component', () => {
     });
   });
 
-  it('should not retrieve organization when the id is undefined', () => {
+  it('should not retrieve organisation if id is undefined', async () => {
     jest.mocked(useParams).mockReturnValue({ id: undefined });
 
     renderWithRouter();
 
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+
     expect(api.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('ConfigOrganisation component - Validation Tests', () => {
+  beforeEach(() => {
+    jest.mocked(useParams).mockReturnValue({ id: '123' });
+    api.get.mockResolvedValue({
+      data: mockOrganisation,
+      status: 200,
+    });
+  });
+
+  it('should show error message if name is empty on form submit', async () => {
+    renderWithRouter();
+
+    // Wait for the API call to complete and for the 'SAVE' button to be rendered
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+
+    const nameInput = screen.getByLabelText(/NAME/i);
+    fireEvent.change(nameInput, { target: { value: '' } }); // Empty name
+    fireEvent.click(saveButton);
+
+    // Wait for the validation error message to appear
+    await waitFor(() => {
+      expect(screen.getByText(/Name is required/i)).toBeInTheDocument(); // Validation error
+    });
+  });
+
+  it('should show error message if industry is empty on form submit', async () => {
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+    const industryInput = screen.getByLabelText(/INDUSTRY/i);
+
+    fireEvent.change(industryInput, { target: { value: '' } }); // Empty industry
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Industry is required/i)).toBeInTheDocument(); // Validation error
+    });
+
+    expect(industryInput.value).toBe(''); // Ensure the field remains empty
+  });
+
+  it('should show error message if location is empty on form submit', async () => {
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+    const locationInput = screen.getByLabelText(/ADDRESS/i);
+
+    fireEvent.change(locationInput, { target: { value: '' } }); // Empty location
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Location is required/i)).toBeInTheDocument(); // Validation error
+    });
+
+    expect(locationInput.value).toBe(''); // Ensure the field remains empty
+  });
+
+  it('should show error message if industry contains invalid characters', async () => {
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+    const industryInput = screen.getByLabelText(/INDUSTRY/i);
+
+    fireEvent.change(industryInput, { target: { value: 'Medicine123' } }); // Invalid industry
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Industry name must contain only letters and spaces/i)).toBeInTheDocument(); // Validation error
+    });
+
+    expect(industryInput.value).toBe('Medicine123'); // Ensure invalid input is retained
+  });
+
+  it('should show error message if location contains invalid characters', async () => {
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+    const locationInput = screen.getByLabelText(/ADDRESS/i);
+
+    fireEvent.change(locationInput, { target: { value: '123 Main St, City!@#' } }); // Invalid location
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Location can only contain letters, numbers, and commas/i)).toBeInTheDocument(); // Validation error
+    });
+
+    expect(locationInput.value).toBe('123 Main St, City!@#'); // Ensure invalid input is retained
+  });
+
+  it('should not show validation errors if all fields are valid', async () => {
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
+    });
+
+    const saveButton = await screen.findByRole('button', { name: /save/i });
+    const nameInput = screen.getByLabelText(/NAME/i);
+    const industryInput = screen.getByLabelText(/INDUSTRY/i);
+    const locationInput = screen.getByLabelText(/ADDRESS/i);
+
+    fireEvent.change(nameInput, {target: {value: 'New Org Name'}});
+    fireEvent.change(industryInput, {target: {value: 'Tech'}});
+    fireEvent.change(locationInput, {target: {value: '456 New Address, City'}});
+
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      // No error messages should be shown if inputs are valid
+      expect(screen.queryByText(/Name is required/i)).toBeNull();
+      expect(screen.queryByText(/Industry is required/i)).toBeNull();
+      expect(screen.queryByText(/Location is required/i)).toBeNull();
+    });
+
+    expect(api.put).toHaveBeenCalledWith('/api/organizations/123', expect.objectContaining({
+      name: 'New Org Name',
+      industry: 'Tech',
+      location: '456 New Address, City',
+    }));
   });
 });
