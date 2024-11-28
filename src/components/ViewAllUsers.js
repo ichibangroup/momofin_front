@@ -13,6 +13,23 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import DeleteUserModal from './DeleteUserModal';
 
+// Helper functions outside component
+const performDelete = async (userId) => {
+    await api.delete(`/api/momofin-admin/users/${userId}`);
+};
+
+const performPromote = async (orgId, userId) => {
+    await api.put(`/api/momofin-admin/organizations/name/${orgId}/users/${userId}/set-admin`);
+};
+
+const updateUsersAfterDelete = (users, userIdToDelete) => 
+    users.filter(user => user.userId !== userIdToDelete);
+
+const updateUsersAfterPromote = (users, userId) => 
+    users.map(user => user.userId === userId ? 
+        { ...user, organizationAdmin: true } : user
+    );
+
 function ViewUsers() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -33,13 +50,11 @@ function ViewUsers() {
     };
 
     const handleApiOperation = async (operation, successMessage, errorPrefix) => {
-        const originalUsers = [...users];
         try {
             await operation();
             showStatusMessage(successMessage, 'success');
-            await fetchUsers(); // Refresh data
+            await fetchUsers();
         } catch (error) {
-            setUsers(originalUsers);
             const errorMessage = error.response?.data?.message || `${errorPrefix}`;
             showStatusMessage(errorMessage, 'error');
         }
@@ -68,14 +83,18 @@ function ViewUsers() {
         };
     }, []);
 
-    // Role checking functions
-    const isMomofinAdmin = user => user?.momofinAdmin === true;
-    const isOrgAdmin = user => user?.organizationAdmin === true;
-    const canEditUser = user => !isMomofinAdmin(user);
-    const canDeleteUser = user => !isMomofinAdmin(user);
-    const canPromoteUser = user => !isMomofinAdmin(user) && !isOrgAdmin(user);
+    const isMomofinAdmin = (user) => {
+        return user?.momofinAdmin === true;
+    };
 
-    // Sorting functions
+    const isOrgAdmin = (user) => {
+        return user?.organizationAdmin === true;
+    };
+
+    const canEditUser = (user) => !isMomofinAdmin(user);
+    const canDeleteUser = (user) => !isMomofinAdmin(user);
+    const canPromoteUser = (user) => !isMomofinAdmin(user) && !isOrgAdmin(user);
+
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
         return sortConfig.direction === 'asc' ?
@@ -86,7 +105,7 @@ function ViewUsers() {
     const handleSort = (key) => {
         const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
         setSortConfig({ key, direction });
-        
+
         const sortedUsers = [...users].sort((a, b) => {
             const valueA = a[key]?.toString().toLowerCase() || '';
             const valueB = b[key]?.toString().toLowerCase() || '';
@@ -97,41 +116,42 @@ function ViewUsers() {
         setUsers(sortedUsers);
     };
 
-    // Action handlers
     const handlePromoteToAdmin = async (orgId, userId) => {
-        const operation = async () => {
-            setUsers(prevUsers => prevUsers.map(user => 
-                user.userId === userId ? { ...user, organizationAdmin: true } : user
-            ));
-            await api.put(`/api/momofin-admin/organizations/name/${orgId}/users/${userId}/set-admin`);
-        };
-
         await handleApiOperation(
-            operation,
+            async () => {
+                setUsers(prevUsers => updateUsersAfterPromote(prevUsers, userId));
+                await performPromote(orgId, userId);
+            },
             'User has been successfully promoted to organization admin.',
             'Failed to promote user to admin'
         );
+    };
+
+    const handleDeleteClick = (user) => {
+        setDeleteModal({ isOpen: true, user });
+    };
+
+    const handleDeleteClose = () => {
+        setDeleteModal({ isOpen: false, user: null });
+    };
+
+    const handleEditClick = (userId) => {
+        navigate(`/app/editProfile/${userId}`);
     };
 
     const handleDeleteConfirm = async () => {
         const userToDelete = deleteModal.user;
         handleDeleteClose();
 
-        const operation = async () => {
-            setUsers(prevUsers => prevUsers.filter(user => user.userId !== userToDelete.userId));
-            await api.delete(`/api/momofin-admin/users/${userToDelete.userId}`);
-        };
-
         await handleApiOperation(
-            operation,
+            async () => {
+                setUsers(prevUsers => updateUsersAfterDelete(prevUsers, userToDelete.userId));
+                await performDelete(userToDelete.userId);
+            },
             `${userToDelete.username} has been successfully removed.`,
             'Failed to delete user'
         );
     };
-
-    const handleDeleteClick = (user) => setDeleteModal({ isOpen: true, user });
-    const handleDeleteClose = () => setDeleteModal({ isOpen: false, user: null });
-    const handleEditClick = (userId) => navigate(`/app/editProfile/${userId}`);
 
     const renderActionButtons = (user) => (
         <>
@@ -180,16 +200,18 @@ function ViewUsers() {
                 <table>
                     <thead>
                         <tr className="headers">
-                            {['name', 'username', 'organization', 'email'].map(key => (
-                                <th 
-                                    key={key} 
-                                    className="sort-header" 
-                                    onClick={() => handleSort(key)}
-                                >
-                                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                                    {getSortIcon(key)}
-                                </th>
-                            ))}
+                            <th className="sort-header" onClick={() => handleSort('name')}>
+                                Name {getSortIcon('name')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('username')}>
+                                Username {getSortIcon('username')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('organization')}>
+                                Organization {getSortIcon('organization')}
+                            </th>
+                            <th className="sort-header" onClick={() => handleSort('email')}>
+                                Email {getSortIcon('email')}
+                            </th>
                             <th className="sort-header">Actions</th>
                         </tr>
                     </thead>
@@ -208,6 +230,7 @@ function ViewUsers() {
                     </tbody>
                 </table>
             </div>
+
             <DeleteUserModal
                 isOpen={deleteModal.isOpen}
                 onClose={handleDeleteClose}
