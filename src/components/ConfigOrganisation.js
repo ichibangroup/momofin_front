@@ -5,7 +5,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api'; // Your axios instance
 
 const ConfigOrganisation = () => {
-  const { id } = useParams() || {}; // Get the id from URL
+  const { id } = useParams()
   const navigate = useNavigate();
 
   const [organization, setOrganization] = useState({
