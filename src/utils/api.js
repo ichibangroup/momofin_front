@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuthToken } from './auth';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://momofin-trust-service-897144390110.asia-southeast2.run.app',
 });
 
 // Request interceptor - only handles adding the token

@@ -16,15 +16,12 @@ describe('AddUserForm Component', () => {
 
   beforeEach(() => {
     alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {}); // Mock window.alert
+    sanitizeFormData.mockImplementation((data) => data);
+    sanitizePlainText.mockImplementation((text) => text);
   });
 
   afterEach(() => {
     alertSpy.mockRestore(); // Restore original alert function
-  });
-
-  beforeEach(() => {
-    sanitizeFormData.mockImplementation((data) => data);
-    sanitizePlainText.mockImplementation((text) => text);
   });
 
   it('renders form fields and title correctly', () => {
