@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -24,7 +24,7 @@ const ViewOrganisations = () => {
   const [editingOrg, setEditingOrg] = useState(null);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/api/momofin-admin/organizations');
@@ -35,7 +35,7 @@ const ViewOrganisations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchOrganizations();
