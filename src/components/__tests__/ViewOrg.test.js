@@ -6,9 +6,6 @@ import api from '../../utils/api';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 
-// Mock the entire api module
-jest.mock('../../utils/api');
-
 jest.mock('../../utils/api', () => ({
     get: jest.fn(),
     put: jest.fn(),
@@ -423,4 +420,46 @@ test('status message disappears after timeout', async () => {
     });
   });
   
+  test('should handle API delete failure and revert UI changes', async () => {
+    // Simulate a delete failure
+    api.delete.mockRejectedValue(new Error('Delete failed'));
+    api.get.mockResolvedValue({ data: mockOrganizations }); // For refetching after error
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Find and click the delete button for the first organization
+    const deleteButtons = screen.getAllByTitle('Delete Organisation');
+    fireEvent.click(deleteButtons[0]);
+
+    // Confirm delete in the modal
+    const confirmDeleteButton = screen.getByText('Delete');
+    fireEvent.click(confirmDeleteButton);
+
+    // Verify error message is displayed
+    await waitFor(() => {
+      const errorMessage = screen.getByText('Failed to delete organization');
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    // Verify the organization is still in the document (via refetching)
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Verify delete API was called
+    expect(api.delete).toHaveBeenCalledWith('/api/momofin-admin/organizations/1');
+    
+    // Verify refetch was called after delete failure
+    expect(api.get).toHaveBeenCalledWith('/api/momofin-admin/organizations');
+  });
+
 });
