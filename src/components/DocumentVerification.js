@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
 import './DocumentVerification.css';
-
+import * as Sentry from '@sentry/react';
 
 export class IHashGenerator {
   generateHash(file) {
@@ -103,9 +103,11 @@ const DocumentVerification = () => {
       try {
         const result = await processor.submitDocument(file);
         setSubmissionResult(result.documentSubmissionResult);
+        Sentry.captureMessage(`Document submitted: ${result.documentSubmissionResult}`);
         setError(null);
       } catch (err) {
         setError(err.message);
+        Sentry.captureException(err);
         setSubmissionResult(null);
       } finally {
         setIsLoading(false);
