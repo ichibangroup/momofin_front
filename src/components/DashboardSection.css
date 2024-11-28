@@ -47,6 +47,7 @@
   height: auto;  /* Maintain aspect ratio */
   display: inline-block;
   margin-bottom: 10px; /* Space between logo and subtitle */
+  margin-right: 50px;
 }
 
 .branding h1 {
@@ -74,7 +75,7 @@
   max-width: 800px;
   margin: 0 auto;
   margin-top: -20vh;
-  margin-left: 40vh; /* Move action buttons 30px to the left */
+  margin-left: 32vh; /* Move action buttons 30px to the left */
 }
 
 /* Action Buttons */
@@ -166,10 +167,11 @@
 
 /* Mobile Adjustments */
 @media (max-width: 768px) {
-  .action-radial-container {
-    flex-direction: column;
-    gap: 40px;
+  .action-box {
+    width: 150px;
+    height: 150px;
   }
+
 
   .action-box {
     width: 180px;
