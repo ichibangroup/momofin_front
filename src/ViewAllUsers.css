@@ -1,81 +1,148 @@
-.view-users {
+.user-management {
     width: 90%;
-    margin: 20px auto;
+    margin: 0 auto;
     background: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    position: relative;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 30px; /* Increase or decrease as needed */
 }
 
 .headers {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* Adjust based on the number of columns */
-    gap: 10px; /* Space between each header box */
-    margin-bottom: 20px; /* Space between headers and content */
+    grid-template-columns: 2fr 2fr 1.5fr 2fr 1.5fr;
+    align-items: center;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 20px;
+    margin-bottom: 10px; 
 }
 
-.headers div {
-    background-color: #f2f2f2; /* Light grey background for header boxes */
-    padding: 10px;
-    border-radius: 10px; /* Rounded corners for the boxes */
+.headers tr td {
     text-align: center;
-    font-weight: bold;
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #fff; 
+    border-radius: 20px;
 }
 
 .user-rows-container {
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
-    background: #f9f9f9;
-    border-radius: 8px;
+    background: #f9f9f9; 
+    border-radius: 8px; 
 }
 
 .user-row {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* Must match header columns */
+    grid-template-columns: 2fr 2fr 1.5fr 2fr 1.5fr;
     align-items: center;
-    padding: 10px 0;
     border-bottom: 1px solid #ccc;
 }
 
-.user-row div {
+.user-row tr td {
+    padding: 10px;
+    text-align: center;
+}
+
+td, th {
     padding: 10px;
     text-align: center;
 }
 
 .actions {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     gap: 10px;
 }
 
-.add-btn, .edit-btn, .delete-btn {
-    background-color: #0056b3;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.add-btn:hover, .edit-btn:hover, .delete-btn:hover {
-    background-color: #004494;
-}
-
-.add-btn {
-    display: block;
+.custom-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 200px;
+    padding: 10px;
     margin: 20px auto;
+    background: white;
+    color: #567DF4;
+    border: 2px solid #567DF4;
     border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
 }
 
-.error {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: 10px;
+.custom-add-btn:hover {
+    background: #567DF4;
+    color: white;
+}
+
+.actions button {
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.actions button:hover {
+    transform: scale(1.2);
+}
+
+.edit-btn {
+    color: #567DF4;
+}
+
+.delete-btn {
+    color: #dc3545;
+}
+
+.sort-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sort-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-flex;  
+    align-items: center;   
+    justify-content: center; 
+    margin: 0;            
+}
+
+
+.tooltip-container .tooltip {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip-container:hover .tooltip {
+    visibility: visible;
+}
+
+.actions .promote-btn {
+    color: #ede08c; /* Green color to signify promotion */
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.promote-btn:hover {
+    transform: scale(1.2);
+    color: #f5f529; /* Darker green on hover */
 }

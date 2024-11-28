@@ -193,11 +193,6 @@ body {
   display: none;
 }
 
-.wrapper.active .main_body .container {
-  width: calc(100% - 100px);
-  margin-left: 100px;
-}
-
 .error-message {
   color: red;
   margin-bottom: 20px;
@@ -215,4 +210,13 @@ body {
 
 .hamburger:focus {
   outline: 2px solid #007bff; 
+}
+
+.badge {
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 8px;
 }

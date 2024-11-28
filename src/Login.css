@@ -7,7 +7,7 @@
   margin: 0;
 }
 
-form {
+.login-form {
   background: white;
   padding: 3em;
   border-radius: 20px;
@@ -60,7 +60,7 @@ h2 {
   margin-right: 10px;
 }
 
-button {
+.signin-button {
   width: 100%;
   padding: 12px;
   margin-top: 20px;
@@ -73,7 +73,7 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
+.signin-button:hover {
   background-color: #004494;
 }
 
@@ -82,7 +82,7 @@ button:hover {
   margin-top: 20px;
 }
 
-p, a {
+.login-p, a {
   text-align: center;
   font-size: 14px;
 }
