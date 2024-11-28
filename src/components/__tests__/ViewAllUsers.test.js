@@ -267,5 +267,169 @@ describe('ViewUsers Component Tests', () => {
       expect(sortedEmails[1]).toHaveTextContent('ayu@example.com');
     });
   });
-  
+  test('correctly identifies user roles', async () => {
+    const usersWithRoles = [
+      {
+        userId: 1,
+        name: 'Admin User',
+        username: 'admin',
+        organization: 'ICHIBAN GROUP',
+        email: 'admin@example.com',
+        momofinAdmin: true,
+      },
+      {
+        userId: 2,
+        name: 'Org Admin',
+        username: 'orgadmin',
+        organization: 'ICHIBAN GROUP',
+        email: 'orgadmin@example.com',
+        organizationAdmin: true,
+      },
+      {
+        userId: 3,
+        name: 'Regular User',
+        username: 'regular',
+        organization: 'ICHIBAN GROUP',
+        email: 'regular@example.com',
+      }
+    ];
+
+    api.get.mockResolvedValueOnce({ data: usersWithRoles });
+    renderComponent();
+
+    await waitFor(() => {
+      // Verify Momofin Admin can't be edited or deleted
+      const adminRow = screen.getByText('Admin User').closest('tr');
+      expect(adminRow.querySelector('.edit-btn')).not.toBeInTheDocument();
+      expect(adminRow.querySelector('.delete-btn')).not.toBeInTheDocument();
+      expect(adminRow.querySelector('.promote-btn')).not.toBeInTheDocument();
+
+      // Verify Org Admin can't be promoted
+      const orgAdminRow = screen.getByText('Org Admin').closest('tr');
+      expect(orgAdminRow.querySelector('.promote-btn')).not.toBeInTheDocument();
+
+      // Verify Regular User has all action buttons
+      const regularRow = screen.getByText('Regular User').closest('tr');
+      expect(regularRow.querySelector('.edit-btn')).toBeInTheDocument();
+      expect(regularRow.querySelector('.delete-btn')).toBeInTheDocument();
+      expect(regularRow.querySelector('.promote-btn')).toBeInTheDocument();
+    });
+  });
+
+  test('handles status message timeout cleanup', async () => {
+    jest.useFakeTimers();
+    renderComponent();
+
+    await waitFor(() => {
+      const promoteButton = screen.getAllByTitle('Promote to Admin')[0];
+      fireEvent.click(promoteButton);
+    });
+
+    // Fast forward time to trigger cleanup
+    jest.advanceTimersByTime(5000);
+
+    // Verify message is cleared
+    expect(screen.queryByText(/successfully promoted/i)).not.toBeInTheDocument();
+
+    jest.useRealTimers();
+  });
+
+  test('handles error when fetching users with specific error message', async () => {
+    const errorMessage = 'Network error occurred';
+    api.get.mockRejectedValueOnce(new Error(errorMessage));
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to fetch users/i)).toBeInTheDocument();
+    });
+  });
+
+  test('handles promote user with server error response', async () => {
+    const serverError = {
+      response: {
+        data: {
+          message: 'Server validation failed'
+        }
+      }
+    };
+    
+    api.get.mockResolvedValueOnce({ data: mockUsers });
+    api.put.mockRejectedValueOnce(serverError);
+
+    renderComponent();
+
+    await waitFor(() => {
+      const promoteButton = screen.getAllByTitle('Promote to Admin')[0];
+      fireEvent.click(promoteButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Server validation failed')).toBeInTheDocument();
+    });
+  });
+
+  test('handles delete user with server error response', async () => {
+    const serverError = {
+      response: {
+        data: {
+          message: 'Cannot delete user'
+        }
+      }
+    };
+    
+    api.get.mockResolvedValueOnce({ data: mockUsers });
+    api.delete.mockRejectedValueOnce(serverError);
+
+    renderComponent();
+
+    await waitFor(() => {
+      const deleteButton = screen.getAllByTitle('Remove User')[0];
+      fireEvent.click(deleteButton);
+    });
+
+    const confirmButton = screen.getByText('Delete User');
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Cannot delete user')).toBeInTheDocument();
+    });
+  });
+
+  test('closes delete modal without confirming', async () => {
+    renderComponent();
+    
+    await waitFor(() => {
+      const deleteButton = screen.getAllByTitle('Remove User')[0];
+      fireEvent.click(deleteButton);
+    });
+
+    // Find and click the cancel button
+    const cancelButton = screen.getByText('Cancel');
+    fireEvent.click(cancelButton);
+
+    // Verify modal is closed
+    await waitFor(() => {
+      expect(screen.queryByText(/are you sure you want to delete/i)).not.toBeInTheDocument();
+    });
+  });
+
+  test('handles null or undefined user data gracefully', async () => {
+    const usersWithNulls = [
+      {
+        userId: 1,
+        name: null,
+        username: undefined,
+        organization: 'Test Org',
+        email: 'test@example.com'
+      }
+    ];
+
+    api.get.mockResolvedValueOnce({ data: usersWithNulls });
+    renderComponent();
+
+    await waitFor(() => {
+      // Verify that the component doesn't crash with null/undefined values
+      expect(screen.getByText('Test Org')).toBeInTheDocument();
+    });
+  });
 });
