@@ -226,7 +226,7 @@ describe('ViewUsers Component Tests', () => {
     });
   
     // Click to sort by organization ascending
-    const organizationHeader = screen.getByText('Organisation').closest('th');
+    const organizationHeader = screen.getByText('Organization').closest('th');
     fireEvent.click(organizationHeader);
     await waitFor(() => {
       const sortedOrganizations = screen.getAllByText(/ICHIBAN GROUP|A-CORP/);
