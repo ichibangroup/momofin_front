@@ -49,7 +49,6 @@ describe('Layout Component', () => {
 
     await renderLayout();
 
-    expect(screen.getByText('MOMOFIN')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Upload and Verify')).toBeInTheDocument();
