@@ -13,7 +13,7 @@ import {
   faSortDown
 } from '@fortawesome/free-solid-svg-icons';
 import DeleteUserModal from './DeleteUserModal';
-import '../ViewOrgUsers.css';
+import './ViewOrgUsers.css';
 import api from '../utils/api';
 import StatusNotification from './StatusNotification';
 
