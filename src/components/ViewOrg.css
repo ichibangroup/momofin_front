@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+}
+#RAHHHH
+.user-management {
+    width: 90%;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.view-organisations-title {
+    font-family: 'Space Grotesk', sans-serif;
+    text-align: center;
+    color: rgb(26, 55, 95);
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.headers {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
+    align-items: center;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 20px;
+    margin-bottom: 10px; 
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+thead tr {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
+    width: 100%;
+}
+
+tbody tr {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
+    width: 100%;
+    align-items: center;
+}
+
+th, td {
+    text-align: center;
+    padding: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.headers th {
+    text-align: center;
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #fff; 
+    border-radius: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.user-rows-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background: #f9f9f9; 
+    border-radius: 8px; 
+}
+
+.user-row {
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+td, th {
+    padding: 10px;
+    text-align: center;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.custom-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 200px;
+    padding: 10px;
+    margin: 20px auto;
+    background: white;
+    color: #567DF4;
+    border: 2px solid #567DF4;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.custom-add-btn:hover {
+    background: #567DF4;
+    color: white;
+}
+
+.actions button {
+    padding: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.actions button:hover {
+    transform: scale(1.2);
+}
+
+.edit-btn {
+    color: #567DF4;
+}
+
+.delete-btn {
+    color: #dc3545;
+}
+
+.sort-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sort-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-flex;  
+    align-items: center;   
+    justify-content: center; 
+    margin: 0;            
+}
+
+.tooltip-container .tooltip {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip-container:hover .tooltip {
+    visibility: visible;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.edit-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.actions .save-btn, .actions .cancel-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+    transition: transform 0.2s ease;
+}
+
+.actions .save-btn:hover, .actions .cancel-btn:hover {
+    transform: scale(1.2);
+}
+
+.actions .save-btn {
+    color: green;
+}
+
+.actions .cancel-btn {
+    color: red;
+}
+
+.read-only-field {
+    padding: 0.5rem;
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    color: #6b7280;
+}

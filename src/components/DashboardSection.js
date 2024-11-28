@@ -13,6 +13,7 @@ function DashboardSection({ title, actionBoxes, backgroundLines }) {
     }
   };
 
+  //REAHHHHHHHHH 
   return (
     <div className="dashboard-container">
       {/* Background Lines */}
