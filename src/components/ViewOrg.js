@@ -179,19 +179,6 @@ const ViewOrganisations = () => {
     }
   };
 
-  const getOrgIcon = () => {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="tooltip-container">
-          <FontAwesomeIcon
-            icon={faBuilding}
-            className="text-blue-500"
-            title="Organization"
-          />
-        </span>
-      </div>
-    );
-  };
 
   if (loading) return <div className="text-center p-4">Loading...</div>;
 

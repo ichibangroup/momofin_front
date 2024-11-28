@@ -371,4 +371,56 @@ test('status message disappears after timeout', async () => {
     expect(screen.getAllByRole('textbox')).toHaveLength(3); // Still only the first org's inputs
   });
 
+  test('renders organizations and handles loading state', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+      expect(screen.getByText('Org B')).toBeInTheDocument();
+    });
+
+    expect(api.get).toHaveBeenCalledWith('/api/momofin-admin/organizations');
+  });
+
+  test('Cancel button hides the delete dialog', async () => {
+    api.get.mockResolvedValue({ data: mockOrganizations });
+
+    render(
+      <MemoryRouter>
+        <ViewOrganisations />
+      </MemoryRouter>
+    );
+
+    // Wait for organizations to load
+    await waitFor(() => {
+      expect(screen.getByText('Org A')).toBeInTheDocument();
+    });
+
+    // Open delete dialog
+    const deleteButtons = screen.getAllByTitle(/Delete Organisation/i);
+    fireEvent.click(deleteButtons[0]);
+
+    // Ensure the dialog appears
+    await waitFor(() => {
+      expect(screen.getByText(/Are you sure you want to delete/i)).toBeInTheDocument();
+    });
+
+    // Click the Cancel button
+    const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+    fireEvent.click(cancelButton);
+
+    // Confirm the dialog is no longer visible
+    await waitFor(() => {
+      expect(screen.queryByText(/Are you sure you want to delete/i)).not.toBeInTheDocument();
+    });
+  });
+  
 });
