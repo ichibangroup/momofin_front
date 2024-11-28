@@ -7,7 +7,6 @@ import {
   faSort, 
   faSortUp, 
   faSortDown,
-  faBuilding,
   faSave,
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +15,6 @@ import api from "../utils/api";
 import StatusNotification from './StatusNotification';
 
 const ViewOrganisations = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [organizations, setOrganizations] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -41,7 +39,7 @@ const ViewOrganisations = () => {
 
   useEffect(() => {
     fetchOrganizations();
-  }, []);
+  }, [fetchOrganizations]);
 
   const showStatusMessage = (text, type) => {
     // Clear any existing timeout
