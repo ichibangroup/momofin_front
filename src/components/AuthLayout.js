@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 
-
+//RAHHHHHHHH
 const AuthLayout = () => {
   return (
     <div className="auth-layout">
