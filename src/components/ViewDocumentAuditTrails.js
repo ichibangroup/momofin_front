@@ -41,7 +41,7 @@ const ViewAuditTrails = () => {
 
             const response = await api.get('/audit/audits', { params });
 
-            if (response && response.data) {
+            if (response?.data) {
                 setAuditTrails(prev => isLoadMore ? [...prev, ...response.data.content] : response.data.content);
                 setHasMore(!response.data.last);
                 setError(null);
