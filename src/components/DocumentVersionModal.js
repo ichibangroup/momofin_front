@@ -38,10 +38,11 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
         <div className={`modal-backdrop ${isOpen ? 'show' : ''}`}>
             <div className="modal">
                 <div className="modal-header">
-                    <h2>Document Versions</h2>
-                    <button onClick={onClose} className="modal-close-button">
-                        &times;
-                    </button>
+                    <h2>Document Versions
+                        <button onClick={onClose} className="modal-close-button">
+                            &times;
+                        </button>
+                    </h2>
                 </div>
                 <div className="modal-body">
                     {errorMessage && (
