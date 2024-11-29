@@ -31,7 +31,7 @@ describe('API Configuration', () => {
 
     describe('Base Configuration', () => {
         it('should create an axios instance with correct base URL', () => {
-            expect(api.defaults.baseURL).toBe('http://localhost:8080');
+            expect(api.defaults.baseURL).toBe('https://momofin-trust-service-897144390110.asia-southeast2.run.app');
         });
     });
 
