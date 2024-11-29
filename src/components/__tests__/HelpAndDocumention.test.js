@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import HelpAndDocumentation from '../HelpAndDocumentation';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 describe('HelpAndDocumentation Component', () => {
   beforeEach(() => {
@@ -52,19 +53,19 @@ describe('HelpAndDocumentation Component', () => {
     });
   });
 
-  // Icon Tests
   test('renders FontAwesome icons', () => {
-    const icons = [
-      'shield-halved', // from faShieldAlt
-      'clipboard-check', // from faClipboardCheck
-      'upload', // from faUpload
-      'file-signature', // from faFileSignature
-      'users', // from faUsers
-      'lock' // from faLock
+    // Check for icons by their data-icon attribute
+    const iconNames = [
+      'shield-halved', 
+      'clipboard-check', 
+      'upload', 
+      'file-signature', 
+      'users', 
+      'lock'
     ];
-
-    icons.forEach(iconName => {
-      const icon = screen.getByTestId(`fa-${iconName}`);
+  
+    iconNames.forEach(iconName => {
+      const icon = screen.getByTestId(`icon-${iconName}`);
       expect(icon).toBeInTheDocument();
     });
   });

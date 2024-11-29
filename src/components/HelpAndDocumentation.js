@@ -20,7 +20,7 @@ const HelpAndDocumentation = () => {
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">
-            <FontAwesomeIcon icon={faShieldAlt} className="mr-3 text-blue-500" />
+            <FontAwesomeIcon icon={faShieldAlt} className="mr-3 text-blue-500" data-testid="icon-shield-halved" />
             Project Overview
           </h2>
           <p className="text-gray-700 mb-4 leading-relaxed">
@@ -30,13 +30,13 @@ const HelpAndDocumentation = () => {
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">
-            <FontAwesomeIcon icon={faClipboardCheck} className="mr-3 text-blue-500" />
+            <FontAwesomeIcon icon={faClipboardCheck} className="mr-3 text-blue-500" data-testid="icon-clipboard-check" />
             Key Features
           </h2>
           <div className="feature-grid">
             <div className="feature-card">
               <h3 className="font-bold text-blue-600 mb-2">
-                <FontAwesomeIcon icon={faUpload} className="mr-2" /> 
+                <FontAwesomeIcon icon={faUpload} className="mr-2" data-testid="icon-upload"/> 
                 Document Upload
               </h3>
               <p className="text-gray-700">
@@ -45,7 +45,7 @@ const HelpAndDocumentation = () => {
             </div>
             <div className="feature-card">
               <h3 className="font-bold text-blue-600 mb-2">
-                <FontAwesomeIcon icon={faFileSignature} className="mr-2" /> 
+                <FontAwesomeIcon icon={faFileSignature} className="mr-2" data-testid="icon-file-signature" /> 
                 Verification Process
               </h3>
               <p className="text-gray-700">
@@ -57,7 +57,7 @@ const HelpAndDocumentation = () => {
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">
-            <FontAwesomeIcon icon={faUsers} className="mr-3 text-blue-500" />
+            <FontAwesomeIcon icon={faUsers} className="mr-3 text-blue-500"  data-testid="icon-users"/>
             User Roles
           </h2>
           <div className="bg-gray-100 p-6 rounded-lg">
@@ -82,7 +82,7 @@ const HelpAndDocumentation = () => {
 
         <section className="mb-8">
           <h2 className="text-2xl font-semibold text-blue-700 mb-4">
-            <FontAwesomeIcon icon={faLock} className="mr-3 text-blue-500" />
+            <FontAwesomeIcon icon={faLock} className="mr-3 text-blue-500" data-testid="icon-lock" />
             Security Principles
           </h2>
           <p className="text-gray-700 mb-4 leading-relaxed">
