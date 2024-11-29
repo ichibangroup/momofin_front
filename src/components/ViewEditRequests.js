@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../ViewAllUsers.css'; // Ensure the CSS file path is correct
+import '../ViewDocuments.css'; // Ensure the CSS file path is correct
 import api from "../utils/api";
 import {Link} from 'react-router-dom';
 import {Eye} from "lucide-react";
@@ -33,6 +33,26 @@ function ViewEditRequests() {
         }
     };
 
+    const handleRejectRequest = async (documentId) => {
+        try {
+            setLoading(true);
+            await api.delete(`/doc/edit-request/${documentId}`);
+
+            // Remove the rejected request from the local state
+            setRequests(prevRequests =>
+                prevRequests.filter(request => request.documentId !== documentId)
+            );
+
+            setError(null);
+        } catch (error) {
+            console.error('Error rejecting request:', error);
+            const errorMsg = error.response?.data?.message || 'An unknown error occurred';
+            setError(`Failed to reject request: ${errorMsg}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const fetchRequests = async () => {
         try {
             setLoading(true);
@@ -53,39 +73,48 @@ function ViewEditRequests() {
 
     return (
         <div className="view-users" data-testid="viewUsers-1">
-            <h1>View All Users</h1>
-            <div className="headers">
-                <div>Organisation</div>
-                <div>Owner's Name</div>
-                <div>Owner's Position</div>
-                <div>Owner's Email</div>
-                <div>Document</div>
-                <div>Actions</div>
-            </div>
-            <div className="user-rows-container">
-                {requests.map((request) => (
-                    <div key={request.documentId} className="user-row">
-                        <div>{request.organizationName}</div>
-                        <div>{request.username}</div>
-                        <div>{request.position}</div>
-                        <div>{request.email}</div>
-                        <div>{request.documentName}</div>
-                        <div className="actions">
-                            <button
-                                onClick={() => handleViewDocument(request.documentId, request.organizationName)}
-                                disabled={loading}
-                                className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
-                            >
-                                <Eye size={16}/>
-                                View
-                            </button>
-                            <button className="edit-btn"><Link to={`/app/editDocument/${request.documentId}`}
-                                                               className="btn btn-primary btn-sm">✏️</Link></button>
-                            <button className="btn btn-danger btn-sm">❌</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <h1 className="view-document-title">View Edit Requests</h1>
+            <table>
+                <thead className="headers">
+                <tr>
+                    <th>Organisation</th>
+                    <th>Owner's Name</th>
+                    <th>Owner's Position</th>
+                    <th>Owner's Email</th>
+                    <th>Document</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                        {requests.map((request) => (
+                            <tr key={request.documentId} className="user-row">
+                                <td>{request.organizationName}</td>
+                                <td>{request.username}</td>
+                                <td>{request.position}</td>
+                                <td>{request.email}</td>
+                                <td>{request.documentName}</td>
+                                <td className="actions">
+                                    <button
+                                        onClick={() => handleViewDocument(request.documentId, request.organizationName)}
+                                        disabled={loading}
+                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                                    >
+                                        <Eye size={16}/>
+                                        View
+                                    </button>
+                                    <Link  to={`/app/editDocument/${request.documentId}`}
+                                                                       className="px-3 py-2 mt-1 mb-1 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300">✏️ Accept</Link>
+                                    <button
+                                        onClick={() => handleRejectRequest(request.documentId)}
+                                        disabled={loading}
+                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 disabled:bg-red-300"
+                                    >❌ Reject
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                </tbody>
+            </table>
         </div>
     );
 }
