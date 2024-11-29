@@ -7,6 +7,18 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     height: calc(100vh - 100px);
     overflow-y: auto;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    text-align: center;
+    color: rgb(26, 55, 95);
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .headers {

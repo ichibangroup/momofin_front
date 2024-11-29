@@ -9,6 +9,7 @@ import api from '../utils/api';
 import './Layout.css';
 import { setAuthToken } from "../utils/auth";
 import { LogoutActivityLogger } from '../utils/logoutLogger';
+import logoAvento from '../assets/logo-avento.png';
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -117,7 +118,7 @@ const Layout = () => {
         <div className={`wrapper ${isActive ? 'active' : ''}`} data-testid="wrapper">
             <div className="top_navbar">
                 <div className="logo">
-                    <Link to="/app">MOMOFIN</Link>
+                <img src={logoAvento} alt="Logo Avento" style={{ width: '140px', height: 'auto' }} />
                 </div>
                 <div className="top_menu">
                     <div className="home_link">
