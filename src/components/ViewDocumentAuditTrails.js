@@ -83,8 +83,8 @@ const ViewAuditTrails = () => {
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
         return sortConfig.direction === 'asc' 
-            ? <FontAwesomeIcon icon={faSortUp} className="ml-1 text-blue-500" /> 
-            : <FontAwesomeIcon icon={faSortDown} className="ml-1 text-blue-500" />;
+            ? <FontAwesomeIcon data-testid="sort-icon" icon={faSortUp} className="ml-1 text-blue-500" /> 
+            : <FontAwesomeIcon data-testid="sort-icon" icon={faSortDown} className="ml-1 text-blue-500" />;
     };
 
     const loadMore = () => setPage(prevPage => prevPage + 1);
@@ -150,16 +150,16 @@ const ViewAuditTrails = () => {
             <table className="audit-table">
                 <thead>
                     <tr className="headers">
-                        <th className="sort-header" onClick={() => handleSort('documentName')}>
+                        <th data-testid="header-document" className="sort-header" onClick={() => handleSort('documentName')}>
                             Document {getSortIcon('documentName')}
                         </th>
-                        <th className="sort-header" onClick={() => handleSort('username')}>
+                        <th data-testid="header-username" className="sort-header" onClick={() => handleSort('username')}>
                             User {getSortIcon('username')}
                         </th>
-                        <th className="sort-header" onClick={() => handleSort('action')}>
+                        <th data-testid="header-action" className="sort-header" onClick={() => handleSort('action')}>
                             Action {getSortIcon('action')}
                         </th>
-                        <th className="sort-header" onClick={() => handleSort('timestamp')}>
+                        <th data-testid="header-timestamp" className="sort-header" onClick={() => handleSort('timestamp')}>
                             Date {getSortIcon('timestamp')}
                         </th>
                     </tr>

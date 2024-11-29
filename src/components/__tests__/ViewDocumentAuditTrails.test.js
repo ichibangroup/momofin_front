@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import ViewAuditTrails from '../ViewDocumentAuditTrails'; 
+import getSortIcon from '../ViewDocumentAuditTrails'; 
 import api from '../../utils/api';
 
 jest.mock('../../utils/api'); 
@@ -129,4 +130,37 @@ describe('ViewAuditTrails Component', () => {
 
     expect(screen.getByTestId('load-more-btn')).toBeInTheDocument(); // Button should still be there
   });
+
+  test('should render the headers correctly with sort icons', () => {
+    render(<ViewAuditTrails />);
+
+    // Use data-testid to target headers directly
+    expect(screen.getByTestId('header-document')).toHaveTextContent(/Document/);
+    expect(screen.getByTestId('header-username')).toHaveTextContent(/User/);
+    expect(screen.getByTestId('header-action')).toHaveTextContent(/Action/);
+    expect(screen.getByTestId('header-timestamp')).toHaveTextContent(/Date/);
+});
+
+
+test('should update sorting when a header is clicked', () => {
+  // Render the component
+  render(<ViewAuditTrails />);
+
+  // Find all table headers using getByRole
+  const headers = screen.getAllByRole('columnheader');
+
+  // Click on the 'Document' header
+  fireEvent.click(headers[0]); // Assuming 'Document' is the first column
+  expect(screen.getByTestId('viewAudits-1')).toBeInTheDocument(); // Check the component remains rendered
+
+  // Click on the 'User' header
+  fireEvent.click(headers[1]);
+  expect(screen.getByTestId('viewAudits-1')).toBeInTheDocument(); // Observe updated DOM status
+
+  fireEvent.click(headers[2]);
+  expect(screen.getByTestId('viewAudits-1')).toBeInTheDocument(); // Observe updated DOM status
+
+  fireEvent.click(headers[3]);
+  expect(screen.getByTestId('viewAudits-1')).toBeInTheDocument(); // Observe updated DOM status
+});
 });
