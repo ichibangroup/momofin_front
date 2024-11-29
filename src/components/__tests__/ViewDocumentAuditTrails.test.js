@@ -1,58 +1,132 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import ViewAuditTrails from '../ViewDocumentAuditTrails';
+import ViewAuditTrails from '../ViewDocumentAuditTrails'; 
 import api from '../../utils/api';
 
-jest.mock('../../utils/api');
+jest.mock('../../utils/api'); 
 
-test('renders ViewAuditTrails component', () => {
-    render(<ViewAuditTrails />);
-    const titleElement = screen.getByText(/View Audits/i);
-    expect(titleElement).toBeInTheDocument();
-});
-
-test('fetches and displays audit trails successfully', async () => {
-    const mockAuditData = [
-        { id: 1, username: 'user1', document: 'doc1', action: 'submit', outcome: 'SUCCESS' },
-        { id: 2, username: 'user2', document: 'doc2', action: 'verify', outcome: 'FAILED' },
-    ];
-    api.get.mockResolvedValueOnce({ data: mockAuditData });
-
-    render(<ViewAuditTrails />);
-
-    await waitFor(() => {
-        expect(screen.getByText('user1')).toBeInTheDocument();
-        expect(screen.getByText('doc1')).toBeInTheDocument();
-        expect(screen.getByText('submit')).toBeInTheDocument();
-        expect(screen.getByText('SUCCESS')).toBeInTheDocument();
-
-        expect(screen.getByText('user2')).toBeInTheDocument();
-        expect(screen.getByText('doc2')).toBeInTheDocument();
-        expect(screen.getByText('verify')).toBeInTheDocument();
-        expect(screen.getByText('FAILED')).toBeInTheDocument();
-    });
-});
-
-test('filters audit trails by action and user', async () => {
-    // Mock API response
-    const auditTrails = [{ id: 1, action: 'CREATE', user: 'user1' }];
-    axios.get.mockResolvedValueOnce({ data: { content: auditTrails } });
-  
-    render(<AuditTrailTable />);
-  
-    // Simulate filtering inputs
-    fireEvent.change(screen.getByPlaceholderText('Filter by action'), { target: { value: 'CREATE' } });
-    fireEvent.change(screen.getByPlaceholderText('Filter by user'), { target: { value: 'user1' } });
-  
-    // Trigger search
-    fireEvent.click(screen.getByText('Apply Filters'));
-  
-    // Verify API call with filter parameters
-    expect(axios.get).toHaveBeenCalledWith('/api/audit-trails', expect.objectContaining({
-      params: expect.objectContaining({
-        action: 'CREATE',
-        user: 'user1'
-      }),
-    }));
+describe('ViewAuditTrails Component', () => {
+  beforeEach(() => {
+    api.get.mockReset();
   });
+
+  it('should render without errors', () => {
+    render(<ViewAuditTrails />);
+    expect(screen.getByText('View Audits')).toBeInTheDocument();
+  });
+
+  it('should display loading spinner while fetching data', async () => {
+    api.get.mockResolvedValueOnce({
+      data: { content: [], last: true }
+    });
+  
+    render(<ViewAuditTrails />);
+  
+    await waitFor(() => expect(screen.queryByTestId('spinner')).toBeInTheDocument());
+  
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+  
+    await waitFor(() => expect(screen.queryByTestId('spinner')).not.toBeInTheDocument());
+  });
+  
+
+  it('should display error message on fetch failure', async () => {
+    api.get.mockRejectedValueOnce(new Error('Failed to fetch audits'));
+
+    await act(async () => {
+      render(<ViewAuditTrails />);
+    });
+
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+    
+    expect(screen.getByText('Failed to fetch audits. Please try again later.')).toBeInTheDocument();
+  });
+
+  it('should display audit trails in the table when fetched successfully', async () => {
+    const mockData = {
+      data: {
+        content: [
+          { id: 1, documentName: 'Doc 1', username: 'user1', action: 'SUBMIT', date: '2024-11-29' }
+        ],
+        last: true
+      }
+    };
+  
+    api.get.mockResolvedValueOnce(mockData);
+  
+    await act(async () => {
+      render(<ViewAuditTrails/>);
+    });
+  
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+  
+    expect(screen.getByText('Doc 1')).toBeInTheDocument();
+    expect(screen.getByText('user1')).toBeInTheDocument();
+    const submitElements = screen.getAllByText('SUBMIT');
+    expect(submitElements.length).toBeGreaterThan(1);
+    expect(screen.getByText('2024-11-29')).toBeInTheDocument();
+  });
+
+  it('should call API with correct parameters when filters are changed', async () => {
+    const mockData = {
+      data: { content: [], last: true }
+    };
+    api.get.mockResolvedValueOnce(mockData);
+  
+    await act(async () => {
+      render(<ViewAuditTrails />);
+    });
+  
+    fireEvent.change(screen.getByPlaceholderText('Filter by Document'), { target: { value: 'Doc 1' } });
+    fireEvent.change(screen.getByPlaceholderText('Filter by Username'), { target: { value: 'user1' } });
+    fireEvent.change(screen.getByLabelText('Start Date'), { target: { value: '2024-11-01T00:00' } });
+  
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+  
+    // Check the arguments of each call to api.get
+    expect(api.get.mock.calls[0][1].params).toEqual(
+      expect.objectContaining({
+        direction: 'DESC',
+        size: 10,
+        sortBy: 'timestamp',
+      })
+    );
+  
+    expect(api.get.mock.calls[1][1].params).toEqual(
+      expect.objectContaining({
+        direction: 'DESC',
+        documentName: 'Doc 1',
+        size: 10,
+        sortBy: 'timestamp',
+      })
+    );
+  
+    expect(api.get.mock.calls[2][1].params).toEqual(
+      expect.objectContaining({
+        direction: 'DESC',
+        documentName: 'Doc 1',
+        username: 'user1',
+        size: 10,
+        sortBy: 'timestamp',
+      })
+    );
+  });
+  
+  
+
+  it('should call load more when "Load More" button is clicked', async () => {
+    const mockData = {
+      data: { content: [], last: false }
+    };
+    api.get.mockResolvedValueOnce(mockData);
+
+    await act(async () => {
+      render(<ViewAuditTrails />);
+    });
+
+    const loadMoreButton = screen.getByTestId('load-more-btn');
+    fireEvent.click(loadMoreButton);
+
+    expect(screen.getByTestId('load-more-btn')).toBeInTheDocument(); // Button should still be there
+  });
+});

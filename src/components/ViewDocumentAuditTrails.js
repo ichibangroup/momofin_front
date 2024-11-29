@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import '../ViewDocumentAuditTrails.css';
+import React, { useEffect, useState, useCallback } from 'react';
+import './ViewDocumentAuditTrails.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faSort,
@@ -24,7 +24,7 @@ const ViewAuditTrails = () => {
     });
     const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
-    const fetchAuditTrails = async (isLoadMore = false) => {
+    const fetchAuditTrails = useCallback(async (isLoadMore = false) => {
         try {
             setLoading(true);
             const params = {
@@ -41,25 +41,29 @@ const ViewAuditTrails = () => {
 
             const response = await api.get('/audit/audits', { params });
 
-            setAuditTrails(prev => isLoadMore ? [...prev, ...response.data.content] : response.data.content);
-            setHasMore(!response.data.last);
-            setError(null);
+            if (response && response.data) {
+                setAuditTrails(prev => isLoadMore ? [...prev, ...response.data.content] : response.data.content);
+                setHasMore(!response.data.last);
+                setError(null);
+            } else {
+                throw new Error('Invalid response data');
+            }
         } catch (err) {
             console.error('Error fetching audits:', err);
             setError('Failed to fetch audits. Please try again later.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [filters, sortConfig, page]); // Added filters, sortConfig, and page as dependencies
 
     useEffect(() => {
         setPage(0); // Reset to the first page when filters or sorting changes
         fetchAuditTrails();
-    }, [filters, sortConfig]);
+    }, [filters, sortConfig, fetchAuditTrails]); // Added fetchAuditTrails as a dependency
 
     useEffect(() => {
         if (page > 0) fetchAuditTrails(true);
-    }, [page]);
+    }, [page, fetchAuditTrails]); // Added fetchAuditTrails as a dependency
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -89,48 +93,58 @@ const ViewAuditTrails = () => {
         <div className="view-audits" data-testid="viewAudits-1">
             <h1 className="title">View Audits</h1>
 
-            {/* Filter Section */}
+             {/* Filter Section */}
             <div className="filter-section">
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Filter by Username"
-                    value={filters.username}
-                    onChange={handleFilterChange}
-                />
-                <input
-                    type="text"
-                    name="documentName"
-                    placeholder="Filter by Document"
-                    value={filters.documentName}
-                    onChange={handleFilterChange}
-                />
-                <select
-                    name="action"
-                    value={filters.action}
-                    onChange={handleFilterChange}
-                >
-                    <option value="">Filter by Action</option>
-                    <option value="SUBMIT">SUBMIT</option>
-                    <option value="VERIFY">VERIFY</option>
-                </select>
-                <input
-                    type="datetime-local"
-                    name="startDate"
-                    value={filters.startDate}
-                    onChange={handleFilterChange}
-                />
-                <input
-                    type="datetime-local"
-                    name="endDate"
-                    value={filters.endDate}
-                    onChange={handleFilterChange}
-                />
+                <div className="filter-item">
+                    <input
+                        type="text"
+                        name="documentName"
+                        placeholder="Filter by Document"
+                        value={filters.documentName}
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="filter-item">
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Filter by Username"
+                        value={filters.username}
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="filter-item">
+                    <select
+                        name="action"
+                        value={filters.action}
+                        onChange={handleFilterChange}
+                    >
+                        <option value="">Filter by Action</option>
+                        <option value="SUBMIT">SUBMIT</option>
+                        <option value="VERIFY">VERIFY</option>
+                    </select>
+                </div>
+                <div className="filter-item">
+                    <label htmlFor="startDate">Start Date</label>
+                    <input
+                        type="datetime-local"
+                        name="startDate"
+                        id="startDate"
+                        value={filters.startDate}
+                        onChange={handleFilterChange}
+                    />
+                </div>
+                <div className="filter-item">
+                    <label htmlFor="endDate">End Date</label>
+                    <input
+                        type="datetime-local"
+                        name="endDate"
+                        id="endDate"
+                        value={filters.endDate}
+                        onChange={handleFilterChange}
+                    />
+                </div>
             </div>
-
-            {/* Display Loading or Error */}
-            {loading && <p>Loading...</p>}
-            {error && <p>{error}</p>}
 
             {/* Table Section */}
             <table className="audit-table">
@@ -168,9 +182,19 @@ const ViewAuditTrails = () => {
                 </tbody>
             </table>
 
+            {/* Display Loading or Error */}
+            {loading && (
+                <div className="spinner-container">
+                    <div className="spinner" data-testid="spinner" aria-live="polite"></div>
+                </div>
+            )}
+            {error && <p className="error-message">{error}</p>}
+
             {/* Load More Button */}
             {hasMore && !loading && (
-                <button onClick={loadMore} className="load-more-btn">Load More</button>
+                <div className="load-more-container" data-testid="load-more-btn">
+                    <button onClick={loadMore} className="load-more-btn">Load More</button>
+                </div>
             )}
         </div>
     );
