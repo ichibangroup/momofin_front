@@ -75,28 +75,25 @@ describe('ConfigOrganisation component',  () => {
       expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
       const saveButton = screen.getByText(/SAVE/i);
 
-      const nameInput = screen.getByLabelText(/NAME/i);
       const industryInput = screen.getByLabelText(/INDUSTRY/i);
       const addressInput = screen.getByLabelText(/ADDRESS/i);
       const descriptionInput = screen.getByLabelText(/DESCRIPTION/i);
 
-      fireEvent.change(nameInput, { target: { value: 'New Group Name' } });
       fireEvent.change(industryInput, { target: { value: 'Tech' } });
       fireEvent.change(addressInput, { target: { value: '123 New Address' } });
       fireEvent.change(descriptionInput, { target: { value: 'New Description' } });
       fireEvent.click(saveButton);
 
-      expect(nameInput.value).toBe('New Group Name');
       expect(industryInput.value).toBe('Tech');
       expect(addressInput.value).toBe('123 New Address');
       expect(descriptionInput.value).toBe('New Description');
     });
 
     expect(api.put).toHaveBeenCalledWith('/api/organizations/123',  {
+      'name' : 'ICHIBAN GROUP',
       'location': '123 New Address',
       'description': 'New Description',
-      'industry': 'Tech',
-      'name': 'New Group Name'});
+      'industry': 'Tech'});
   });
 
   test('renders the ADD USER and VIEW ORG USERS LIST links', async () => {
@@ -275,21 +272,23 @@ describe('ConfigOrganisation component - Validation Tests', () => {
     });
   });
 
-  it('should show error message if name is empty on form submit', async () => {
+  it('should ensure the name field is disabled and shows the correct value', async () => {
     renderWithRouter();
 
-    // Wait for the API call to complete and for the 'SAVE' button to be rendered
-    const saveButton = await screen.findByRole('button', { name: /save/i });
-
-    const nameInput = screen.getByLabelText(/NAME/i);
-    fireEvent.change(nameInput, { target: { value: '' } }); // Empty name
-    fireEvent.click(saveButton);
-
-    // Wait for the validation error message to appear
     await waitFor(() => {
-      expect(screen.getByText(/Name is required/i)).toBeInTheDocument(); // Validation error
+      expect(api.get).toHaveBeenCalledWith('/api/organizations/123');
     });
+
+    const nameInput = await screen.findByLabelText(/NAME/i);
+
+    // Check that the input is disabled
+    expect(nameInput).toBeDisabled();
+    expect(nameInput).toHaveValue(mockOrganisation.name); // Ensure it matches the fetched value
+
+    // Ensure the tooltip is present
+    expect(nameInput).toHaveAttribute('title', 'Name cannot be edited after creation');
   });
+
 
   it('should show error message if industry is empty on form submit', async () => {
     renderWithRouter();
@@ -371,7 +370,7 @@ describe('ConfigOrganisation component - Validation Tests', () => {
     expect(locationInput.value).toBe('123 Main St, City!@#'); // Ensure invalid input is retained
   });
 
-  it('should not show validation errors if all fields are valid', async () => {
+  it('should not show validation errors and submit valid data on save', async () => {
     renderWithRouter();
 
     await waitFor(() => {
@@ -379,27 +378,29 @@ describe('ConfigOrganisation component - Validation Tests', () => {
     });
 
     const saveButton = await screen.findByRole('button', { name: /save/i });
-    const nameInput = screen.getByLabelText(/NAME/i);
     const industryInput = screen.getByLabelText(/INDUSTRY/i);
     const locationInput = screen.getByLabelText(/ADDRESS/i);
 
-    fireEvent.change(nameInput, {target: {value: 'New Org Name'}});
-    fireEvent.change(industryInput, {target: {value: 'Tech'}});
-    fireEvent.change(locationInput, {target: {value: '456 New Address, City'}});
+    // Change editable fields
+    fireEvent.change(industryInput, { target: { value: 'Tech' } });
+    fireEvent.change(locationInput, { target: { value: '456 New Address, City' } });
 
     fireEvent.click(saveButton);
 
+    // Ensure no validation errors
     await waitFor(() => {
-      // No error messages should be shown if inputs are valid
-      expect(screen.queryByText(/Name is required/i)).toBeNull();
       expect(screen.queryByText(/Industry is required/i)).toBeNull();
       expect(screen.queryByText(/Location is required/i)).toBeNull();
     });
 
-    expect(api.put).toHaveBeenCalledWith('/api/organizations/123', expect.objectContaining({
-      name: 'New Org Name',
-      industry: 'Tech',
-      location: '456 New Address, City',
-    }));
+    // Ensure PUT request contains the original name and updated fields
+    expect(api.put).toHaveBeenCalledWith(
+        '/api/organizations/123',
+        expect.objectContaining({
+          name: mockOrganisation.name, // Unchanged
+          industry: 'Tech',
+          location: '456 New Address, City',
+        })
+    );
   });
 });
