@@ -47,7 +47,7 @@ describe('ViewEditRequests Component', () => {
 
     test('renders component with header', () => {
         renderWithRouter(<ViewEditRequests />);
-        expect(screen.getByText('View All Users')).toBeInTheDocument();
+        expect(screen.getByText('View Edit Requests')).toBeInTheDocument();
     });
 
     test('renders table headers correctly', () => {
@@ -99,8 +99,8 @@ describe('ViewEditRequests Component', () => {
 
         await waitFor(() => {
             // Check if buttons are rendered for each row
-            const editButtons = screen.getAllByText('✏️');
-            const deleteButtons = screen.getAllByText('❌');
+            const editButtons = screen.getAllByText('✏️ Accept');
+            const deleteButtons = screen.getAllByText('❌ Reject');
 
             expect(editButtons).toHaveLength(mockRequests.length);
             expect(deleteButtons).toHaveLength(mockRequests.length);
@@ -308,6 +308,91 @@ describe('ViewEditRequests Component', () => {
                     expect(button).toBeEnabled();
                 });
             });
+        });
+    });
+    describe('ViewEditRequests - Reject Request', () => {
+
+        beforeEach(() => {
+            // Reset the mock before each test
+            api.get.mockClear();
+            api.delete.mockClear();
+            api.get.mockImplementation((url) => {
+                if (url === '/doc/edit-request') {
+                    return Promise.resolve({ data: mockRequests });
+                }
+                if (url.startsWith('/doc/edit-request/doc123')) {
+                    return new Promise(resolve =>
+                        setTimeout(() =>
+                            resolve({ data: { url: 'https://example.com/doc' } }), 100
+                        )
+                    );
+                }
+                return Promise.reject(new Error('Not found'));
+            });
+        });
+
+        test('renders cancel edit request button when document is being requested', async () => {
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for documents to load
+            await waitFor(() => {
+                const cancelButtons = screen.getAllByText('❌ Reject');
+                expect(cancelButtons).toHaveLength(2);
+            });
+        });
+
+        test('successfully cancels an edit request', async () => {
+            // Mock the get request to return mock documents
+
+            // Mock the delete request to succeed
+            api.delete.mockResolvedValueOnce({});
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for documents to load
+            await waitFor(() => {
+                const cancelButtons = screen.getAllByText('❌ Reject');
+                expect(cancelButtons).toHaveLength(2);
+            });
+
+
+            const cancelButtons = screen.getAllByText('❌ Reject');
+            fireEvent.click(cancelButtons[0]);
+
+            // Verify the delete endpoint was called with correct documentId
+            await waitFor(() => {
+                expect(api.delete).toHaveBeenCalledWith('/doc/edit-request/1');
+            });
+        });
+
+        test('handles cancel edit request error', async () => {
+            // Mock the get request to return mock documents
+
+            // Mock the delete request to fail
+            api.delete.mockRejectedValueOnce(new Error('Cancellation failed'));
+
+            // Spy on console.error to check error logging
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            renderWithRouter(<ViewEditRequests />);
+
+            // Wait for documents to load
+            await waitFor(() => {
+                const cancelButtons = screen.getAllByText('❌ Reject');
+                expect(cancelButtons).toHaveLength(2);
+            });
+
+            // Click the Cancel Edit Request button
+            const cancelButtons = screen.getAllByText('❌ Reject');
+            fireEvent.click(cancelButtons[0]);
+
+            // Verify error handling
+            await waitFor(() => {
+                expect(consoleErrorSpy).toHaveBeenCalledWith('Error rejecting request:', expect.any(Error));
+            });
+
+            // Restore console.error
+            consoleErrorSpy.mockRestore();
         });
     });
 });
