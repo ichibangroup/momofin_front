@@ -97,17 +97,17 @@ function ViewEditRequests() {
                                     <button
                                         onClick={() => handleViewDocument(request.documentId, request.organizationName)}
                                         disabled={loading}
-                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 view-button"
                                     >
                                         <Eye size={16}/>
                                         View
                                     </button>
                                     <Link  to={`/app/editDocument/${request.documentId}`}
-                                                                       className="px-3 py-2 mt-1 mb-1 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300">✏️ Accept</Link>
+                                                                       className="px-3 py-2 mt-1 mb-1 flex items-center gap-2 text-sm rounded-md version-button">✏️ Accept</Link>
                                     <button
                                         onClick={() => handleRejectRequest(request.documentId)}
                                         disabled={loading}
-                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 disabled:bg-red-300"
+                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md edit-request-button"
                                     >❌ Reject
                                     </button>
                                 </td>

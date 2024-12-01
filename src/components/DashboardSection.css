@@ -190,5 +190,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%; /* Ensures the body and html elements are also 100% of the viewport height */
-  overflow: hidden; /* Prevent scrolling on the body */
+}
+
+.unscrollable {
+  overflow: hidden;
 }
