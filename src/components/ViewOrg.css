@@ -68,6 +68,8 @@ th, td {
 }
 
 .user-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
     align-items: center;
     border-bottom: 1px solid #ccc;
     font-family: 'Space Grotesk', sans-serif;

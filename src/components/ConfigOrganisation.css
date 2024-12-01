@@ -144,7 +144,7 @@ label {
   font-family: 'Space Grotesk', sans-serif;
 }
 
-input[name="name"] {
+input[name="organisation-name"] {
   background-color: #d3d3d3; /* Light gray background to indicate it's read-only */
   color: #8d99ae; /* Gray text color */
 }

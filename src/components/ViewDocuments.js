@@ -113,10 +113,10 @@ function Page() {
 
   const handleCancelEditRequest = async (documentId) => {
     try {
-      await api.delete(`/doc/edit-request/${documentId}`);
+      await api.delete(`/doc/edit-request/${documentId}/cancel`);
       setErrorMessage("Edit request cancelled successfully!");
       setShowModal(true);
-      handleGetDocuments(); // Refresh documents to update beingRequested status
+      handleGetDocuments();
     } catch (error) {
       console.error("Error cancelling edit request:", error);
       setErrorMessage(error.response?.data?.errorMessage || "Failed to cancel edit request. Please try again.");
@@ -130,7 +130,7 @@ function Page() {
         {showModal && (
             <div className="modal-backdrop">
               <div className="modal">
-                <h2>Error</h2>
+                <h2>Info</h2>
                 <p>{errorMessage}</p>
                 <button onClick={closeModal} className="modal-close-button">
                   Close
@@ -162,14 +162,14 @@ function Page() {
                       <button
                           onClick={() => handleViewDocument(document.documentId)}
                           disabled={loading}
-                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md view-button"
                       >
                         <Eye size={16}/>
                         View
                       </button>
                       <button
                           onClick={() => handleCopyLink(document.documentId)}
-                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600"
+                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md copy-link-button"
                       >
                         {copiedId === document.documentId ? (
                             <>
@@ -186,7 +186,7 @@ function Page() {
                       {document.beingRequested ? (
                           <button
                               onClick={() => handleCancelEditRequest(document.documentId)}
-                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600"
+                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md  cancel-request-button"
                           >
                             <X size={16}/>
                             Cancel Edit Request
@@ -194,12 +194,12 @@ function Page() {
                       ) : (
                           <button
                               onClick={() => openEditRequestModal(document.documentId)}
-                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-yellow-500 text-white hover:bg-yellow-600"
+                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md  edit-request-button"
                           >
                             Request Edit
                           </button>
                       )}
-                      <button onClick={() => openDocumentVersionsModal(document.documentId)}>Version History</button>
+                      <button className="version-button" onClick={() => openDocumentVersionsModal(document.documentId)}>Version History</button>
                     </td>
                   </tr>
               ))}
@@ -215,11 +215,14 @@ function Page() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <button onClick={handleSubmitEditRequest}>Submit Request</button>
-                <button onClick={closeModal}>Cancel</button>
+                <div className="modal-buttons">
+                  <button onClick={handleSubmitEditRequest}>Submit Request</button>
+                  <button onClick={closeModal}>Cancel</button>
+                </div>
               </div>
             </div>
         )}
+
 
         {isDocumentVersionsModalOpen && (
             <DocumentVersionModal

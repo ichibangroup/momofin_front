@@ -10,6 +10,11 @@ const mockDocuments = [
   { id: 1, name: 'Document 1' },
   { id: 2, name: 'Document 2' }
 ];
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 const mockClipboard = {
   writeText: jest.fn(),
@@ -245,14 +250,14 @@ describe('Page Component - Link Copying Tests', () => {
     await userEvent.click(copyButton);
 
     // Check if error modal appears
-    expect(await screen.findByText('Error')).toBeInTheDocument();
+    expect(await screen.findByText('Info')).toBeInTheDocument();
     expect(screen.getByText('Failed to copy link to clipboard')).toBeInTheDocument();
 
     // Test closing the error modal
     const closeButton = screen.getByText('Close');
     await userEvent.click(closeButton);
 
-    expect(screen.queryByText('Error')).not.toBeInTheDocument();
+    expect(screen.queryByText('Info')).not.toBeInTheDocument();
   });
 
   test('handles multiple rapid clicks on copy button', async () => {
@@ -608,7 +613,7 @@ describe('Page Component - Link Copying Tests', () => {
 
       // Verify the delete endpoint was called with correct documentId
       await waitFor(() => {
-        expect(api.delete).toHaveBeenCalledWith('/doc/edit-request/1');
+        expect(api.delete).toHaveBeenCalledWith('/doc/edit-request/1/cancel');
       });
 
       // Verify success message

@@ -143,9 +143,11 @@ const ConfigOrganisation = () => {
                   <input
                       type="text"
                       id="name"
-                      name="name"
+                      name="organisation-name"
                       value={organization.name}
                       onChange={handleChange}
+                      disabled={true}
+                      title = "Name cannot be edited after creation"
                   />
                   {validationErrors.name && (
                       <span className="error-message">{validationErrors.name}</span>
