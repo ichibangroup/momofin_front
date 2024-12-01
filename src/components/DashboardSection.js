@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
 import './DashboardSection.css';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,14 @@ import logoAvento from '../assets/logo-avento.png';
 
 function DashboardSection({ title, actionBoxes, backgroundLines }) {
   const navigate = useNavigate();
+
+    useEffect(() => {
+        document.body.classList.add('unscrollable');
+
+        return () => {
+            document.body.classList.remove('unscrollable');
+        };
+    }, []);
 
   const handleKeyDown = (box, index, event) => {
     if (event.key === 'Enter' || event.key === ' ') {
