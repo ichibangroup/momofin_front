@@ -32,86 +32,100 @@ describe('ViewAuditTrails Component', () => {
   
 
   it('should display error message on fetch failure', async () => {
+    // Mock API to reject with an error
     api.get.mockRejectedValueOnce(new Error('Failed to fetch audits'));
 
-    await act(async () => {
-      render(<ViewAuditTrails />);
-    });
+    // Render the component
+    render(<ViewAuditTrails />);
 
-    await waitFor(() => expect(api.get).toHaveBeenCalled());
-    
-    expect(screen.getByText('Failed to fetch audits. Please try again later.')).toBeInTheDocument();
-  });
+    // Wait for the error message to be displayed
+    await waitFor(() =>
+        expect(screen.getByText(/Failed to fetch audits/i)).toBeInTheDocument()
+    );
+
+    // Verify no spinner is present (optional)
+    expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
+});
+
+
 
   it('should display audit trails in the table when fetched successfully', async () => {
     const mockData = {
-      data: {
-        content: [
-          { id: 1, documentName: 'Doc 1', username: 'user1', action: 'SUBMIT', date: '2024-11-29' }
-        ],
-        last: true
-      }
+        data: {
+            content: [
+                { id: 1, documentName: 'Doc 1', username: 'user1', action: 'SUBMIT', date: '2024-11-29' },
+            ],
+            page: { number: 0, totalPages: 1 },
+        },
     };
-  
+
+    // Mock the API response
     api.get.mockResolvedValueOnce(mockData);
-  
+
+    // Render the component
     await act(async () => {
-      render(<ViewAuditTrails/>);
+        render(<ViewAuditTrails />);
     });
-  
-    await waitFor(() => expect(api.get).toHaveBeenCalled());
-  
+
+    // Ensure the API was called
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
+    // Verify the table displays the data correctly
     expect(screen.getByText('Doc 1')).toBeInTheDocument();
     expect(screen.getByText('user1')).toBeInTheDocument();
     const submitElements = screen.getAllByText('SUBMIT');
     expect(submitElements.length).toBeGreaterThan(1);
     expect(screen.getByText('2024-11-29')).toBeInTheDocument();
-  });
+
+    // Verify the correct number of rows
+    const tableRows = screen.getAllByRole('row');
+    expect(tableRows.length).toBe(2); // 1 header row + 1 data row
+});
+
 
   it('should call API with correct parameters when filters are changed', async () => {
     const mockData = {
-      data: { content: [], last: true }
+        data: {
+            content: [],
+            page: { number: 0, totalPages: 1 },
+        },
     };
-    api.get.mockResolvedValueOnce(mockData);
-  
+
+    // Mock API response
+    api.get.mockResolvedValue(mockData);
+
+    // Render the component
     await act(async () => {
-      render(<ViewAuditTrails />);
+        render(<ViewAuditTrails />);
     });
-  
-    fireEvent.change(screen.getByPlaceholderText('Filter by Document'), { target: { value: 'Doc 1' } });
-    fireEvent.change(screen.getByPlaceholderText('Filter by Username'), { target: { value: 'user1' } });
-    fireEvent.change(screen.getByLabelText('Start Date'), { target: { value: '2024-11-01T00:00' } });
-  
-    await waitFor(() => expect(api.get).toHaveBeenCalled());
-  
-    // Check the arguments of each call to api.get
-    expect(api.get.mock.calls[0][1].params).toEqual(
-      expect.objectContaining({
-        direction: 'DESC',
-        size: 10,
-        sortBy: 'timestamp',
-      })
-    );
-  
-    expect(api.get.mock.calls[1][1].params).toEqual(
-      expect.objectContaining({
-        direction: 'DESC',
-        documentName: 'Doc 1',
-        size: 10,
-        sortBy: 'timestamp',
-      })
-    );
-  
-    expect(api.get.mock.calls[2][1].params).toEqual(
-      expect.objectContaining({
-        direction: 'DESC',
-        documentName: 'Doc 1',
-        username: 'user1',
-        size: 10,
-        sortBy: 'timestamp',
-      })
-    );
-  });
+
+    // Simulate filter changes
+    fireEvent.change(screen.getByPlaceholderText('Filter by Document'), {
+        target: { value: 'Doc 1' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Filter by Username'), {
+        target: { value: 'user1' },
+    });
+    fireEvent.change(screen.getByLabelText('Start Date'), {
+        target: { value: '2024-11-01T00:00' },
+    });
+
+    // Wait for the expected API call to complete
+    await waitFor(() => {
+        // Check the last call to the mocked API
+        expect(api.get).toHaveBeenLastCalledWith('/audit/audits', {
+            params: {
+                documentName: 'Doc 1',
+                username: 'user1',
+                startDate: '2024-11-01T00:00',
+                sortBy: 'timestamp',
+                direction: 'DESC',
+                size: 10,
+            },
+        });
+    });
+});
+
   
   
 

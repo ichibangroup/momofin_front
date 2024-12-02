@@ -213,7 +213,6 @@ const ViewAuditTrails = () => {
                     <div className="spinner" data-testid="spinner" aria-live="polite"></div>
                 </div>
             )}
-            {error && <p className="error-message">{error}</p>}
 
             {/* Load More Button */}
             {hasMore && !loading && (
