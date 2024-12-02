@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faCogs, faUpload, faHome, faBorderAll, faAddressBook,
+    faCogs, faUpload, faClipboardList, faHome, faBorderAll, faAddressBook,
     faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
@@ -145,7 +145,15 @@ const Layout = () => {
                                     <span className="icon"><FontAwesomeIcon icon={faUpload} /></span>
                                     <span className="list">Upload and Verify</span>
                                 </Link>
-                            </li>
+                                </li>
+                            {hasRole('ROLE_ORG_ADMIN') && (
+                                <li>
+                                    <Link to="viewDocumentAuditTrails">
+                                    <span className="icon"><FontAwesomeIcon icon={faClipboardList} /></span>
+                                    <span className="list">View Audit Logs</span>
+                                    </Link>
+                                </li>
+                            )}
                             {hasRole('ROLE_MOMOFIN_ADMIN') && (
                                 <li>
                                     <Link to="momofinDashboard">
