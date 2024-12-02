@@ -5,6 +5,7 @@ body {
 }
 
 .view-audits {
+    overflow: auto;
     width: 90%;
     margin: 0 auto;
     background: #fff;

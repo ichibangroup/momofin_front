@@ -14,6 +14,7 @@ const ViewAuditTrails = () => {
     const [auditTrails, setAuditTrails] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(0);
+    const [reset, setReset] = useState(false); // Tracks when filters/sorting trigger a reset
     const [filters, setFilters] = useState({
         username: '',
         action: '',
@@ -24,61 +25,81 @@ const ViewAuditTrails = () => {
     });
     const [sortConfig, setSortConfig] = useState({ key: 'timestamp', direction: 'desc' });
 
-    const fetchAuditTrails = useCallback(async (isLoadMore = false) => {
-        try {
-            setLoading(true);
-            const params = {
-                ...filters,
-                sortBy: sortConfig.key,
-                direction: sortConfig.direction.toUpperCase(),
-                page,
-                size: 10,
-            };
-
-            Object.keys(params).forEach(key => {
-                if (!params[key]) delete params[key];
-            });
-
-            const response = await api.get('/audit/audits', { params });
-
-            if (response?.data) {
-                setAuditTrails(prev => isLoadMore ? [...prev, ...response.data.content] : response.data.content);
-                setHasMore(!response.data.last);
-                setError(null);
-            } else {
-                throw new Error('Invalid response data');
+    const fetchAuditTrails = useCallback(
+        async ({ loadMore = false, reset = false } = {}) => {
+            try {
+                setLoading(true);
+                const params = {
+                    ...filters,
+                    sortBy: sortConfig.key,
+                    direction: sortConfig.direction.toUpperCase(),
+                    page,
+                    size: 10,
+                };
+    
+                // Remove empty filter parameters
+                Object.keys(params).forEach((key) => {
+                    if (!params[key]) delete params[key];
+                });
+    
+                const response = await api.get('/audit/audits', { params });
+                console.log('Response:', response.data);
+    
+                if (response?.data) {
+                    setAuditTrails((prev) =>
+                        loadMore && response.data.content
+                            ? [...prev, ...response.data.content]
+                            : response.data.content || []
+                    );
+                    setHasMore(
+                        !(response.data.page.number >= response.data.page.totalPages - 1)
+                    );
+                    if (reset) setPage(0); // Ensure the page resets on a filter/sort reset
+                    setError(null);
+                } else {
+                    throw new Error('Invalid response data');
+                }
+            } catch (err) {
+                console.error('Error fetching audits:', err);
+                setError('Failed to fetch audits. Please try again later.');
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            console.error('Error fetching audits:', err);
-            setError('Failed to fetch audits. Please try again later.');
-        } finally {
-            setLoading(false);
+        },
+        [filters, sortConfig, page]
+    );    
+    
+
+    useEffect(() => {
+        if (reset) {
+            fetchAuditTrails({ reset: true });
+            setReset(false); // Reset completed
+        } else {
+            fetchAuditTrails({ loadMore: page > 0 });
         }
-    }, [filters, sortConfig, page]); // Added filters, sortConfig, and page as dependencies
-
-    useEffect(() => {
-        setPage(0); // Reset to the first page when filters or sorting changes
-        fetchAuditTrails();
-    }, [filters, sortConfig, fetchAuditTrails]); // Added fetchAuditTrails as a dependency
-
-    useEffect(() => {
-        if (page > 0) fetchAuditTrails(true);
-    }, [page, fetchAuditTrails]); // Added fetchAuditTrails as a dependency
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value,
-        }));
+    }, [page, reset, filters, sortConfig, fetchAuditTrails]);
+    
+    
+    const updateStateAndReset = (newState) => {
+        setAuditTrails([]); // Clear rows immediately
+        setFilters((prev) => ({ ...prev, ...newState }));
+        setPage(0); // Reset to the first page
+        setReset(true); // Signal reset for useEffect
     };
-
+    
     const handleSort = (key) => {
-        setSortConfig(prevConfig => ({
+        setSortConfig((prevConfig) => ({
             key,
             direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
         }));
+        updateStateAndReset({});
     };
+    
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        updateStateAndReset({ [name]: value });
+    };    
+    
 
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) return <FontAwesomeIcon icon={faSort} className="ml-1 text-gray-400" />;
@@ -165,7 +186,15 @@ const ViewAuditTrails = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {auditTrails.length > 0 ? (
+                    {error ? (
+                        <tr>
+                            <td colSpan="4" className="error-message">
+                                {error}
+                            </td>
+                        </tr>
+                    ) : (
+                        auditTrails &&
+                        auditTrails.length > 0 &&
                         auditTrails.map((audit) => (
                             <tr key={audit.id}>
                                 <td>{audit.documentName}</td>
@@ -174,12 +203,8 @@ const ViewAuditTrails = () => {
                                 <td>{audit.date}</td>
                             </tr>
                         ))
-                    ) : (
-                        <tr>
-                            <td colSpan="4">No audit trails found for the applied filters.</td>
-                        </tr>
                     )}
-                </tbody>
+            </tbody>
             </table>
 
             {/* Display Loading or Error */}
