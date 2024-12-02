@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faCogs, faUpload, faClipboardList, faHome, faBorderAll, faAddressBook,
-    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature
+    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature, faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
@@ -51,8 +51,6 @@ const Layout = () => {
         fetchUserInfo();
     }, [navigate]);
     
-    
-
     const handleLogout = async () => {
         if (user) {
             // Log logout attempt
@@ -187,6 +185,12 @@ const Layout = () => {
                                                     <span className="badge">{editRequestsCount}</span>
                                                 )}
                                             </span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="help">
+                                            <span className="icon"><FontAwesomeIcon icon={faQuestionCircle}/></span>
+                                            <span className="list">Help & Documentation</span>
                                         </Link>
                                     </li>
                                     <li>

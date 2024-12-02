@@ -10,6 +10,11 @@ const mockDocuments = [
   { id: 1, name: 'Document 1' },
   { id: 2, name: 'Document 2' }
 ];
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 const mockClipboard = {
   writeText: jest.fn(),
@@ -245,14 +250,14 @@ describe('Page Component - Link Copying Tests', () => {
     await userEvent.click(copyButton);
 
     // Check if error modal appears
-    expect(await screen.findByText('Error')).toBeInTheDocument();
+    expect(await screen.findByText('Info')).toBeInTheDocument();
     expect(screen.getByText('Failed to copy link to clipboard')).toBeInTheDocument();
 
     // Test closing the error modal
     const closeButton = screen.getByText('Close');
     await userEvent.click(closeButton);
 
-    expect(screen.queryByText('Error')).not.toBeInTheDocument();
+    expect(screen.queryByText('Info')).not.toBeInTheDocument();
   });
 
   test('handles multiple rapid clicks on copy button', async () => {
@@ -402,7 +407,7 @@ describe('Page Component - Link Copying Tests', () => {
       render(<Page />);
       await waitFor(() => {
         expect(screen.getByText('Document 1')).toBeInTheDocument();
-        const requestEditButtons = screen.getAllByText('Edit request in progress');
+        const requestEditButtons = screen.getAllByText('Cancel Edit Request');
         expect(requestEditButtons).toHaveLength(2);
       });
     });
@@ -551,6 +556,102 @@ describe('Page Component - Link Copying Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Failed to submit edit request. Please try again.')).toBeInTheDocument();
       });
+    });
+  });
+  describe('ViewDocuments - Cancel Edit Request', () => {
+    const mockDocuments = [
+      {
+        documentId: '1',
+        name: 'Test Document',
+        beingRequested: true
+      },
+      {
+        documentId: '2',
+        name: 'Another Document',
+        beingRequested: false
+      }
+    ];
+
+    beforeEach(() => {
+      // Reset the mock before each test
+      api.get.mockClear();
+      api.delete.mockClear();
+    });
+
+    test('renders cancel edit request button when document is being requested', async () => {
+      // Mock the get request to return mock documents
+      api.get.mockResolvedValue({ data: { documents: mockDocuments } });
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        const cancelButtons = screen.getAllByText('Cancel Edit Request');
+        expect(cancelButtons).toHaveLength(1);
+      });
+    });
+
+    test('successfully cancels an edit request', async () => {
+      // Mock the get request to return mock documents
+      api.get.mockResolvedValueOnce({ data: { documents: mockDocuments } })
+          .mockResolvedValueOnce({ data: { documents: mockDocuments.map(doc => ({ ...doc, beingRequested: false })) } });
+
+      // Mock the delete request to succeed
+      api.delete.mockResolvedValueOnce({});
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        const cancelButtons = screen.getAllByText('Cancel Edit Request');
+        expect(cancelButtons).toHaveLength(1);
+      });
+
+      // Click the Cancel Edit Request button
+      const cancelButton = screen.getByText('Cancel Edit Request');
+      fireEvent.click(cancelButton);
+
+      // Verify the delete endpoint was called with correct documentId
+      await waitFor(() => {
+        expect(api.delete).toHaveBeenCalledWith('/doc/edit-request/1/cancel');
+      });
+
+      // Verify success message
+      await waitFor(() => {
+        expect(screen.getByText('Edit request cancelled successfully!')).toBeInTheDocument();
+      });
+    });
+
+    test('handles cancel edit request error', async () => {
+      // Mock the get request to return mock documents
+      api.get.mockResolvedValueOnce({ data: { documents: mockDocuments } });
+
+      // Mock the delete request to fail
+      api.delete.mockRejectedValueOnce(new Error('Cancellation failed'));
+
+      // Spy on console.error to check error logging
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      render(<Page />);
+
+      // Wait for documents to load
+      await waitFor(() => {
+        const cancelButtons = screen.getAllByText('Cancel Edit Request');
+        expect(cancelButtons).toHaveLength(1);
+      });
+
+      // Click the Cancel Edit Request button
+      const cancelButton = screen.getByText('Cancel Edit Request');
+      fireEvent.click(cancelButton);
+
+      // Verify error handling
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error cancelling edit request:', expect.any(Error));
+        expect(screen.getByText(/Failed to cancel edit request/i)).toBeInTheDocument();
+      });
+
+      // Restore console.error
+      consoleErrorSpy.mockRestore();
     });
   });
 });

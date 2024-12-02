@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../utils/api';
+import './DocumentVerification.css';
 import { useParams } from "react-router-dom";
 
 const SpecifiedDocumentVerifier = () => {
