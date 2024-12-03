@@ -86,9 +86,8 @@ body {
     margin-bottom: 10px;
 }
 
-tbody tr {
-    display: grid;
-    grid-template-columns: 40% 20% 20% 20%;
+.audit-table tbody tr {
+    display: table-row;
     width: 100%;
     align-items: center;
     padding: 10px;
@@ -96,7 +95,7 @@ tbody tr {
     margin-bottom: 10px;
 }
 
-th, td {
+.audit-table th, .audit-table td {
     text-align: center;
     padding: 10px;
     overflow: hidden;

@@ -72,7 +72,7 @@ function ViewEditRequests() {
     }, []);
 
     return (
-        <div className="view-users" data-testid="viewUsers-1">
+        <div className="alpha-table" data-testid="viewUsers-1">
             <h1 className="view-document-title">View Edit Requests</h1>
             <table>
                 <thead className="headers">
