@@ -195,9 +195,9 @@ const UserManagement = () => {
                 type={statusMessage.type}
             />
             <h1>View Organisation Users</h1>
-            <table>
+            <table className="org-user-table">
                 <thead>
-                <tr className="headers">
+                <tr className="org-user-headers">
                     <th>User Type</th>
                     <th className="sort-header" onClick={() => sortData('name')}>
                         Name {getSortIcon('name')}
@@ -216,7 +216,7 @@ const UserManagement = () => {
                 </thead>
                 <tbody>
                 {users.map((user) => (
-                    <tr key={user.userId} className="user-row">
+                    <tr key={user.userId} className="org-user-row">
                         <td>{getUserIcon(user)}</td>
                         <td>{user.name}</td>
                         <td>{user.username}</td>

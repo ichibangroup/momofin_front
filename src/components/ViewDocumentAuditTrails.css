@@ -86,9 +86,8 @@ body {
     margin-bottom: 10px;
 }
 
-tbody tr {
-    display: grid;
-    grid-template-columns: 40% 20% 20% 20%;
+.audit-table tbody tr {
+    display: table-row;
     width: 100%;
     align-items: center;
     padding: 10px;
@@ -96,7 +95,7 @@ tbody tr {
     margin-bottom: 10px;
 }
 
-th, td {
+.audit-table th, .audit-table td {
     text-align: center;
     padding: 10px;
     overflow: hidden;
@@ -104,19 +103,19 @@ th, td {
     white-space: nowrap;
 }
 
-.headers th {
+.audit-table .headers th {
     padding: 10px 20px;
     margin: 0 5px;
     background-color: #fff;
     border-radius: 20px;
 }
 
-.sort-header {
+.audit-table .sort-header {
     cursor: pointer;
     user-select: none;
 }
 
-.sort-header:hover {
+.audit-table .sort-header:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
 

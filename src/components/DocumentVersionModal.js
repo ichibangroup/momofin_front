@@ -62,7 +62,7 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
                             <p>{errorMessage}</p>
                         </div>
                     )}
-                    <table>
+                    <table className="alpha-table">
                         <thead>
                         <tr>
                             <th>Version</th>
