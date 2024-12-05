@@ -52,7 +52,7 @@ const ViewAuditTrails = () => {
                             : response.data.content || []
                     );
                     setHasMore(
-                        !(response.data.page.number >= response.data.page.totalPages - 1)
+                        (response.data.page.number < response.data.page.totalPages - 1)
                     );
                     if (reset) setPage(0); // Ensure the page resets on a filter/sort reset
                     setError(null);
