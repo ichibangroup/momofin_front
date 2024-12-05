@@ -187,9 +187,9 @@ const ViewOrganisations = () => {
         type={statusMessage.type}
       />
       <h1 className="view-organisations-title">View All Organisations</h1>
-      <table>
+      <table className="org-table">
         <thead>
-          <tr className="headers">
+          <tr className="org-headers">
             <th className="sort-header" onClick={() => sortData('name')}>
               Name {getSortIcon('name')}
             </th>
@@ -207,7 +207,7 @@ const ViewOrganisations = () => {
         </thead>
         <tbody>
           {organizations.map((org) => (
-            <tr key={org.organizationId} className="user-row">
+            <tr key={org.organizationId} className="org-row">
               {isEditing && editingOrg?.organizationId === org.organizationId ? (
                 <>
                   <td className="read-only-field">{org.name}</td>

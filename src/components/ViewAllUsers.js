@@ -197,9 +197,9 @@ function ViewUsers() {
             )}
             <h1>View All Users</h1>
             <div className="user-table-container">
-                <table>
+                <table className="user-table">
                     <thead>
-                        <tr className="headers">
+                        <tr className="user-headers">
                             <th className="sort-header" onClick={() => handleSort('name')}>
                                 Name {getSortIcon('name')}
                             </th>

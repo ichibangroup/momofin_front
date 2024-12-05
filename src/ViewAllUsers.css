@@ -21,7 +21,7 @@ h1 {
     letter-spacing: 1px;
 }
 
-.headers {
+.user-headers {
     display: grid;
     grid-template-columns: 2fr 2fr 1.5fr 2fr 1.5fr;
     align-items: center;
@@ -31,7 +31,7 @@ h1 {
     margin-bottom: 10px; 
 }
 
-.headers tr td {
+.user-headers tr td {
     text-align: center;
     padding: 10px 20px;
     margin: 0 5px;
@@ -58,7 +58,7 @@ h1 {
     text-align: center;
 }
 
-td, th {
+.user-table td, .user-table th {
     padding: 10px;
     text-align: center;
 }
