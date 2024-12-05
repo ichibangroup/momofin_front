@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
 
-body {
-  font-family: 'Space Grotesk', sans-serif;
-  overflow: hidden;
-}
 
 .add-organisation-container {
   max-width: 100%;
@@ -188,4 +184,8 @@ body {
   .add-organisation-back-btn {
     width: 100%;
   }
+}
+
+.unscrollable {
+  overflow: hidden;
 }
