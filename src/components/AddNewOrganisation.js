@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
@@ -112,6 +112,16 @@ AdminDetailsForm.defaultProps = {
 };
 
 const AddOrganisation = () => {
+
+  useEffect(() => {
+    document.body.classList.add('unscrollable');
+
+    return () => {
+      document.body.classList.remove('unscrollable');
+    };
+  }, []);
+
+
   const [organisationData, setOrganisationData] = useState({
     name: '',
     industry: '',
