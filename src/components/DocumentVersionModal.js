@@ -17,12 +17,24 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
             const errorMsg = error.response?.data?.message || 'An unknown error occurred';
             setErrorMessage(`Failed to load document: ${errorMsg}`);
         }
-    }
+    };
 
     const fetchVersions = useCallback(async () => {
         try {
             const response = await api.get(`/doc/${documentId}/versions`);
-            setVersions(response.data);
+            // Format the dates during data fetching
+            const formattedVersions = response.data.map((version) => ({
+                ...version,
+                formattedDate: new Date(version.createdDate).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                }),
+            }));
+            setVersions(formattedVersions);
         } catch (error) {
             console.error('Error fetching document versions:', error);
         }
@@ -50,7 +62,7 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
                             <p>{errorMessage}</p>
                         </div>
                     )}
-                    <table>
+                    <table className="alpha-table">
                         <thead>
                         <tr>
                             <th>Version</th>
@@ -64,13 +76,13 @@ const DocumentVersionModal = ({ documentId, isOpen, onClose }) => {
                             <tr key={version.id.version}>
                                 <td>{version.id.version}</td>
                                 <td>{version.editedBy.username}</td>
-                                <td>{version.createdDate}</td>
+                                <td>{version.formattedDate}</td>
                                 <td>
                                     <button
                                         onClick={() => handleViewDocument(version.id.documentId, version.id.version)}
-                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                                        className="px-3 py-2 flex items-center gap-2 text-sm rounded-md view-button"
                                     >
-                                        <Eye size={16}/>
+                                        <Eye size={16} />
                                         View
                                     </button>
                                 </td>

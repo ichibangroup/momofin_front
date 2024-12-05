@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import '../index.css';
 import '../ViewDocuments.css';
-import { Eye, Link, Check } from 'lucide-react';
+import { Eye, Link, Check, X } from 'lucide-react';
 import DocumentVersionModal from './DocumentVersionModal';
 
 function Page() {
@@ -57,7 +57,7 @@ function Page() {
   };
 
   const handleCopyLink = async (documentId) => {
-    const verificationUrl = `https://momofin-docuver-staging.netlify.app/app/verify/${documentId}`;
+    const verificationUrl = `https://avento-trust.netlify.app/app/verify/${documentId}`;
     try {
       await navigator.clipboard.writeText(verificationUrl);
       setCopiedId(documentId);
@@ -101,6 +101,7 @@ function Page() {
       closeModal();
       setErrorMessage("Edit request submitted successfully!");
       setShowModal(true);
+      handleGetDocuments();
       return response.data;
     } catch (error) {
       closeModal();
@@ -110,13 +111,26 @@ function Page() {
     }
   };
 
+  const handleCancelEditRequest = async (documentId) => {
+    try {
+      await api.delete(`/doc/edit-request/${documentId}/cancel`);
+      setErrorMessage("Edit request cancelled successfully!");
+      setShowModal(true);
+      handleGetDocuments();
+    } catch (error) {
+      console.error("Error cancelling edit request:", error);
+      setErrorMessage(error.response?.data?.errorMessage || "Failed to cancel edit request. Please try again.");
+      setShowModal(true);
+    }
+  };
+
   return (
       <div className="page-container">
-        <h1 className="page-title">Your Documents</h1>
+        <h1 className="view-document-title">Your Documents</h1>
         {showModal && (
             <div className="modal-backdrop">
               <div className="modal">
-                <h2>Error</h2>
+                <h2>Info</h2>
                 <p>{errorMessage}</p>
                 <button onClick={closeModal} className="modal-close-button">
                   Close
@@ -131,10 +145,10 @@ function Page() {
             value={keyword}
             onChange={handleSearch}
         />
-        <table className="users-table">
-          <thead>
+        <table className="alpha-table">
+          <thead className="document-headers">
           <tr>
-            <th>File Names</th>
+            <th className="text-center">File Names</th>
             <th className="text-center">Actions</th>
           </tr>
           </thead>
@@ -148,14 +162,14 @@ function Page() {
                       <button
                           onClick={() => handleViewDocument(document.documentId)}
                           disabled={loading}
-                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300"
+                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md view-button"
                       >
                         <Eye size={16}/>
                         View
                       </button>
                       <button
                           onClick={() => handleCopyLink(document.documentId)}
-                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600"
+                          className="px-3 py-2 flex items-center gap-2 text-sm rounded-md copy-link-button"
                       >
                         {copiedId === document.documentId ? (
                             <>
@@ -171,20 +185,21 @@ function Page() {
                       </button>
                       {document.beingRequested ? (
                           <button
-                              disabled
-                              className="px-3 py-2 text-sm rounded-md bg-gray-500 text-gray-200 cursor-not-allowed"
+                              onClick={() => handleCancelEditRequest(document.documentId)}
+                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md  cancel-request-button"
                           >
-                            Edit request in progress
+                            <X size={16}/>
+                            Cancel Edit Request
                           </button>
                       ) : (
                           <button
                               onClick={() => openEditRequestModal(document.documentId)}
-                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md bg-yellow-500 text-white hover:bg-yellow-600"
+                              className="px-3 py-2 flex items-center gap-2 text-sm rounded-md  edit-request-button"
                           >
                             Request Edit
                           </button>
                       )}
-                      <button onClick={() => openDocumentVersionsModal(document.documentId)}>Version History</button>
+                      <button className="version-button" onClick={() => openDocumentVersionsModal(document.documentId)}>Version History</button>
                     </td>
                   </tr>
               ))}
@@ -200,11 +215,14 @@ function Page() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <button onClick={handleSubmitEditRequest}>Submit Request</button>
-                <button onClick={closeModal}>Cancel</button>
+                <div className="modal-buttons">
+                  <button onClick={handleSubmitEditRequest}>Submit Request</button>
+                  <button onClick={closeModal}>Cancel</button>
+                </div>
               </div>
             </div>
         )}
+
 
         {isDocumentVersionsModalOpen && (
             <DocumentVersionModal

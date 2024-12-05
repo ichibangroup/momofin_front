@@ -1,0 +1,197 @@
+/* Import Space Grotesk font */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap');
+
+/* General Container */
+.dashboard-container {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  color: #0D3B66; /* Dark Blue */
+  position: relative;
+  overflow: hidden; /* Prevent scrolling */
+  padding: 0; /* Removed padding to avoid overflow */
+  background-color: transparent;
+  height: 100vh; /* Full height of the viewport */
+  width: 100vw; /* Full width of the viewport */
+  box-sizing: border-box; /* Prevents padding from affecting total size */
+  
+  display: flex; /* Use flexbox for centering */
+  justify-content: center;  /* Centers content horizontally */
+  align-items: center;  /* Centers content vertically */
+  flex-direction: column;  /* Aligns content in a column */
+  text-align: center; /* Ensure all text is centered */
+}
+
+/* Background Lines */
+.background-lines {
+  position: absolute;
+  top: -50px;
+  left: -100px;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(13,59,102,0.05) 20%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Branding Section */
+.branding {
+  text-align: center;
+  margin-bottom: -30vh;
+  margin-top: -80vh;
+  margin-left: -32.5vh; /* Move action buttons 30px to the left */
+  z-index: 1;
+  position: relative;
+}
+
+.branding img.logo {
+  transform: scale(0.35);  /* Increase size by 1.5 times (adjust as needed) */
+  height: auto;  /* Maintain aspect ratio */
+  display: inline-block;
+  margin-bottom: 10px; /* Space between logo and subtitle */
+}
+
+.branding h1 {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  font-size: 48px;
+  font-weight: bold;
+  color: #0D3B66; /* Dark Blue text */
+}
+
+.branding p {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  font-size: 18px;
+  color: #8D99AE; /* Cool Gray text */
+}
+
+.action-radial-container {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  z-index: 1;
+  position: relative;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-top: -20vh;
+  margin-left: 40vh; /* Move action buttons 30px to the left */
+}
+
+/* Action Buttons */
+.action-box {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  width: 280px;  /* Increased size */
+  height: 280px; /* Increased size */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgb(26, 55, 95); /* Blue */
+  color: #FFFFFF; /* White text by default */
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+/* Gold Button Specific Styles */
+.action-box.verify-box {
+  background-color: rgb(249, 218, 73); /* Gold background */
+  color: #000000; /* Black text for gold button */
+}
+
+/* Hover Effect */
+.action-box:hover {
+  transform: scale(1.1);
+  background-color: #000000; /* Black background */
+  color: rgb(249, 218, 73); /* Gold text */
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow on hover */
+}
+
+.action-box:hover .action-icon {
+  color: rgb(249, 218, 73); /* Gold icon color */
+}
+
+.action-box:hover .blue-button-text {
+  color: rgb(249, 218, 73); /* Gold text color for blue button */
+}
+
+.action-box:hover .gold-button-text {
+  color: rgb(249, 218, 73); /* Gold text color for gold button */
+}
+
+/* Separate Button Text Styles */
+.blue-button-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #FFFFFF; /* White text by default for blue button */
+  transition: color 0.3s ease; /* Ensure text color transition */
+}
+
+.gold-button-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000000; /* Black text by default for gold button */
+  transition: color 0.3s ease; /* Ensure text color transition */
+}
+
+/* Action Box Content */
+.action-box-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action-icon {
+  font-size: 60px; /* Larger icon */
+  color: inherit; /* Inherit color from button */
+  transition: color 0.3s ease; /* Ensure icon color transition matches text */
+}
+
+.action-box h3 {
+  font-family: 'Space Grotesk', sans-serif; /* Apply Space Grotesk font */
+  font-size: 24px; /* Larger text */
+  font-weight: bold;
+  color: inherit; /* Inherit text color from the button */
+  transition: color 0.3s ease; /* Ensure text color transition matches icon */
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .action-radial-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .action-box {
+    width: 180px;
+    height: 180px;
+  }
+
+  .action-icon {
+    font-size: 36px;
+  }
+
+  .action-box h3 {
+    font-size: 18px;
+  }
+}
+
+/* Ensure no body scrolling */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensures the body and html elements are also 100% of the viewport height */
+}
+
+.unscrollable {
+  overflow: hidden;
+}

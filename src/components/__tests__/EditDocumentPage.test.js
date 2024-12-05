@@ -1,13 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import EditDocumentPage from '../EditDocumentPage';
 import api from '../../utils/api';
 
 // Mock the modules
 jest.mock('react-router-dom', () => ({
-    useParams: jest.fn()
+    useParams: jest.fn(),
+    useNavigate: jest.fn()
 }));
+
+
+
 jest.mock('../../utils/api');
 
 describe('EditDocumentPage', () => {
@@ -27,15 +31,16 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         expect(screen.getByText('Edit Document')).toBeInTheDocument();
-        expect(screen.getByText('Choose a file:')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Submit Edit Request' })).toBeInTheDocument();
+
+        expect(screen.getByTestId('file-upload-input')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Submit Edit' })).toBeInTheDocument();
     });
 
     test('handles valid file selection', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(1024 * 1024); // 1MB file
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         fireEvent.change(input, { target: { files: [file] } });
 
@@ -46,7 +51,7 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(6 * 1024 * 1024); // 6MB file
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         fireEvent.change(input, { target: { files: [file] } });
 
@@ -57,14 +62,14 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(1024 * 1024);
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         // Mock successful API response
         api.post.mockResolvedValueOnce({ data: { message: 'Success' } });
 
         // Select file and submit
         fireEvent.change(input, { target: { files: [file] } });
-        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit Request' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit' }));
 
         // Check loading state
         expect(screen.getByRole('button', { name: 'Submitting...' })).toBeInTheDocument();
@@ -83,7 +88,7 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(1024 * 1024);
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         // Mock API error
         const errorMessage = 'Failed to upload file';
@@ -91,7 +96,7 @@ describe('EditDocumentPage', () => {
 
         // Select file and submit
         fireEvent.change(input, { target: { files: [file] } });
-        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit Request' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit' }));
 
         await waitFor(() => {
             expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -101,7 +106,7 @@ describe('EditDocumentPage', () => {
     test('shows error when submitting without file', () => {
         render(<EditDocumentPage />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit Request' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit' }));
 
         expect(screen.getByText('Please select a file to submit.')).toBeInTheDocument();
     });
@@ -110,14 +115,14 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(1024 * 1024);
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         // Mock delayed API response
         api.post.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
         // Select file and submit
         fireEvent.change(input, { target: { files: [file] } });
-        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit Request' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit' }));
 
         // Button should be disabled and show loading state
         const button = screen.getByRole('button', { name: 'Submitting...' });
@@ -133,7 +138,7 @@ describe('EditDocumentPage', () => {
 
         // First select an invalid file
         const largeFile = createFile(6 * 1024 * 1024);
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         fireEvent.change(input, { target: { files: [largeFile] } });
         expect(screen.getByText('File size must be less than 5MB.')).toBeInTheDocument();
@@ -149,7 +154,7 @@ describe('EditDocumentPage', () => {
         render(<EditDocumentPage />);
 
         const file = createFile(1024 * 1024);
-        const input = screen.getByLabelText('Choose a file:');
+        const input = screen.getByTestId('file-upload-input');
 
         api.post.mockImplementation((url, formData) => {
             // Verify FormData contains the file
@@ -159,7 +164,7 @@ describe('EditDocumentPage', () => {
         });
 
         fireEvent.change(input, { target: { files: [file] } });
-        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit Request' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Submit Edit' }));
 
         await waitFor(() => {
             expect(api.post).toHaveBeenCalled();

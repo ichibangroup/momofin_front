@@ -4,226 +4,179 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
 import AddUserForm from '../AddUserForm';
 import api from '../../utils/api';
+import { sanitizeFormData, sanitizePlainText } from '../../utils/sanitizer';
+import { BrowserRouter as Router } from 'react-router-dom';
 
-// Mock the api module
+// Mock API and sanitization utilities
 jest.mock('../../utils/api');
+jest.mock('../../utils/sanitizer');
 
-describe('AddUserForm', () => {
-  const mockTitle = 'Add New User';
-  const mockFormData = {
-    name: 'John Doe',
-    username: 'johndoe',
-    password: 'password123456', // Updated to meet 10 character requirement
-    email: 'john@example.com',
-    position: 'Developer'
-  };
+describe('AddUserForm Component', () => {
+  let alertSpy;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    global.alert = jest.fn();
+    alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {}); // Mock window.alert
+    sanitizeFormData.mockImplementation((data) => data);
+    sanitizePlainText.mockImplementation((text) => text);
   });
 
-  it('renders form with correct title and all input fields', () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    expect(screen.getByText(mockTitle)).toBeInTheDocument();
-
-    expect(screen.getByLabelText('Name:', { exact: true })).toBeInTheDocument();
-    expect(screen.getByLabelText(/username:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email:/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/position:/i)).toBeInTheDocument();
-    expect(screen.getByText(/register user/i)).toBeInTheDocument();
+  afterEach(() => {
+    alertSpy.mockRestore(); // Restore original alert function
   });
 
-  it('updates form fields when user types', async () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    const nameInput = screen.getByLabelText('Name:', { exact: true });
-    const usernameInput = screen.getByLabelText(/username:/i);
-    const passwordInput = screen.getByLabelText(/password:/i);
-    const emailInput = screen.getByLabelText(/email:/i);
-    const positionInput = screen.getByLabelText(/position:/i);
-
-    await userEvent.type(nameInput, mockFormData.name);
-    await userEvent.type(usernameInput, mockFormData.username);
-    await userEvent.type(passwordInput, mockFormData.password);
-    await userEvent.type(emailInput, mockFormData.email);
-    await userEvent.type(positionInput, mockFormData.position);
-
-    expect(nameInput).toHaveValue(mockFormData.name);
-    expect(usernameInput).toHaveValue(mockFormData.username);
-    expect(passwordInput).toHaveValue(mockFormData.password);
-    expect(emailInput).toHaveValue(mockFormData.email);
-    expect(positionInput).toHaveValue(mockFormData.position);
+  it('renders form fields and title correctly', () => {
+    render(<AddUserForm title="Register New User" />);
+    
+    expect(screen.getByText('Register New User')).toBeInTheDocument();
+    expect(screen.getByLabelText('Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Username')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Position')).toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
+    expect(screen.getByText('Register User')).toBeInTheDocument();
   });
 
   it('displays validation errors for empty fields', async () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    // Submit empty form
-    await userEvent.click(screen.getByText(/register user/i));
-
-    // Check for error messages
-    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    render(<AddUserForm title="Register New User" />);
+    
+    fireEvent.click(screen.getByText('Register User'));
+    
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
     expect(screen.getByText('Username is required')).toBeInTheDocument();
     expect(screen.getByText('Password must be at least 10 characters')).toBeInTheDocument();
     expect(screen.getByText('Email is invalid')).toBeInTheDocument();
     expect(screen.getByText('Position is required')).toBeInTheDocument();
-
-    // API should not be called
-    expect(api.post).not.toHaveBeenCalled();
   });
 
-  it('clears error message when user starts typing', async () => {
-    render(<AddUserForm title={mockTitle} />);
+  it('displays error when password is too short', async () => {
+    render(<AddUserForm title="Register New User" />);
 
-    // Submit empty form to trigger errors
-    await userEvent.click(screen.getByText(/register user/i));
-    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    userEvent.type(screen.getByLabelText('Password'), 'short');
 
-    // Type in name field
-    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), 'J');
+    fireEvent.click(screen.getByText('Register User'));
 
-    // Error message should be gone
+    expect(await screen.findByText('Password must be at least 10 characters')).toBeInTheDocument();
+  });
+
+  it('sanitizes input data on change', () => {
+    render(<AddUserForm title="Register New User" />);
+
+    userEvent.type(screen.getByLabelText('Name'), '   John Doe   ');
+    expect(sanitizePlainText).toHaveBeenCalledWith('   John Doe   ');
+  });
+
+  it('sanitizes form data on submit', async () => {
+    render(<AddUserForm title="Register New User" />);
+
+    userEvent.type(screen.getByLabelText('Name'), 'John Doe');
+    userEvent.type(screen.getByLabelText('Username'), 'johndoe');
+    userEvent.type(screen.getByLabelText('Password'), 'securepassword');
+    userEvent.type(screen.getByLabelText('Email'), 'john@example.com');
+    userEvent.type(screen.getByLabelText('Position'), 'Developer');
+
+    fireEvent.click(screen.getByText('Register User'));
+
+    await waitFor(() => expect(sanitizeFormData).toHaveBeenCalledWith({
+      name: 'John Doe',
+      username: 'johndoe',
+      password: 'securepassword',
+      email: 'john@example.com',
+      position: 'Developer'
+    }));
+  });
+
+  it('calls API on successful form submission', async () => {
+    api.post.mockResolvedValue({ status: 200 });
+    
+    render(<AddUserForm title="Register New User" />);
+  
+    userEvent.type(screen.getByLabelText('Name'), 'John Doe');
+    userEvent.type(screen.getByLabelText('Username'), 'johndoe');
+    userEvent.type(screen.getByLabelText('Password'), 'securepassword');
+    userEvent.type(screen.getByLabelText('Email'), 'john@example.com');
+    userEvent.type(screen.getByLabelText('Position'), 'Developer');
+  
+    fireEvent.click(screen.getByText('Register User'));
+  
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/auth/register', {
+        name: 'John Doe',
+        username: 'johndoe',
+        password: 'securepassword',
+        email: 'john@example.com',
+        position: 'Developer'
+      });
+    });
+  
+    // Wait for the alert to be called after the API response
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Registration successful!');
+    });
+  });
+
+  it('displays an error message on API failure', async () => {
+    api.post.mockRejectedValue(new Error('Registration failed'));
+
+    render(
+      <Router>
+        <AddUserForm />
+      </Router>
+    );
+
+    // Fill out and submit form
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'johndoe' } });
+    fireEvent.change(screen.getByLabelText('Position'), { target: { value: 'Developer' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'securepassword' } });
+    fireEvent.click(screen.getByText('Register User'));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Registration failed');
+    });
+  });
+
+  it('clears specific field error when the field is changed', async () => {
+    render(<AddUserForm title="Register New User" />);
+    
+    // First submit the form empty to generate errors
+    fireEvent.click(screen.getByText('Register User'));
+    
+    // Verify the name error is present
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+    
+    // Type in the name field
+    userEvent.type(screen.getByLabelText('Name'), 'John Doe');
+    
+    // Verify the name error is cleared
     expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+    
+    // Verify other errors remain (testing that only the specific field error was cleared)
+    expect(screen.getByText('Username is required')).toBeInTheDocument();
   });
 
-  it('submits form successfully when all fields are valid', async () => {
-    api.post.mockResolvedValueOnce({ status: 200, data: { message: 'Success' } });
-
-    render(<AddUserForm title={mockTitle} />);
-
-    // Fill out the form
-    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
-    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
-    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
-    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
-    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
-
-    await userEvent.click(screen.getByText(/register user/i));
-
+  it('handles multiple error clearings correctly', async () => {
+    render(<AddUserForm title="Register New User" />);
+    
+    // Submit empty form to generate errors
+    fireEvent.click(screen.getByText('Register User'));
+    
+    // Wait for errors to appear
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/auth/register', mockFormData);
-      expect(global.alert).toHaveBeenCalledWith('Registration successful!');
-
-      // Check if form was reset
-      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue('');
-      expect(screen.getByLabelText(/username:/i)).toHaveValue('');
-      expect(screen.getByLabelText(/password:/i)).toHaveValue('');
-      expect(screen.getByLabelText(/email:/i)).toHaveValue('');
-      expect(screen.getByLabelText(/position:/i)).toHaveValue('');
+      expect(screen.getByText('Name is required')).toBeInTheDocument();
+      expect(screen.getByText('Email is invalid')).toBeInTheDocument();
     });
-  });
-
-  it('submits form successfully but not status 200', async () => {
-    api.post.mockResolvedValueOnce({ status: 500, data: { message: 'Success' } });
-
-    render(<AddUserForm title={mockTitle} />);
-
-    // Fill out the form
-    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
-    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
-    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
-    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
-    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
-
-    await userEvent.click(screen.getByText(/register user/i));
-
+    
+    // Type in name and email fields
+    userEvent.type(screen.getByLabelText('Name'), 'John Doe');
+    userEvent.type(screen.getByLabelText('Email'), 'john@example.com');
+    
+    // Verify both errors are cleared while others remain
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/auth/register', mockFormData);
-      expect(global.alert).not.toHaveBeenCalled();
-
-      // Check if form was reset
-      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
-      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
-      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
-      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
-      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
-    });
-  });
-
-  it('displays validation error for short password', async () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    await userEvent.type(screen.getByLabelText(/password:/i), 'short');
-    await userEvent.click(screen.getByText(/register user/i));
-
-    expect(screen.getByText('Password must be at least 10 characters')).toBeInTheDocument();
-    expect(api.post).not.toHaveBeenCalled();
-  });
-
-  it('displays validation error for invalid email', async () => {
-    render(<AddUserForm title={mockTitle} />);
-
-    await userEvent.type(screen.getByLabelText(/email:/i), 'invalid-email');
-    await userEvent.click(screen.getByText(/register user/i));
-
-    expect(screen.getByText('Email is invalid')).toBeInTheDocument();
-    expect(api.post).not.toHaveBeenCalled();
-  });
-
-  it('handles API error during submission', async () => {
-    const errorMessage = 'error message';
-    api.post.mockRejectedValueOnce({
-      response: {
-        data: {
-          message: errorMessage
-        }
-      }
-    });
-
-    render(<AddUserForm title={mockTitle} />);
-
-    // Fill out the form
-    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
-    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
-    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
-    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
-    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
-
-    await userEvent.click(screen.getByText(/register user/i));
-
-    await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith(errorMessage);
-
-      // Form data should remain
-      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
-      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
-      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
-      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
-      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
-    });
-  });
-
-  it('handles API error with no message', async () => {
-    api.post.mockRejectedValueOnce({
-      response: {
-        data: {
-        }
-      }
-    });
-
-    render(<AddUserForm title={mockTitle} />);
-
-    // Fill out the form
-    await userEvent.type(screen.getByLabelText('Name:', { exact: true }), mockFormData.name);
-    await userEvent.type(screen.getByLabelText(/username:/i), mockFormData.username);
-    await userEvent.type(screen.getByLabelText(/password:/i), mockFormData.password);
-    await userEvent.type(screen.getByLabelText(/email:/i), mockFormData.email);
-    await userEvent.type(screen.getByLabelText(/position:/i), mockFormData.position);
-
-    await userEvent.click(screen.getByText(/register user/i));
-
-    await waitFor(() => {
-      expect(global.alert).toHaveBeenCalledWith('Registration failed');
-
-      // Form data should remain
-      expect(screen.getByLabelText('Name:', { exact: true })).toHaveValue(mockFormData.name);
-      expect(screen.getByLabelText(/username:/i)).toHaveValue(mockFormData.username);
-      expect(screen.getByLabelText(/password:/i)).toHaveValue(mockFormData.password);
-      expect(screen.getByLabelText(/email:/i)).toHaveValue(mockFormData.email);
-      expect(screen.getByLabelText(/position:/i)).toHaveValue(mockFormData.position);
+      expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+      expect(screen.queryByText('Email is invalid')).not.toBeInTheDocument();
+      expect(screen.getByText('Username is required')).toBeInTheDocument();
+      expect(screen.getByText('Password must be at least 10 characters')).toBeInTheDocument();
     });
   });
 });

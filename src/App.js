@@ -41,7 +41,10 @@ const ViewOrgUsers = lazy(() => import('./components/ViewOrgUsers'));
 const ViewAllUsers = lazy(() => import('./components/ViewAllUsers')); 
 const ViewDocumentAudits = lazy(() => import('./components/ViewDocumentAuditTrails'));
 const EditUserOrgProfile = lazy(() => import('./components/EditUserOrgProfile'));
+const HelpAndDocumentation = lazy(() => import('./components/HelpAndDocumentation'));
 
+
+///RAHHHHH
 
 
 function App() {
@@ -76,6 +79,7 @@ function App() {
           <Route path="viewEditRequests" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><ViewEditRequests /></Suspense></ProtectedRoute>} />
           <Route path="editDocument/:documentId" element={<ProtectedRoute><Suspense fallback={<LoadingIndicator />}><EditDocumentPage /></Suspense></ProtectedRoute>} />
           <Route path="editUserOrgProfile/:userId" element={<Suspense fallback={<LoadingIndicator />}><EditUserOrgProfile /></Suspense>} />
+          <Route path="help" element={<Suspense fallback={<LoadingIndicator />}><HelpAndDocumentation /></Suspense>} />
         </Route>
 
         {/* Auth layout routes */}

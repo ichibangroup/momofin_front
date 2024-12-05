@@ -58,6 +58,10 @@
     background-color: #F59E0B; /* Yellow for Verify */
 }
 
+.audit-box {
+    background-color: #f50b0b; /* Yellow for Verify */
+}
+
 .learn-more-link {
     text-decoration: none;
     color: #ffffff;

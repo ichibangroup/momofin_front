@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faCogs, faUpload, faHome, faBorderAll, faAddressBook,
-    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature
+    faCogs, faUpload, faClipboardList, faHome, faBorderAll, faAddressBook,
+    faAddressCard, faLongArrowAltLeft, faLongArrowAltRight, faSignOut, faFileSignature, faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../utils/api';
 import './Layout.css';
 import { setAuthToken } from "../utils/auth";
 import { LogoutActivityLogger } from '../utils/logoutLogger';
+import logoAvento from '../assets/logo-avento.png';
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -50,8 +51,6 @@ const Layout = () => {
         fetchUserInfo();
     }, [navigate]);
     
-    
-
     const handleLogout = async () => {
         if (user) {
             // Log logout attempt
@@ -117,7 +116,7 @@ const Layout = () => {
         <div className={`wrapper ${isActive ? 'active' : ''}`} data-testid="wrapper">
             <div className="top_navbar">
                 <div className="logo">
-                    <Link to="/app">MOMOFIN</Link>
+                <img src={logoAvento} alt="Logo Avento" style={{ width: '140px', height: 'auto' }} />
                 </div>
                 <div className="top_menu">
                     <div className="home_link">
@@ -144,7 +143,15 @@ const Layout = () => {
                                     <span className="icon"><FontAwesomeIcon icon={faUpload} /></span>
                                     <span className="list">Upload and Verify</span>
                                 </Link>
-                            </li>
+                                </li>
+                            {hasRole('ROLE_ORG_ADMIN') && (
+                                <li>
+                                    <Link to="viewDocumentAuditTrails">
+                                    <span className="icon"><FontAwesomeIcon icon={faClipboardList} /></span>
+                                    <span className="list">View Audit Logs</span>
+                                    </Link>
+                                </li>
+                            )}
                             {hasRole('ROLE_MOMOFIN_ADMIN') && (
                                 <li>
                                     <Link to="momofinDashboard">
@@ -178,6 +185,12 @@ const Layout = () => {
                                                     <span className="badge">{editRequestsCount}</span>
                                                 )}
                                             </span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="help">
+                                            <span className="icon"><FontAwesomeIcon icon={faQuestionCircle}/></span>
+                                            <span className="list">Help & Documentation</span>
                                         </Link>
                                     </li>
                                     <li>
