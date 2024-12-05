@@ -145,7 +145,7 @@ function Page() {
             value={keyword}
             onChange={handleSearch}
         />
-        <table>
+        <table className="alpha-table">
           <thead className="document-headers">
           <tr>
             <th className="text-center">File Names</th>

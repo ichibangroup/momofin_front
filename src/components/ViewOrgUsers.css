@@ -7,7 +7,7 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.headers {
+.org-user-headers {
     display: grid;
     grid-template-columns: 0.5fr 2fr 1fr 1.5fr 2fr 1fr;
     align-items: center;
@@ -17,7 +17,7 @@
     margin-bottom: 10px; 
 }
 
-.headers tr td {
+.org-user-headers tr td {
     text-align: center;
     padding: 10px 20px;
     margin: 0 5px;
@@ -32,19 +32,19 @@
     border-radius: 8px; 
 }
 
-.user-row {
+.org-user-row {
     display: grid;
     grid-template-columns: 0.5fr 2fr 1fr 1.5fr 2fr 1fr;
     align-items: center;
     border-bottom: 1px solid #ccc;
 }
 
-.user-row tr td {
+.org-user-row tr td {
     padding: 10px;
     text-align: center;
 }
 
-td, th {
+.org-user-table td, .org-user-table th {
     padding: 10px;
     text-align: center;
 }

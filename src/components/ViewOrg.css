@@ -25,13 +25,13 @@ body {
     letter-spacing: 1px;
 }
 
-table {
+.org-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
-.headers {
+.org-headers {
     display: grid;
     grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
     align-items: center;
@@ -43,7 +43,7 @@ table {
 }
 
 
-th, td {
+.org-table th, .org-table td {
     text-align: center;
     padding: 10px;
     overflow: hidden;
@@ -51,7 +51,7 @@ th, td {
     white-space: nowrap;
 }
 
-.headers th {
+.org-headers th {
     text-align: center;
     padding: 10px 20px;
     margin: 0 5px;
@@ -60,14 +60,14 @@ th, td {
     font-family: 'Space Grotesk', sans-serif;
 }
 
-.user-rows-container {
+.org-rows-container {
     max-height: 300px;
     overflow-y: auto;
     background: #f9f9f9; 
     border-radius: 8px; 
 }
 
-.user-row {
+.org-row {
     display: grid;
     grid-template-columns: 2fr 1fr 1.5fr 2fr 1fr;
     align-items: center;
@@ -75,7 +75,7 @@ th, td {
     font-family: 'Space Grotesk', sans-serif;
 }
 
-td, th {
+.org-table td, .org-table th {
     padding: 10px;
     text-align: center;
 }
