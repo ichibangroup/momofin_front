@@ -57,7 +57,7 @@ function Page() {
   };
 
   const handleCopyLink = async (documentId) => {
-    const verificationUrl = `https://momofin-docuver-staging.netlify.app/app/verify/${documentId}`;
+    const verificationUrl = `https://avento-trust.netlify.app/app/verify/${documentId}`;
     try {
       await navigator.clipboard.writeText(verificationUrl);
       setCopiedId(documentId);
